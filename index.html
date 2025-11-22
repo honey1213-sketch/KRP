@@ -1,78 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>RiddhanshCart</title>
-    <style>
-        body { margin:0; font-family:Arial; background:#f5f5f5; }
-        header {
-            background:#232f3e; color:white; padding:15px;
-            display:flex; justify-content:space-between; align-items:center;
-        }
-        header h2 { margin:0; }
-        .search-box input {
-            padding:8px; width:300px; border-radius:4px; border:none;
-        }
-        #cartCount { background:red; padding:2px 8px; border-radius:50%; }
-        .products {
-            display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
-            gap:15px; padding:20px;
-        }
-        .product {
-            background:white; padding:10px; border-radius:8px;
-            box-shadow:0 0 5px #ccc; text-align:center;
-        }
-        .product img { width:100%; height:180px; object-fit:cover; border-radius:5px; }
-        button {
-            background:#ff9900; border:none; padding:8px 12px;
-            border-radius:4px; margin-top:8px; cursor:pointer;
-        }
-        #receipt {
-            position:fixed; top:0; left:0; right:0; bottom:0; display:none;
-            align-items:center; justify-content:center;
-            background:rgba(0,0,0,0.6);
-        }
-        #receiptBox {
-            background:white; padding:20px; width:300px; border-radius:10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>RiddhanshCart - Payment & Tracking</title>
+<style>
+body { margin:0; font-family:Arial; background:#f2f2f2; }
+
+/* HEADER */
+header {
+    background:#232f3e; color:white; padding:15px;
+    display:flex; justify-content:space-between; align-items:center;
+}
+header h2 { margin:0; }
+#cartCount { background:red; padding:3px 7px; border-radius:50%; }
+
+/* PRODUCTS */
+.products {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:15px; padding:20px;
+}
+.product {
+    background:white; padding:10px; border-radius:8px;
+    box-shadow:0 0 5px #bbb; text-align:center;
+}
+.product img { width:100%; height:180px; object-fit:cover; border-radius:6px; }
+
+/* POPUP */
+.popup {
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.6); z-index:999;
+}
+.box { background:white; padding:20px; width:330px; border-radius:10px; }
+
+/* TRACKING */
+.step {
+    padding:10px; margin:5px 0; border-left:4px solid #999;
+}
+.active { border-color:#4CAF50; background:#eafbe6; }
+
+/* Buttons */
+button {
+    background:#ff9900; border:none; padding:8px 12px;
+    border-radius:4px; cursor:pointer; margin-top:8px;
+}
+</style>
 </head>
 <body>
 
 <header>
     <h2>RiddhanshCart</h2>
-    <div class="search-box"><input placeholder="Search products..."></div>
-    <div onclick="openOrders()" style="cursor:pointer;">
-        🛒 Cart <span id="cartCount">0</span>
-    </div>
+    <div onclick="openCart()" style="cursor:pointer">🛒 Cart <span id="cartCount">0</span></div>
 </header>
 
 <div class="products" id="productList"></div>
 
-<!-- Receipt Popup -->
-<div id="receipt">
-    <div id="receiptBox">
-        <h3>Payment Successful ✔</h3>
-        <div id="receiptDetails"></div>
-        <button onclick="closeReceipt()">Close</button>
+<!-- PAYMENT POPUP -->
+<div id="paymentPopup" class="popup" style="display:none;">
+    <div class="box">
+        <h3>Payment Portal</h3>
+        <p>Amount: <b id="payAmount"></b></p>
+
+        <label>UPI ID</label><br>
+        <input id="upi" placeholder="example@upi"
+               style="width:100%;padding:6px;margin-top:4px;"><br><br>
+
+        <button onclick="processPayment()">Pay Securely</button>
+        <button onclick="closePayment()">Cancel</button>
     </div>
 </div>
 
+<!-- RECEIPT POPUP -->
+<div id="receiptPopup" class="popup" style="display:none;">
+    <div class="box">
+        <h3>Payment Successful ✔</h3>
+        <div id="receiptDetails"></div>
+        <button onclick="openTracking()">Track Order</button>
+    </div>
+</div>
+
+<!-- TRACKING POPUP -->
+<div id="trackingPopup" class="popup" style="display:none;">
+    <div class="box" style="width:350px;">
+        <h3>Order Tracking</h3>
+        <p><b>Order ID:</b> <span id="trackOrderId"></span></p>
+        <p><b>Delivery Boy:</b> <span id="deliveryBoy"></span></p>
+        <p><b>Phone:</b> <span id="deliveryPhone"></span></p>
+        <p><b>Expected Delivery:</b> <span id="deliveryDate"></span></p>
+
+        <div>
+            <div class="step active">Order Placed</div>
+            <div class="step active">Packed</div>
+            <div class="step">Out for Delivery</div>
+            <div class="step">Delivered</div>
+        </div>
+
+        <button onclick="closeTracking()">Close</button>
+    </div>
+</div>
+
+
 <script>
-// SAMPLE PRODUCTS
+// PRODUCTS
 const products = [
     {id:1, name:"Smartphone X1", price:12999, img:"https://i.imgur.com/HKX2G6H.jpeg"},
     {id:2, name:"DSLR Camera", price:45999, img:"https://i.imgur.com/Y0kM5qV.jpeg"},
-    {id:3, name:"Bluetooth Headphones", price:1999, img:"https://i.imgur.com/psJpN4s.jpeg"},
+    {id:3, name:"Wireless Headphones", price:1999, img:"https://i.imgur.com/psJpN4s.jpeg"},
     {id:4, name:"Sports Shoes", price:1499, img:"https://i.imgur.com/25pF7tY.jpeg"},
-    {id:5, name:"LED Smart TV 43\"", price:29999, img:"https://i.imgur.com/JU5KUZT.jpeg"},
-    {id:6, name:"Gaming Laptop", price:67999, img:"https://i.imgur.com/eLe4P3Q.jpeg"}
 ];
 
 let cart = [];
+let currentTotal = 0;
+let lastOrderId = "";
 
-function loadProducts() {
-    let html = "";
+// LOAD PRODUCTS
+function loadProducts(){
+    let html="";
     products.forEach(p=>{
         html += `
         <div class="product">
@@ -85,53 +128,73 @@ function loadProducts() {
     document.getElementById("productList").innerHTML = html;
 }
 
+// ADD TO CART
 function addToCart(id){
-    const item = products.find(p=>p.id===id);
+    let item = products.find(p=>p.id==id);
     cart.push(item);
-    document.getElementById("cartCount").innerText = cart.length;
+    document.getElementById("cartCount").innerHTML = cart.length;
     alert(item.name + " added to cart");
 }
 
-function openOrders(){
-    let total = cart.reduce((sum,i)=>sum+i.price,0);
-    let details = `<p><b>Items:</b></p>`;
-    cart.forEach(i=>{
-        details += `${i.name} - ₹${i.price}<br>`;
-    });
-    details += `<p><b>Total: ₹${total}</b></p>
-                <button onclick="payNow()">Pay Now</button>`;
-    document.body.innerHTML = document.body.innerHTML + `
-        <div id="ordersPopup"
-             style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000000aa;
-             display:flex;justify-content:center;align-items:center;">
-            <div style="background:white;padding:20px;border-radius:10px;min-width:300px;">
-                <h3>Your Orders</h3>
-                ${details}
-                <br><button onclick="closeOrders()">Close</button>
-            </div>
-        </div>`;
+// OPEN CART
+function openCart(){
+    if(cart.length==0){ alert("Cart is empty"); return; }
+
+    currentTotal = cart.reduce((a,b)=>a+b.price,0);
+
+    document.getElementById("payAmount").innerHTML = "₹" + currentTotal;
+    document.getElementById("paymentPopup").style.display = "flex";
 }
 
-function closeOrders(){
-    document.getElementById("ordersPopup").remove();
-}
+// CLOSE POPUPS
+function closePayment(){ document.getElementById("paymentPopup").style.display="none"; }
 
-function payNow(){
-    document.getElementById("ordersPopup").remove();
-    let total = cart.reduce((s,i)=>s+i.price,0);
+// PROCESS PAYMENT (FAKE)
+function processPayment(){
+    let upi = document.getElementById("upi").value;
+    if(upi.length < 5){ alert("Enter valid UPI"); return; }
+
+    lastOrderId = "RC" + Math.floor(Math.random()*900000 + 100000);
+
     document.getElementById("receiptDetails").innerHTML =
-        `Amount Paid: <b>₹${total}</b><br>Order ID: RC${Date.now()}`;
-    document.getElementById("receipt").style.display = "flex";
-    cart = [];
-    document.getElementById("cartCount").innerText = "0";
+        `<p>Order ID: <b>${lastOrderId}</b></p>
+         <p>Amount Paid: <b>₹${currentTotal}</b></p>
+         <p>Payment Mode: <b>UPI</b></p>`;
+
+    document.getElementById("paymentPopup").style.display="none";
+    document.getElementById("receiptPopup").style.display="flex";
 }
 
-function closeReceipt(){
-    document.getElementById("receipt").style.display = "none";
+// TRACK ORDER PAGE
+function openTracking(){
+    document.getElementById("receiptPopup").style.display="none";
+
+    document.getElementById("trackOrderId").innerText = lastOrderId;
+
+    // Realistic delivery boy data
+    const boys = [
+        {name:"Rohit Kumar", phone:"9876543210"},
+        {name:"Aman Verma", phone:"9898989898"},
+        {name:"Sahil Khan", phone:"9123456789"},
+        {name:"Vikas Mishra", phone:"9090909090"}
+    ];
+    let d = boys[Math.floor(Math.random()*boys.length)];
+
+    document.getElementById("deliveryBoy").innerText = d.name;
+    document.getElementById("deliveryPhone").innerText = d.phone;
+
+    // Delivery date +3 days
+    let date = new Date();
+    date.setDate(date.getDate() + 3);
+    document.getElementById("deliveryDate").innerText = date.toDateString();
+
+    document.getElementById("trackingPopup").style.display="flex";
 }
+
+// CLOSE TRACKING
+function closeTracking(){ document.getElementById("trackingPopup").style.display="none"; }
 
 loadProducts();
 </script>
-
 </body>
 </html>
