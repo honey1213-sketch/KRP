@@ -1,213 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>For My Love Alisha ❤️ From Rajat</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:#ffeef5;color:#333;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alisha और Rajat - हमारी कहानी</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: #fff0f8; color: #333; line-height: 1.6; }
 
-/* HERO SECTION */
-.hero{
-    height:100vh;
-    background:url('https://i.imgur.com/p9qJNpV.jpeg') center/cover no-repeat;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    color:white;
-    padding:20px;
-    position:relative;
-}
-.hero::after{
-    content:"";
-    position:absolute; inset:0;
-    background:rgba(0,0,0,0.45);
-}
-.hero-content{
-    position:relative;
-    z-index:2;
-    max-width:800px;
-}
-.hero h1{
-    font-size:55px;
-    margin-bottom:10px;
-    animation:fade 2s ease;
-}
-.hero h3{font-size:22px;animation:fade 3s ease;}
-@keyframes fade{from{opacity:0;}to{opacity:1;}}
+    /* Header / Hero */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background: url('https://i.imgur.com/p9qJNpV.jpeg') center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      color: white;
+      padding: 0 20px;
+    }
+    .hero-content h1 {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    .hero-content p {
+      font-size: 1.6rem;
+      animation: fadeIn 3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-/* SECTION */
-.section{
-    padding:70px 20px;
-    max-width:1000px;
-    margin:auto;
-}
+    /* Sections */
+    .section {
+      padding: 80px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .section-heading {
+      font-size: 2.5rem;
+      color: #d63384;
+      text-align: center;
+      margin-bottom: 40px;
+    }
 
-/* Love Card */
-.card{
-    background:white;
-    padding:25px;
-    margin:20px 0;
-    border-radius:15px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.15);
-}
+    /* Message Card */
+    .message-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      padding: 30px;
+      margin-bottom: 40px;
+    }
+    .message-card p {
+      font-size: 1.2rem;
+    }
 
-/* Timeline */
-.timeline{
-    position:relative;
-    margin:40px 0;
-}
-.timeline::before{
-    content:"";
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    width:4px;
-    height:100%;
-    background:#ff5da2;
-}
-.t-item{
-    width:50%;
-    padding:20px;
-    position:relative;
-}
-.left{float:left;text-align:right;}
-.right{float:right;}
-.t-item::before{
-    content:"❤️";
-    position:absolute;
-    top:25px;
-    font-size:28px;
-}
-.left::before{right:-18px;}
-.right::before{left:-18px;}
+    /* Timeline */
+    .timeline {
+      position: relative;
+      margin: 40px 0;
+      padding-left: 50px;
+      border-left: 4px solid #d63384;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 40px;
+    }
+    .timeline-item::before {
+      content: '❤️';
+      position: absolute;
+      left: -32px;
+      top: 0;
+      font-size: 1.5rem;
+    }
+    .timeline-item h3 {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      color: #b3125b;
+    }
+    .timeline-item p {
+      font-size: 1.1rem;
+    }
 
-.clear{clear:both;}
+    /* Gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .gallery img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: transform .3s;
+    }
+    .gallery img:hover {
+      transform: scale(1.05);
+    }
 
-/* GALLERY */
-.gallery{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-    gap:15px;
-}
-.gallery img{
-    width:100%;
-    height:240px;
-    object-fit:cover;
-    border-radius:12px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.2);
-    transition:.3s;
-}
-.gallery img:hover{
-    transform:scale(1.03);
-}
+    /* Love Letter */
+    .letter {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin-bottom: 40px;
+    }
 
-/* FOOTER */
-footer{
-    background:#ff5da2;
-    color:white;
-    text-align:center;
-    padding:35px;
-    margin-top:50px;
-    font-size:18px;
-}
-</style>
+    /* Footer */
+    footer {
+      background: #d63384;
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 1.2rem;
+    }
+
+  </style>
 </head>
 
 <body>
 
-<!-- HERO -->
-<section class="hero">
+  <!-- Hero Section -->
+  <section class="hero">
     <div class="hero-content">
-        <h1>For My Love Alisha ❤️</h1>
-        <h3>From Your Forever Person — Rajat</h3>
+      <h1>Alisha, तुम मेरी दुनिया हो</h1>
+      <p>तुम्हारे लिए Rajat की ये छोटी सी वेबसाइट, सिर्फ और सिर्फ 💖</p>
     </div>
-</section>
+  </section>
 
-<!-- INTRO -->
-<section class="section">
-    <h2 style="font-size:36px;color:#ff5da2;margin-bottom:15px;">🌸 My Message to You, Alisha</h2>
-    <div class="card">
-        <p style="font-size:20px;line-height:32px;">
-            Alisha, tum meri zindagi ka sabse khoobsurat hissa ho.  
-            Tumhari muskaan, tumhari awaaz, tumhari har ek baat mere dil ko sukoon deti है।  
-            Yeh website sirf tumhare liye banayi hai…  
-            Kyunki tum special ho, aur tumhare लिए कुछ भी कम नहीं होना चाहिए.  
-            — ❤️ Rajat
-        </p>
+  <!-- My Message to You -->
+  <section class="section">
+    <h2 class="section-heading">मेरी Feelings तुम्हारे लिए</h2>
+    <div class="message-card">
+      <p>
+        प्यारी अलिशा, जब से तुम मेरी जिंदगी में आई हो,  
+        हर सुबह सुहानी लगती है,  
+        हर शाम खूबसूरत होती है।  
+        तुम्हारी हँसी मेरे दिल की धड़कन बढ़ा देती है,  
+        और तुम्हारी आवाज़ मेरी आत्मा को सुकून देती है।  
+        तुम सिर्फ मेरी गर्लफ्रेंड नहीं,  
+        मेरी सबसे अच्छी दोस्त, मेरी साथी हो।  
+        मैं हर दिन बस तुम्हारे साथ अपनी ज़िन्दगी बिताना चाहता हूँ।  
+        ❤️ Rajat
+      </p>
     </div>
-</section>
+  </section>
 
-<!-- TIMELINE -->
-<section class="section">
-    <h2 style="font-size:32px;color:#ff5da2;margin-bottom:25px;text-align:center;">
-        ❤️ Our Love Journey
-    </h2>
-
+  <!-- Timeline -->
+  <section class="section">
+    <h2 class="section-heading">हमारी Journey</h2>
     <div class="timeline">
-        <div class="t-item left">
-            <h3>🌟 The Moment I Saw You</h3>
-            <p>Your smile… I fell instantly.</p>
-        </div>
-        <div class="t-item right">
-            <h3>💞 When We Started Talking</h3>
-            <p>Every conversation felt like magic.</p>
-        </div>
-        <div class="t-item left">
-            <h3>✨ When You Became My Everything</h3>
-            <p>You started living inside my heart.</p>
-        </div>
-        <div class="t-item right">
-            <h3>💕 Today & Always</h3>
-            <p>My world = You, Alisha.</p>
-        </div>
-        <div class="clear"></div>
+      <div class="timeline-item">
+        <h3>पहली नज़र</h3>
+        <p>उस दिन जब मैंने पहली बार तुम्हें देखा था … मेरी दुनिया बदल गई थी।</p>
+      </div>
+      <div class="timeline-item">
+        <h3>हमारी पहली बात</h3>
+        <p>हमारी पहली चैट, वो छोटी‑छोटी बातें, जो मुझे आज भी याद हैं।</p>
+      </div>
+      <div class="timeline-item">
+        <h3>जब तुम मेरी बनी</h3>
+        <p>तुम्हारे साथ बिताये गए वो यादगार पल, जिससे पता चला कि मैं तुम्हारे बिना अधूरा हूँ।</p>
+      </div>
+      <div class="timeline-item">
+        <h3>हमारी मजबूती</h3>
+        <p>हर तूफान ने हमें और नज़दीक लाया, और हम साथ खड़े रहे।</p>
+      </div>
+      <div class="timeline-item">
+        <h3>हमारा भविष्य</h3>
+        <p>मैं तुम्हारे साथ एक ऐसी जिंदगी बनाना चाहता हूँ, जिससे हमारी कहानी हमेशा चले … हमेशा तुम + मैं।</p>
+      </div>
     </div>
-</section>
+  </section>
 
-<!-- LETTER -->
-<section class="section">
-    <h2 style="font-size:32px;color:#ff5da2;margin-bottom:22px;">
-        💌 A Letter From Rajat to Alisha
-    </h2>
-    <div class="card">
-        <p style="font-size:19px;line-height:33px;">
-            Dear Alisha,<br><br>
-            Tum meri zindagi ki wo roshni ho jo mujhe har andhere se bahar nikalti है।  
-            Tumhare bina ek pal bhi adhoora sa lagta है.  
-            Main shayad kabhi lafzon me bayaan na kar paun ki tum mere liye kya ho…  
-            Par itna jarur janta hoon —  
-            <b>tum ho is dil ki dhadkan, aur main hoon tumhara Rajat… hamesha ke liye.</b>  
-            <br><br>
-            Forever Yours,<br>  
-            ❤️ Rajat
-        </p>
-    </div>
-</section>
-
-<!-- GALLERY -->
-<section class="section">
-    <h2 style="font-size:32px;color:#ff5da2;margin-bottom:25px;text-align:center;">
-        📸 Beautiful Moments for My Beautiful Girl
-    </h2>
-
+  <!-- Gallery -->
+  <section class="section">
+    <h2 class="section-heading">हमारी यादें</h2>
     <div class="gallery">
-        <img src="https://i.imgur.com/Vp4Rk6i.jpeg">
-        <img src="https://i.imgur.com/XWN8Xk3.jpeg">
-        <img src="https://i.imgur.com/zfWdvdr.jpeg">
-        <img src="https://i.imgur.com/L82G70E.jpeg">
-        <img src="https://i.imgur.com/B2EoRdn.jpeg">
-        <img src="https://i.imgur.com/LntUQ8l.jpeg">
+      <img src="https://i.imgur.com/Vp4Rk6i.jpeg" alt="Couple Photo 1">
+      <img src="https://i.imgur.com/XWN8Xk3.jpeg" alt="Couple Photo 2">
+      <img src="https://i.imgur.com/zfWdvdr.jpeg" alt="Couple Photo 3">
+      <img src="https://i.imgur.com/L82G70E.jpeg" alt="Couple Photo 4">
+      <img src="https://i.imgur.com/B2EoRdn.jpeg" alt="Couple Photo 5">
+      <img src="https://i.imgur.com/LntUQ8l.jpeg" alt="Couple Photo 6">
     </div>
-</section>
+  </section>
 
-<!-- FOOTER -->
-<footer>
-    Made With Infinite Love ❤️ By Rajat For His Alisha  
-</footer>
+  <!-- Romantic Letter -->
+  <section class="section">
+    <h2 class="section-heading">मेरी यादों का ख़त</h2>
+    <div class="letter">
+      <p>
+        मेरी प्यारी Alisha,<br><br>
+        तुम मेरी ज़िन्दगी की वो खूबसूरत कविता हो, जिसे मैं हर रोज़ पढ़ना चाहता हूँ।  
+        तुम मेरे दिल की धड़कन हो, मेरी खुशी की वजह हो, और मेरी सबसे बड़ी ताकत हो।  
+        तुम्हारे साथ बिताया हर पल मेरे लिए अनमोल है।  
+        तुम्हारी मुस्कान मेरे लिए सूरज की किरण की तरह है,  
+        और तुम्हारी आँखों में मैं खुद को पाता हूँ।<br><br>
+        मैं वादा करता हूँ कि मैं हमेशा तुम्हारा साथ दूँगा,  
+        तुम्हारी खुशियों में शामिल रहूँगा,  
+        그리고 तुम्हारे हर सपने को सच करने की कोशिश करूँगा।<br><br>
+        तुम्हारा हमेशा,  
+        ❤️ Rajat
+      </p>
+    </div>
+  </section>
+
+  <!-- More Romantic Images (Using Free Stock) -->
+  <section class="section">
+    <h2 class="section-heading">खूबसूरत तस्वीरें</h2>
+    <div class="gallery">
+      <!-- कुछ royalty-free images from Pixabay / Unsplash -->
+      <img src="https://cdn.pixabay.com/photo/2017/08/06/06/58/couple-2591754_1280.jpg" alt="Couple Romantic">
+      <img src="https://cdn.pixabay.com/photo/2015/03/26/10/01/couple-690176_1280.jpg" alt="Love Couple">
+      <img src="https://cdn.pixabay.com/photo/2018/07/01/20/14/couple-3501712_1280.jpg" alt="Romantic Couple">
+      <img src="https://cdn.pixabay.com/photo/2016/11/29/03/27/couple-1869610_1280.jpg" alt="Couple Silhouette">
+      <img src="https://cdn.pixabay.com/photo/2017/06/07/19/52/couple-2383915_1280.jpg" alt="Loving Couple">
+      <img src="https://cdn.pixabay.com/photo/2014/09/07/21/51/couple-438647_1280.jpg" alt="Romance">
+    </div>
+    <p style="text-align:center; margin-top:20px; color:#666; font-size:0.9rem;">
+      इमेजेज़ स्रोत: Pixabay। :contentReference[oaicite:0]{index=0}
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    यह वेबसाइट खास तौर पर <b>Alisha</b> के लिए, <br>तुम्हारा Rajat ❤️  
+  </footer>
 
 </body>
 </html>
-
