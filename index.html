@@ -1,297 +1,213 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RiddhanshCart</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+<title>For My Love Alisha ❤️ From Rajat</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
-body{background:#f2f3f5;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#ffeef5;color:#333;}
 
-/* ---------------- HEADER ---------------- */
-header{
-    background:#131921;
-    color:#fff;
-    padding:12px 25px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    position:sticky;
-    top:0;
-    z-index:20;
-}
-.logo{font-size:26px;font-weight:600;}
-.search{
-    flex:1;
-    margin:0 20px;
-    display:flex;
-}
-.search input{
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:4px 0 0 4px;
-}
-.search button{
-    background:#febd69;
-    border:none;
-    padding:0 15px;
-    border-radius:0 4px 4px 0;
-    cursor:pointer;
-    font-weight:600;
-}
-.cart-btn{
-    cursor:pointer;
-    font-size:20px;
-}
-
-/* ---------------- HOME PRODUCTS GRID ---------------- */
-.container{padding:20px;}
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-    gap:20px;
-}
-.card{
-    background:white;
-    border-radius:10px;
-    padding:10px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.10);
-    transition:.3s;
-}
-.card:hover{transform:translateY(-5px);}
-.card img{
-    width:100%;
-    height:200px;
-    object-fit:cover;
-    border-radius:8px;
-}
-.card button{
-    background:#ffd814;
-    border:none;
-    width:100%;
-    padding:9px;
-    border-radius:8px;
-    margin-top:10px;
-    cursor:pointer;
-    font-weight:600;
-}
-
-/* POPUP BASE */
-.popup{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.55);
+/* HERO SECTION */
+.hero{
+    height:100vh;
+    background:url('https://i.imgur.com/p9qJNpV.jpeg') center/cover no-repeat;
     display:flex;
     align-items:center;
     justify-content:center;
-    display:none;
-    z-index:40;
-}
-.box{
-    background:white;
-    width:350px;
+    text-align:center;
+    color:white;
     padding:20px;
-    border-radius:12px;
-    animation:pop .3s ease;
-    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    position:relative;
 }
-@keyframes pop{
-    from{transform:scale(.8);opacity:0;}
-    to{transform:scale(1);opacity:1;}
+.hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background:rgba(0,0,0,0.45);
 }
-.box button{
-    background:#ffa41c;
-    border:none;
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    margin-top:15px;
-    font-weight:600;
-    cursor:pointer;
+.hero-content{
+    position:relative;
+    z-index:2;
+    max-width:800px;
+}
+.hero h1{
+    font-size:55px;
+    margin-bottom:10px;
+    animation:fade 2s ease;
+}
+.hero h3{font-size:22px;animation:fade 3s ease;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+
+/* SECTION */
+.section{
+    padding:70px 20px;
+    max-width:1000px;
+    margin:auto;
 }
 
-/* TRACKING TIMELINE */
+/* Love Card */
+.card{
+    background:white;
+    padding:25px;
+    margin:20px 0;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* Timeline */
 .timeline{
-    border-left:4px solid #ccc;
-    margin-left:8px;
-    padding-left:12px;
+    position:relative;
+    margin:40px 0;
 }
-.step{
-    background:#eee;
-    padding:8px;
-    border-radius:6px;
-    margin:10px 0;
-    transition:.4s;
+.timeline::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:4px;
+    height:100%;
+    background:#ff5da2;
 }
-.step.active{
-    background:#d8ffe0;
-    border-left:4px solid #38c172;
-    font-weight:600;
+.t-item{
+    width:50%;
+    padding:20px;
+    position:relative;
+}
+.left{float:left;text-align:right;}
+.right{float:right;}
+.t-item::before{
+    content:"❤️";
+    position:absolute;
+    top:25px;
+    font-size:28px;
+}
+.left::before{right:-18px;}
+.right::before{left:-18px;}
+
+.clear{clear:both;}
+
+/* GALLERY */
+.gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:15px;
+}
+.gallery img{
+    width:100%;
+    height:240px;
+    object-fit:cover;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    transition:.3s;
+}
+.gallery img:hover{
+    transform:scale(1.03);
+}
+
+/* FOOTER */
+footer{
+    background:#ff5da2;
+    color:white;
+    text-align:center;
+    padding:35px;
+    margin-top:50px;
+    font-size:18px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-    <div class="logo">RiddhanshCart</div>
-
-    <div class="search">
-        <input placeholder="Search products…">
-        <button>🔍</button>
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>For My Love Alisha ❤️</h1>
+        <h3>From Your Forever Person — Rajat</h3>
     </div>
+</section>
 
-    <div class="cart-btn" onclick="openCart()">🛒 (<span id="cartCount">0</span>)</div>
-</header>
-
-
-
-<div class="container">
-    <div class="grid" id="productList"></div>
-</div>
-
-
-<!-- Payment Popup -->
-<div class="popup" id="paymentPopup">
-    <div class="box">
-        <h2>Payment</h2>
-        <p>Total: <b id="payTotal"></b></p>
-
-        <input id="upi" placeholder="yourupi@bank"
-               style="padding:9px;width:100%;border:1px solid #ccc;border-radius:6px;margin-top:12px;">
-
-        <button onclick="confirmPayment()">Pay Now</button>
-        <button style="background:#ccc;margin-top:10px;" onclick="closePay()">Cancel</button>
+<!-- INTRO -->
+<section class="section">
+    <h2 style="font-size:36px;color:#ff5da2;margin-bottom:15px;">🌸 My Message to You, Alisha</h2>
+    <div class="card">
+        <p style="font-size:20px;line-height:32px;">
+            Alisha, tum meri zindagi ka sabse khoobsurat hissa ho.  
+            Tumhari muskaan, tumhari awaaz, tumhari har ek baat mere dil ko sukoon deti है।  
+            Yeh website sirf tumhare liye banayi hai…  
+            Kyunki tum special ho, aur tumhare लिए कुछ भी कम नहीं होना चाहिए.  
+            — ❤️ Rajat
+        </p>
     </div>
-</div>
+</section>
 
+<!-- TIMELINE -->
+<section class="section">
+    <h2 style="font-size:32px;color:#ff5da2;margin-bottom:25px;text-align:center;">
+        ❤️ Our Love Journey
+    </h2>
 
-<!-- Receipt Popup -->
-<div class="popup" id="receiptPopup">
-    <div class="box">
-        <h2>Order Placed ✔</h2>
-        <div id="receiptBox"></div>
-        <button onclick="openTracking()">Track Order</button>
-    </div>
-</div>
-
-
-<!-- Tracking Popup -->
-<div class="popup" id="trackPopup">
-    <div class="box" style="width:380px;">
-        <h2>Order Tracking</h2>
-        <p><b>Order ID:</b> <span id="trackId"></span></p>
-        <p><b>Delivery Agent:</b> <span id="agent"></span></p>
-        <p><b>Phone:</b> <span id="agentPhone"></span></p>
-        <p><b>Est Delivery:</b> <span id="est"></span></p>
-
-        <div class="timeline">
-            <div class="step active">Order Placed</div>
-            <div class="step active">Packed</div>
-            <div class="step" id="st3">Shipped</div>
-            <div class="step" id="st4">Out for Delivery</div>
-            <div class="step" id="st5">Delivered</div>
+    <div class="timeline">
+        <div class="t-item left">
+            <h3>🌟 The Moment I Saw You</h3>
+            <p>Your smile… I fell instantly.</p>
         </div>
-
-        <button onclick="closeTrack()">Close</button>
+        <div class="t-item right">
+            <h3>💞 When We Started Talking</h3>
+            <p>Every conversation felt like magic.</p>
+        </div>
+        <div class="t-item left">
+            <h3>✨ When You Became My Everything</h3>
+            <p>You started living inside my heart.</p>
+        </div>
+        <div class="t-item right">
+            <h3>💕 Today & Always</h3>
+            <p>My world = You, Alisha.</p>
+        </div>
+        <div class="clear"></div>
     </div>
-</div>
+</section>
 
+<!-- LETTER -->
+<section class="section">
+    <h2 style="font-size:32px;color:#ff5da2;margin-bottom:22px;">
+        💌 A Letter From Rajat to Alisha
+    </h2>
+    <div class="card">
+        <p style="font-size:19px;line-height:33px;">
+            Dear Alisha,<br><br>
+            Tum meri zindagi ki wo roshni ho jo mujhe har andhere se bahar nikalti है।  
+            Tumhare bina ek pal bhi adhoora sa lagta है.  
+            Main shayad kabhi lafzon me bayaan na kar paun ki tum mere liye kya ho…  
+            Par itna jarur janta hoon —  
+            <b>tum ho is dil ki dhadkan, aur main hoon tumhara Rajat… hamesha ke liye.</b>  
+            <br><br>
+            Forever Yours,<br>  
+            ❤️ Rajat
+        </p>
+    </div>
+</section>
 
+<!-- GALLERY -->
+<section class="section">
+    <h2 style="font-size:32px;color:#ff5da2;margin-bottom:25px;text-align:center;">
+        📸 Beautiful Moments for My Beautiful Girl
+    </h2>
 
-<script>
-/* -------- PRODUCTS -------- */
-const products=[
-    {id:1,name:"Smartphone X1",price:12999,img:"https://i.imgur.com/HKX2G6H.jpeg"},
-    {id:2,name:"DSLR Camera",price:45999,img:"https://i.imgur.com/Y0kM5qV.jpeg"},
-    {id:3,name:"Smartwatch Pro",price:3499,img:"https://i.imgur.com/0rVehcK.jpeg"},
-    {id:4,name:"Bluetooth Headphones",price:1999,img:"https://i.imgur.com/psJpN4s.jpeg"},
-];
+    <div class="gallery">
+        <img src="https://i.imgur.com/Vp4Rk6i.jpeg">
+        <img src="https://i.imgur.com/XWN8Xk3.jpeg">
+        <img src="https://i.imgur.com/zfWdvdr.jpeg">
+        <img src="https://i.imgur.com/L82G70E.jpeg">
+        <img src="https://i.imgur.com/B2EoRdn.jpeg">
+        <img src="https://i.imgur.com/LntUQ8l.jpeg">
+    </div>
+</section>
 
-let cart=[];
-let orderId="";
-
-/* Load Products */
-function loadProducts(){
-    let html="";
-    products.forEach(p=>{
-        html+=`
-        <div class="card">
-            <img src="${p.img}">
-            <h3>${p.name}</h3>
-            <p>₹${p.price}</p>
-            <button onclick="add(${p.id})">Add to Cart</button>
-        </div>`;
-    });
-    document.getElementById("productList").innerHTML=html;
-}
-loadProducts();
-
-/* Add to cart */
-function add(id){
-    let item=products.find(p=>p.id===id);
-    cart.push(item);
-    document.getElementById("cartCount").innerText=cart.length;
-}
-
-/* Open payment */
-function openCart(){
-    if(cart.length===0){alert("Cart is empty");return;}
-
-    let total=cart.reduce((a,b)=>a+b.price,0);
-    document.getElementById("payTotal").innerText="₹"+total;
-    document.getElementById("paymentPopup").style.display="flex";
-}
-function closePay(){document.getElementById("paymentPopup").style.display="none";}
-
-/* Payment Confirm */
-function confirmPayment(){
-    if(document.getElementById("upi").value.length<5){
-        alert("Enter valid UPI!");
-        return;
-    }
-
-    orderId="RC"+Math.floor(Math.random()*900000+100000);
-
-    document.getElementById("receiptBox").innerHTML=
-        `<p>Order ID: <b>${orderId}</b></p>
-         <p>Amount Paid: <b>₹${cart.reduce((a,b)=>a+b.price,0)}</b></p>
-         <p>Payment: UPI</p>`;
-
-    document.getElementById("paymentPopup").style.display="none";
-    document.getElementById("receiptPopup").style.display="flex";
-}
-
-/* Tracking */
-function openTracking(){
-    document.getElementById("receiptPopup").style.display="none";
-
-    const agents=[
-        {name:"Arjun Singh",phone:"9876543210"},
-        {name:"Rohit Sharma",phone:"9845123456"},
-        {name:"Sahil Verma",phone:"9022334455"},
-    ];
-    let a=agents[Math.floor(Math.random()*agents.length)];
-
-    document.getElementById("trackId").innerText=orderId;
-    document.getElementById("agent").innerText=a.name;
-    document.getElementById("agentPhone").innerText=a.phone;
-
-    let d=new Date(); d.setDate(d.getDate()+3);
-    document.getElementById("est").innerText=d.toDateString();
-
-    /* Auto-tracking animation */
-    setTimeout(()=>document.getElementById("st3").classList.add("active"),700);
-    setTimeout(()=>document.getElementById("st4").classList.add("active"),1500);
-    setTimeout(()=>document.getElementById("st5").classList.add("active"),2200);
-
-    document.getElementById("trackPopup").style.display="flex";
-}
-function closeTrack(){document.getElementById("trackPopup").style.display="none";}
-</script>
+<!-- FOOTER -->
+<footer>
+    Made With Infinite Love ❤️ By Rajat For His Alisha  
+</footer>
 
 </body>
 </html>
+
