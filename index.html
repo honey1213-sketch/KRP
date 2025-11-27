@@ -1,424 +1,225 @@
 <!doctype html>
 <html lang="hi">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Prime Bank — Click to View Balance</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prime Balance Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg:#081125;
-    --sidebar:#0f1724;
-    --card:#0b1220;
-    --muted:rgba(255,255,255,0.65);
-    --glass: rgba(255,255,255,0.03);
-    --accent: #06b6d4;
-  }
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins';}
+body{
+  display:flex;
+  height:100vh;
+  background:#0a0f1c;
+  color:white;
+  overflow:hidden;
+}
 
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial;
-    height:100vh;
-    display:flex;
-    background:
-      radial-gradient(600px 300px at 10% 10%, rgba(6,182,212,0.03), transparent),
-      linear-gradient(180deg,#020617 0%, #071225 100%);
-    color:#eaf2ff;
-    overflow:hidden;
-  }
+/* ---------- SIDEBAR ---------- */
 
-  /* Vertical sidebar */
-  .sidebar{
-    width:300px;
-    background:linear-gradient(180deg,var(--sidebar),#071026);
-    padding:28px 20px;
-    box-shadow: 4px 0 30px rgba(2,6,23,0.7);
-    display:flex;flex-direction:column;gap:18px;
-  }
-  .brand{
-    display:flex;align-items:center;gap:12px;
-  }
-  .logo{
-    width:48px;height:48px;border-radius:12px;
-    display:grid;place-items:center;font-weight:700;
-    background:linear-gradient(135deg,var(--accent),#4f46e5);
-    color:#021;
-    font-size:18px;
-  }
-  .brand h2{margin:0;font-size:18px}
-  .brand p{margin:0;font-size:12px;color:var(--muted)}
+.sidebar{
+  width:260px;
+  background:#0f1628;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  border-right:1px solid rgba(255,255,255,0.05);
+}
 
-  .user-list{margin-top:6px;display:flex;flex-direction:column;gap:10px}
-  .user{
-    display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;cursor:pointer;
-    transition:all .18s; border:1px solid transparent;
-  }
-  .user:hover{transform:translateX(6px); background:rgba(255,255,255,0.02); border-color:rgba(255,255,255,0.03)}
-  .user.active{background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(79,70,229,0.03)); transform:none; border-color: rgba(6,182,212,0.12)}
-  .avatar{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:#071129;font-weight:700}
-  .uname{font-weight:600}
-  .usmall{font-size:13px;color:var(--muted)}
+.logo{
+  font-size:26px;
+  font-weight:700;
+  text-align:center;
+}
 
-  .sidebar-footer{margin-top:auto;font-size:13px;color:var(--muted);text-align:center;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.02)}
+.user-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
 
-  /* Main content */
-  .main{flex:1;padding:34px;overflow:auto}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .page-title{font-size:20px;font-weight:700}
-  .hint{color:var(--muted);font-size:13px}
+.user{
+  background:#121a30;
+  padding:14px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:.2s;
+}
+.user:hover{
+  transform:translateX(6px);
+  background:#18223a;
+}
+.user.active{
+  background:#1f2d4f;
+  border:1px solid rgba(255,255,255,0.1);
+}
 
-  .panel{
-    margin-top:20px;
-    display:grid;
-    grid-template-columns: 1fr 420px;
-    gap:22px;
-    align-items:start;
-  }
+/* ---------- MAIN AREA ---------- */
 
-  /* Left: actions / history */
-  .left{
-    display:flex;flex-direction:column;gap:18px;
-  }
+.main{
+  flex:1;
+  padding:30px;
+  overflow-y:auto;
+}
 
-  /* Right: big card showing selected user */
-  .card{
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:14px; padding:22px; border:1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
-  }
+.heading{
+  font-size:24px;
+  font-weight:700;
+}
 
-  .card .top{display:flex;align-items:center;gap:16px}
-  .card .meta h3{margin:0;font-size:20px}
-  .card .meta p{margin:0;color:var(--muted);font-size:13px}
+.card{
+  margin-top:20px;
+  background:#10192e;
+  border-radius:14px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,0.05);
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
+}
 
-  .balance{
-    margin-top:18px; display:flex;align-items:center;gap:16px; justify-content:space-between;
-  }
-  .amount{font-size:44px;font-weight:800;letter-spacing:0.6px}
-  .status{
-    padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px;
-    display:inline-flex;align-items:center;gap:8px;
-  }
+.balance{
+  font-size:44px;
+  font-weight:800;
+  margin-top:10px;
+}
 
-  /* progress indicator */
-  .progress-wrap{margin-top:14px}
-  .progress-bar{
-    height:12px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden;border:1px solid rgba(255,255,255,0.02)
-  }
-  .progress-filled{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#06b6d4,#22c55e);transition:width .9s ease}
+.status{
+  margin-top:12px;
+  display:inline-block;
+  padding:8px 16px;
+  border-radius:20px;
+  font-weight:700;
+}
 
-  /* small stats */
-  .stats{display:flex;gap:12px;margin-top:18px}
-  .stat{flex:1;background:rgba(255,255,255,0.02);padding:12px;border-radius:10px}
-  .stat .num{font-weight:700;font-size:18px}
-  .stat .lbl{color:var(--muted);font-size:13px;margin-top:6px}
+.low{background:#f43f5e;color:#230005;}
+.med{background:#f59e0b;color:#251200;}
+.high{background:#4ade80;color:#00250d;}
 
-  /* Transactions mock */
-  .tx-title{margin-top:6px;color:var(--muted);font-size:13px}
-  .tx-list{margin-top:12px;display:flex;flex-direction:column;gap:10px}
-  .tx{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
-  .tx .left{display:flex;flex-direction:column}
-  .tx .desc{font-weight:600}
-  .tx .small{font-size:13px;color:var(--muted)}
+.tx-title{
+  margin-top:20px;
+  font-weight:600;
+  font-size:15px;
+  color:#9bb2d4;
+}
 
-  /* Responsive */
-  @media (max-width:980px){
-    .panel{grid-template-columns: 1fr}
-  }
+.tx-list{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.tx{
+  background:#15203b;
+  padding:14px;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+
+/* MOBILE */
+@media(max-width:800px){
+  .sidebar{width:200px;}
+  .balance{font-size:32px;}
+}
 </style>
 </head>
+
 <body>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="logo">PB</div>
-      <div>
-        <h2>Prime Bank</h2>
-        <p class="usmall">Click a customer to view balance</p>
-      </div>
-    </div>
+<div class="sidebar">
+  <div class="logo">Prime Bank</div>
 
-    <div class="user-list" id="userList">
-      <!-- Users inserted by JS -->
-    </div>
+  <div class="user-list" id="userList"></div>
+</div>
 
-    <div class="sidebar-footer">
-      Live demo • no passwords • local only
-    </div>
-  </aside>
+<div class="main">
+  <div class="heading" id="userTitle">Select a user</div>
 
-  <main class="main">
-    <div class="topbar">
-      <div>
-        <div class="page-title">Dashboard</div>
-        <div class="hint">Instant balance viewer — click a name on the left</div>
-      </div>
-      <div class="hint" id="timeNow"></div>
-    </div>
+  <div class="card" id="cardBox" style="display:none">
+    <div id="balanceLabel" style="font-size:18px;color:#9bb2d4;">Account Balance</div>
+    <div class="balance" id="balanceAmount">₹0</div>
 
-    <div class="panel">
-      <div class="left">
-        <div class="card" id="overviewCard">
-          <div class="top">
-            <div class="meta">
-              <h3 id="selectedName">Select a customer</h3>
-              <p id="selectedSub" class="usmall">Balance and quick stats will appear here</p>
-            </div>
-          </div>
+    <div id="statusBadge" class="status"></div>
 
-          <div class="balance" style="opacity:.9">
-            <div>
-              <div class="amount" id="amountDisplay">₹ 0</div>
-              <div class="tx-title">Recent activity</div>
-              <div class="tx-list" id="txList">
-                <!-- recent tx -->
-              </div>
-            </div>
-
-            <div style="width:150px;text-align:right">
-              <div id="statusBadge" class="status" style="display:none">LOW</div>
-              <div class="tx-title" style="margin-top:12px">Risk</div>
-              <div class="usmall" id="riskReason" style="margin-top:8px">—</div>
-            </div>
-          </div>
-
-          <div class="progress-wrap">
-            <div class="tx-title">Balance level</div>
-            <div class="progress-bar" aria-hidden="true">
-              <div class="progress-filled" id="progressFilled"></div>
-            </div>
-          </div>
-
-          <div class="stats">
-            <div class="stat">
-              <div class="num" id="stat1">0</div>
-              <div class="lbl">Avg. Daily</div>
-            </div>
-            <div class="stat">
-              <div class="num" id="stat2">0</div>
-              <div class="lbl">Last Tx</div>
-            </div>
-            <div class="stat">
-              <div class="num" id="stat3">0</div>
-              <div class="lbl">Standing</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <div style="font-weight:700">Quick Actions</div>
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button class="actionBtn" onclick="fakeTransfer()">Simulate Tx</button>
-            <button class="actionBtn" onclick="refreshSelected()">Refresh</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" id="detailCard">
-        <div class="top">
-          <div class="meta">
-            <h3>Account Summary</h3>
-            <p class="usmall">Detailed view</p>
-          </div>
-        </div>
-
-        <div style="margin-top:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Balance</div>
-            <div style="font-size:20px;font-weight:800;color:#e6eef8" id="sideAmount">₹ 0</div>
-          </div>
-
-          <div style="margin-top:16px" class="tx-title">Recent 3 transactions</div>
-          <div class="tx-list" id="sideTx">
-            <!-- side tx -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </main>
+    <div class="tx-title">Recent Transactions</div>
+    <div id="txList" class="tx-list"></div>
+  </div>
+</div>
 
 <script>
-/* Data (no passwords, click-only) */
 const users = [
-  { id: 'kartikey', name: 'Kartikey', balance: 20000 },
-  { id: 'ramshankar', name: 'Ramshankar', balance: 7999 },
-  { id: 'pranay', name: 'Pranay', balance: 9000 }
+  { id:"kart",  name:"Kartikey",   balance:20000 },
+  { id:"ram",   name:"Ramshankar", balance:7999 },
+  { id:"pra",   name:"Pranay",     balance:9000 }
 ];
 
-const userListEl = document.getElementById('userList');
-const selectedNameEl = document.getElementById('selectedName');
-const selectedSubEl = document.getElementById('selectedSub');
-const amountDisplay = document.getElementById('amountDisplay');
-const sideAmount = document.getElementById('sideAmount');
+const userList = document.getElementById('userList');
+const userTitle = document.getElementById('userTitle');
+const cardBox = document.getElementById('cardBox');
+const balanceAmount = document.getElementById('balanceAmount');
 const statusBadge = document.getElementById('statusBadge');
-const riskReason = document.getElementById('riskReason');
-const progressFilled = document.getElementById('progressFilled');
 const txList = document.getElementById('txList');
-const sideTx = document.getElementById('sideTx');
-const stat1 = document.getElementById('stat1');
-const stat2 = document.getElementById('stat2');
-const stat3 = document.getElementById('stat3');
-const timeNow = document.getElementById('timeNow');
 
-let current = null;
+/* Sidebar listing */
+users.forEach(u=>{
+  const div = document.createElement('div');
+  div.className='user';
+  div.innerText = u.name;
+  div.onclick = ()=>selectUser(u, div);
+  userList.appendChild(div);
+});
 
-/* Utility: create random txs (mock) */
-function mkTxs(amount){
-  const names = ['Grocery','UPI Transfer','Recharge','Salary','Coffee','Online Shop'];
-  const txs = [];
-  for(let i=0;i<3;i++){
-    const amt = Math.round((Math.random()*0.7 + 0.05) * amount/6);
-    const sign = Math.random()>.2 ? '-' : '+'; // mostly debit
-    txs.push({
-      desc: names[Math.floor(Math.random()*names.length)],
-      amt: sign + '₹' + amt.toLocaleString()
-    });
-  }
-  return txs;
-}
-
-/* Fill sidebar */
-function renderSidebar(){
-  userListEl.innerHTML = '';
-  users.forEach(u=>{
-    const el = document.createElement('div');
-    el.className = 'user';
-    el.dataset.id = u.id;
-    el.innerHTML = `<div class="avatar">${u.name.charAt(0)}</div>
-      <div style="flex:1">
-        <div class="uname">${u.name}</div>
-        <div class="usmall">Balance • ₹${u.balance.toLocaleString()}</div>
-      </div>`;
-    el.addEventListener('click',()=>selectUser(u.id, el));
-    userListEl.appendChild(el);
-  });
-}
-
-/* select a user */
-function selectUser(id, el){
-  // mark active
+/* On click user */
+function selectUser(u, box){
   document.querySelectorAll('.user').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
+  box.classList.add('active');
 
-  const user = users.find(x=>x.id===id);
-  current = user;
-  selectedNameEl.innerText = user.name;
-  selectedSubEl.innerText = 'Balance details and quick stats';
+  userTitle.innerText = u.name + " — Balance Details";
+  cardBox.style.display="block";
 
-  // animate balance counting
-  animateCount(amountDisplay, user.balance, 900);
-  animateCount(sideAmount, user.balance, 900);
+  animateBalance(u.balance);
 
-  // determine level
-  const lvl = getLevel(user.balance);
-  showLevel(lvl);
+  const level = u.balance>=15000 ? "high" : u.balance>=8000 ? "med" : "low";
+  statusBadge.className="status "+level;
+  statusBadge.innerText = level.toUpperCase();
 
-  // progress (0..100) relative to high cap (let's say 40k)
-  const cap = 40000;
-  const pct = Math.min(100, Math.round(user.balance / cap * 100));
-  progressFilled.style.width = pct + '%';
-
-  // fill recent txs
-  const txs = mkTxs(user.balance);
-  txList.innerHTML = '';
-  sideTx.innerHTML = '';
-  txs.forEach(t=>{
-    const node = document.createElement('div');
-    node.className = 'tx';
-    node.innerHTML = `<div class="left"><div class="desc">${t.desc}</div><div class="small">${new Date().toLocaleString()}</div></div><div class="right">${t.amt}</div>`;
-    txList.appendChild(node);
-
-    const node2 = node.cloneNode(true);
-    sideTx.appendChild(node2);
-  });
-
-  // stats mock
-  stat1.innerText = '₹ ' + Math.round(user.balance/30).toLocaleString();
-  stat2.innerText = txs[0].amt;
-  stat3.innerText = user.balance > 15000 ? 'High' : (user.balance > 8000 ? 'Medium' : 'Low');
-
-  // side status reason
-  riskReason.innerText = lvl==='LOW' ? 'Low cushion — consider top-up' : (lvl==='MEDIUM' ? 'Comfortable' : 'High balance — great!');
-  // show badge
-  statusBadge.style.display = 'inline-flex';
-  statusBadge.innerText = lvl;
-  setBadgeColor(lvl);
-
-  // also update timestamp
-  timeNow.innerText = new Date().toLocaleString();
+  loadTx(u.balance);
 }
 
-/* determine level */
-function getLevel(balance){
-  if(balance >= 15000) return 'HIGH';
-  if(balance >= 8000) return 'MEDIUM';
-  return 'LOW';
+/* Balance counting animation */
+function animateBalance(target){
+  let start = 0;
+  let duration = 900;
+  let stepTime = 15;
+  let steps = duration/stepTime;
+  let increment = target/steps;
+
+  let x = setInterval(()=>{
+    start += increment;
+    if(start >= target){ start = target; clearInterval(x); }
+    balanceAmount.innerText = "₹ " + Math.floor(start).toLocaleString();
+  }, stepTime);
 }
 
-/* set badge colors */
-function setBadgeColor(level){
-  if(level==='HIGH'){
-    statusBadge.style.background = 'linear-gradient(90deg,#16a34a,#22c55e)';
-    statusBadge.style.color = '#001f14';
-    statusBadge.style.boxShadow = '0 6px 20px rgba(34,197,94,0.12)';
-  } else if(level==='MEDIUM'){
-    statusBadge.style.background = 'linear-gradient(90deg,#f59e0b,#f97316)';
-    statusBadge.style.color = '#1a0b00';
-    statusBadge.style.boxShadow = '0 6px 20px rgba(249,115,22,0.12)';
-  } else {
-    statusBadge.style.background = 'linear-gradient(90deg,#ef4444,#f43f5e)';
-    statusBadge.style.color = '#2a0303';
-    statusBadge.style.boxShadow = '0 6px 20px rgba(244,63,94,0.12)';
+/* Auto 3 random transactions */
+function loadTx(bal){
+  txList.innerHTML = "";
+  const labels = ["UPI Payment","Recharge","Shopping","Transfer","Food"];
+  for(let i=0;i<3;i++){
+    const amt = Math.round((Math.random()*0.15)*bal);
+    const div = document.createElement('div');
+    div.className="tx";
+    div.innerHTML = `
+      <div>${labels[Math.floor(Math.random()*labels.length)]}</div>
+      <div>₹${amt}</div>
+    `;
+    txList.appendChild(div);
   }
 }
-
-/* smooth counting */
-function animateCount(el, to, ms=800){
-  const start = parseInt(el.dataset.current || 0);
-  const diff = to - start;
-  const startTime = performance.now();
-  function step(now){
-    const t = Math.min(1, (now - startTime) / ms);
-    // easeOutCubic
-    const eased = 1 - Math.pow(1 - t, 3);
-    const cur = Math.round(start + diff * eased);
-    el.innerText = '₹ ' + cur.toLocaleString();
-    el.dataset.current = cur;
-    if(t < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-/* fake actions */
-function fakeTransfer(){
-  if(!current){ alert('Select a customer first'); return; }
-  // subtract a small random amount and refresh
-  const amt = Math.round(200 + Math.random()*1500);
-  current.balance = Math.max(0, current.balance - amt);
-  selectUser(current.id, document.querySelector(`.user[data-id="${current.id}"]`));
-}
-function refreshSelected(){
-  if(!current){ alert('Select a customer first'); return; }
-  // random small fluctuation
-  const delta = Math.round((Math.random()-0.5) * 500);
-  current.balance = Math.max(0, current.balance + delta);
-  selectUser(current.id, document.querySelector(`.user[data-id="${current.id}"]`));
-}
-
-/* init */
-renderSidebar();
-// auto-select first
-setTimeout(()=> {
-  const first = document.querySelector('.user');
-  if(first) first.click();
-}, 150);
-
-/* small style for action buttons */
-const styleBtn = document.createElement('style');
-styleBtn.innerText = `.actionBtn{flex:1;padding:10px;border-radius:8px;border:none;background:linear-gradient(90deg,#06b6d4,#3b82f6);color:#001;font-weight:700;cursor:pointer}`;
-document.head.appendChild(styleBtn);
 </script>
 
 </body>
