@@ -1,213 +1,424 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="hi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prime Bank Vertical Dashboard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Prime Bank — Click to View Balance</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#081125;
+    --sidebar:#0f1724;
+    --card:#0b1220;
+    --muted:rgba(255,255,255,0.65);
+    --glass: rgba(255,255,255,0.03);
+    --accent: #06b6d4;
+  }
 
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: #0b0e19;
-            color: white;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial;
+    height:100vh;
+    display:flex;
+    background:
+      radial-gradient(600px 300px at 10% 10%, rgba(6,182,212,0.03), transparent),
+      linear-gradient(180deg,#020617 0%, #071225 100%);
+    color:#eaf2ff;
+    overflow:hidden;
+  }
 
-        /* FULL VERTICAL LEFT SIDEBAR */
-        .sidebar {
-            width: 300px;
-            background: #111426;
-            padding: 40px 25px;
-            box-shadow: 2px 0 25px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+  /* Vertical sidebar */
+  .sidebar{
+    width:300px;
+    background:linear-gradient(180deg,var(--sidebar),#071026);
+    padding:28px 20px;
+    box-shadow: 4px 0 30px rgba(2,6,23,0.7);
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px;
+  }
+  .logo{
+    width:48px;height:48px;border-radius:12px;
+    display:grid;place-items:center;font-weight:700;
+    background:linear-gradient(135deg,var(--accent),#4f46e5);
+    color:#021;
+    font-size:18px;
+  }
+  .brand h2{margin:0;font-size:18px}
+  .brand p{margin:0;font-size:12px;color:var(--muted)}
 
-        .sb-title {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 40px;
-            color: #00d4ff;
-        }
+  .user-list{margin-top:6px;display:flex;flex-direction:column;gap:10px}
+  .user{
+    display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;cursor:pointer;
+    transition:all .18s; border:1px solid transparent;
+  }
+  .user:hover{transform:translateX(6px); background:rgba(255,255,255,0.02); border-color:rgba(255,255,255,0.03)}
+  .user.active{background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(79,70,229,0.03)); transform:none; border-color: rgba(6,182,212,0.12)}
+  .avatar{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:#071129;font-weight:700}
+  .uname{font-weight:600}
+  .usmall{font-size:13px;color:var(--muted)}
 
-        .sb-item {
-            margin: 12px 0;
-            padding: 14px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: .3s;
-        }
+  .sidebar-footer{margin-top:auto;font-size:13px;color:var(--muted);text-align:center;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.02)}
 
-        .sb-item:hover {
-            background: #1a1f38;
-        }
+  /* Main content */
+  .main{flex:1;padding:34px;overflow:auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .page-title{font-size:20px;font-weight:700}
+  .hint{color:var(--muted);font-size:13px}
 
-        /* MAIN FULL VERTICAL DASHBOARD */
-        .main {
-            flex: 1;
-            padding: 35px;
-            overflow-y: auto;
-        }
+  .panel{
+    margin-top:20px;
+    display:grid;
+    grid-template-columns: 1fr 420px;
+    gap:22px;
+    align-items:start;
+  }
 
-        .topbar {
-            font-size: 30px;
-            margin-bottom: 25px;
-            font-weight: bold;
-        }
+  /* Left: actions / history */
+  .left{
+    display:flex;flex-direction:column;gap:18px;
+  }
 
-        /* Vertical Cards */
-        .card {
-            background: rgba(255,255,255,0.07);
-            padding: 28px;
-            border-radius: 18px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 0 18px rgba(0,0,0,0.45);
-            width: 100%;
-            margin-bottom: 25px;
-        }
+  /* Right: big card showing selected user */
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:14px; padding:22px; border:1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+  }
 
-        .card-title {
-            font-size: 22px;
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
+  .card .top{display:flex;align-items:center;gap:16px}
+  .card .meta h3{margin:0;font-size:20px}
+  .card .meta p{margin:0;color:var(--muted);font-size:13px}
 
-        .balance-number {
-            font-size: 50px;
-            font-weight: bold;
-            color: #00ffb3;
-            text-shadow: 0 0 12px #00ffb3;
-        }
+  .balance{
+    margin-top:18px; display:flex;align-items:center;gap:16px; justify-content:space-between;
+  }
+  .amount{font-size:44px;font-weight:800;letter-spacing:0.6px}
+  .status{
+    padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px;
+    display:inline-flex;align-items:center;gap:8px;
+  }
 
-        /* Login screen */
-        .login-wrap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0b0e19;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  /* progress indicator */
+  .progress-wrap{margin-top:14px}
+  .progress-bar{
+    height:12px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden;border:1px solid rgba(255,255,255,0.02)
+  }
+  .progress-filled{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#06b6d4,#22c55e);transition:width .9s ease}
 
-        .login-box {
-            width: 380px;
-            background: rgba(255,255,255,0.08);
-            padding: 40px;
-            border-radius: 16px;
-            backdrop-filter: blur(12px);
-            text-align: center;
-            box-shadow: 0 0 25px rgba(0,0,0,0.5);
-        }
+  /* small stats */
+  .stats{display:flex;gap:12px;margin-top:18px}
+  .stat{flex:1;background:rgba(255,255,255,0.02);padding:12px;border-radius:10px}
+  .stat .num{font-weight:700;font-size:18px}
+  .stat .lbl{color:var(--muted);font-size:13px;margin-top:6px}
 
-        input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            margin-top: 12px;
-        }
+  /* Transactions mock */
+  .tx-title{margin-top:6px;color:var(--muted);font-size:13px}
+  .tx-list{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  .tx{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+  .tx .left{display:flex;flex-direction:column}
+  .tx .desc{font-weight:600}
+  .tx .small{font-size:13px;color:var(--muted)}
 
-        button {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            background: #00d4ff;
-            cursor: pointer;
-            margin-top: 16px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-    </style>
+  /* Responsive */
+  @media (max-width:980px){
+    .panel{grid-template-columns: 1fr}
+  }
+</style>
 </head>
 <body>
 
-<!-- Login Screen -->
-<div class="login-wrap" id="loginWrap">
-    <div class="login-box">
-        <h2>Bank Secure Login</h2>
-        <input id="passInput" type="password" placeholder="Enter Password">
-        <button onclick="login()">Login</button>
-    </div>
-</div>
-
-<!-- FULL VERTICAL SIDEBAR -->
-<div class="sidebar" id="sidebar" style="display:none;">
-    <div class="sb-title" id="userName">User</div>
-    <div class="sb-item">🏦 Dashboard</div>
-    <div class="sb-item">💰 Transactions</div>
-    <div class="sb-item">📄 Statements</div>
-    <div class="sb-item">💳 Cards</div>
-    <div class="sb-item">⚙️ Settings</div>
-    <div class="sb-item">📞 Support</div>
-</div>
-
-<!-- MAIN VERTICAL DASHBOARD -->
-<div class="main" id="mainPanel" style="display:none;">
-    <div class="topbar">Dashboard Overview</div>
-
-    <div class="card">
-        <div class="card-title">Available Balance</div>
-        <div class="balance-number" id="balanceNumber">₹0</div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">PB</div>
+      <div>
+        <h2>Prime Bank</h2>
+        <p class="usmall">Click a customer to view balance</p>
+      </div>
     </div>
 
-    <div class="card">
-        <div class="card-title">Account Type</div>
-        <div style="font-size: 26px; opacity: 0.9;">Savings Account</div>
+    <div class="user-list" id="userList">
+      <!-- Users inserted by JS -->
     </div>
 
-    <div class="card">
-        <div class="card-title">Last Login</div>
-        <div style="font-size: 20px; opacity: .8;">Just Now</div>
+    <div class="sidebar-footer">
+      Live demo • no passwords • local only
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="hint">Instant balance viewer — click a name on the left</div>
+      </div>
+      <div class="hint" id="timeNow"></div>
     </div>
 
-</div>
+    <div class="panel">
+      <div class="left">
+        <div class="card" id="overviewCard">
+          <div class="top">
+            <div class="meta">
+              <h3 id="selectedName">Select a customer</h3>
+              <p id="selectedSub" class="usmall">Balance and quick stats will appear here</p>
+            </div>
+          </div>
+
+          <div class="balance" style="opacity:.9">
+            <div>
+              <div class="amount" id="amountDisplay">₹ 0</div>
+              <div class="tx-title">Recent activity</div>
+              <div class="tx-list" id="txList">
+                <!-- recent tx -->
+              </div>
+            </div>
+
+            <div style="width:150px;text-align:right">
+              <div id="statusBadge" class="status" style="display:none">LOW</div>
+              <div class="tx-title" style="margin-top:12px">Risk</div>
+              <div class="usmall" id="riskReason" style="margin-top:8px">—</div>
+            </div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="tx-title">Balance level</div>
+            <div class="progress-bar" aria-hidden="true">
+              <div class="progress-filled" id="progressFilled"></div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="num" id="stat1">0</div>
+              <div class="lbl">Avg. Daily</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="stat2">0</div>
+              <div class="lbl">Last Tx</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="stat3">0</div>
+              <div class="lbl">Standing</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="font-weight:700">Quick Actions</div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="actionBtn" onclick="fakeTransfer()">Simulate Tx</button>
+            <button class="actionBtn" onclick="refreshSelected()">Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="detailCard">
+        <div class="top">
+          <div class="meta">
+            <h3>Account Summary</h3>
+            <p class="usmall">Detailed view</p>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Balance</div>
+            <div style="font-size:20px;font-weight:800;color:#e6eef8" id="sideAmount">₹ 0</div>
+          </div>
+
+          <div style="margin-top:16px" class="tx-title">Recent 3 transactions</div>
+          <div class="tx-list" id="sideTx">
+            <!-- side tx -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 
 <script>
-    const users = {
-        "2626": { name: "Kartikey", balance: 20000 },
-        "2009": { name: "Ramshankar", balance: 7999 },
-        "7008": { name: "Pranay", balance: 9000 }
-    };
+/* Data (no passwords, click-only) */
+const users = [
+  { id: 'kartikey', name: 'Kartikey', balance: 20000 },
+  { id: 'ramshankar', name: 'Ramshankar', balance: 7999 },
+  { id: 'pranay', name: 'Pranay', balance: 9000 }
+];
 
-    function animateBalance(finalValue) {
-        let num = 0;
-        let speed = Math.ceil(finalValue / 60);
+const userListEl = document.getElementById('userList');
+const selectedNameEl = document.getElementById('selectedName');
+const selectedSubEl = document.getElementById('selectedSub');
+const amountDisplay = document.getElementById('amountDisplay');
+const sideAmount = document.getElementById('sideAmount');
+const statusBadge = document.getElementById('statusBadge');
+const riskReason = document.getElementById('riskReason');
+const progressFilled = document.getElementById('progressFilled');
+const txList = document.getElementById('txList');
+const sideTx = document.getElementById('sideTx');
+const stat1 = document.getElementById('stat1');
+const stat2 = document.getElementById('stat2');
+const stat3 = document.getElementById('stat3');
+const timeNow = document.getElementById('timeNow');
 
-        const interval = setInterval(() => {
-            num += speed;
-            if (num >= finalValue) {
-                num = finalValue;
-                clearInterval(interval);
-            }
-            document.getElementById("balanceNumber").innerText = "₹ " + num.toLocaleString();
-        }, 25);
-    }
+let current = null;
 
-    function login() {
-        const pass = document.getElementById("passInput").value;
-        const user = users[pass];
+/* Utility: create random txs (mock) */
+function mkTxs(amount){
+  const names = ['Grocery','UPI Transfer','Recharge','Salary','Coffee','Online Shop'];
+  const txs = [];
+  for(let i=0;i<3;i++){
+    const amt = Math.round((Math.random()*0.7 + 0.05) * amount/6);
+    const sign = Math.random()>.2 ? '-' : '+'; // mostly debit
+    txs.push({
+      desc: names[Math.floor(Math.random()*names.length)],
+      amt: sign + '₹' + amt.toLocaleString()
+    });
+  }
+  return txs;
+}
 
-        if (user) {
-            document.getElementById("loginWrap").style.display = "none";
-            document.getElementById("sidebar").style.display = "flex";
-            document.getElementById("mainPanel").style.display = "block";
+/* Fill sidebar */
+function renderSidebar(){
+  userListEl.innerHTML = '';
+  users.forEach(u=>{
+    const el = document.createElement('div');
+    el.className = 'user';
+    el.dataset.id = u.id;
+    el.innerHTML = `<div class="avatar">${u.name.charAt(0)}</div>
+      <div style="flex:1">
+        <div class="uname">${u.name}</div>
+        <div class="usmall">Balance • ₹${u.balance.toLocaleString()}</div>
+      </div>`;
+    el.addEventListener('click',()=>selectUser(u.id, el));
+    userListEl.appendChild(el);
+  });
+}
 
-            document.getElementById("userName").innerText = user.name;
-            animateBalance(user.balance);
-        } else {
-            alert("Incorrect Password");
-        }
-    }
+/* select a user */
+function selectUser(id, el){
+  // mark active
+  document.querySelectorAll('.user').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+
+  const user = users.find(x=>x.id===id);
+  current = user;
+  selectedNameEl.innerText = user.name;
+  selectedSubEl.innerText = 'Balance details and quick stats';
+
+  // animate balance counting
+  animateCount(amountDisplay, user.balance, 900);
+  animateCount(sideAmount, user.balance, 900);
+
+  // determine level
+  const lvl = getLevel(user.balance);
+  showLevel(lvl);
+
+  // progress (0..100) relative to high cap (let's say 40k)
+  const cap = 40000;
+  const pct = Math.min(100, Math.round(user.balance / cap * 100));
+  progressFilled.style.width = pct + '%';
+
+  // fill recent txs
+  const txs = mkTxs(user.balance);
+  txList.innerHTML = '';
+  sideTx.innerHTML = '';
+  txs.forEach(t=>{
+    const node = document.createElement('div');
+    node.className = 'tx';
+    node.innerHTML = `<div class="left"><div class="desc">${t.desc}</div><div class="small">${new Date().toLocaleString()}</div></div><div class="right">${t.amt}</div>`;
+    txList.appendChild(node);
+
+    const node2 = node.cloneNode(true);
+    sideTx.appendChild(node2);
+  });
+
+  // stats mock
+  stat1.innerText = '₹ ' + Math.round(user.balance/30).toLocaleString();
+  stat2.innerText = txs[0].amt;
+  stat3.innerText = user.balance > 15000 ? 'High' : (user.balance > 8000 ? 'Medium' : 'Low');
+
+  // side status reason
+  riskReason.innerText = lvl==='LOW' ? 'Low cushion — consider top-up' : (lvl==='MEDIUM' ? 'Comfortable' : 'High balance — great!');
+  // show badge
+  statusBadge.style.display = 'inline-flex';
+  statusBadge.innerText = lvl;
+  setBadgeColor(lvl);
+
+  // also update timestamp
+  timeNow.innerText = new Date().toLocaleString();
+}
+
+/* determine level */
+function getLevel(balance){
+  if(balance >= 15000) return 'HIGH';
+  if(balance >= 8000) return 'MEDIUM';
+  return 'LOW';
+}
+
+/* set badge colors */
+function setBadgeColor(level){
+  if(level==='HIGH'){
+    statusBadge.style.background = 'linear-gradient(90deg,#16a34a,#22c55e)';
+    statusBadge.style.color = '#001f14';
+    statusBadge.style.boxShadow = '0 6px 20px rgba(34,197,94,0.12)';
+  } else if(level==='MEDIUM'){
+    statusBadge.style.background = 'linear-gradient(90deg,#f59e0b,#f97316)';
+    statusBadge.style.color = '#1a0b00';
+    statusBadge.style.boxShadow = '0 6px 20px rgba(249,115,22,0.12)';
+  } else {
+    statusBadge.style.background = 'linear-gradient(90deg,#ef4444,#f43f5e)';
+    statusBadge.style.color = '#2a0303';
+    statusBadge.style.boxShadow = '0 6px 20px rgba(244,63,94,0.12)';
+  }
+}
+
+/* smooth counting */
+function animateCount(el, to, ms=800){
+  const start = parseInt(el.dataset.current || 0);
+  const diff = to - start;
+  const startTime = performance.now();
+  function step(now){
+    const t = Math.min(1, (now - startTime) / ms);
+    // easeOutCubic
+    const eased = 1 - Math.pow(1 - t, 3);
+    const cur = Math.round(start + diff * eased);
+    el.innerText = '₹ ' + cur.toLocaleString();
+    el.dataset.current = cur;
+    if(t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* fake actions */
+function fakeTransfer(){
+  if(!current){ alert('Select a customer first'); return; }
+  // subtract a small random amount and refresh
+  const amt = Math.round(200 + Math.random()*1500);
+  current.balance = Math.max(0, current.balance - amt);
+  selectUser(current.id, document.querySelector(`.user[data-id="${current.id}"]`));
+}
+function refreshSelected(){
+  if(!current){ alert('Select a customer first'); return; }
+  // random small fluctuation
+  const delta = Math.round((Math.random()-0.5) * 500);
+  current.balance = Math.max(0, current.balance + delta);
+  selectUser(current.id, document.querySelector(`.user[data-id="${current.id}"]`));
+}
+
+/* init */
+renderSidebar();
+// auto-select first
+setTimeout(()=> {
+  const first = document.querySelector('.user');
+  if(first) first.click();
+}, 150);
+
+/* small style for action buttons */
+const styleBtn = document.createElement('style');
+styleBtn.innerText = `.actionBtn{flex:1;padding:10px;border-radius:8px;border:none;background:linear-gradient(90deg,#06b6d4,#3b82f6);color:#001;font-weight:700;cursor:pointer}`;
+document.head.appendChild(styleBtn);
 </script>
 
 </body>
