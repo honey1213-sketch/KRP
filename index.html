@@ -59,10 +59,14 @@ select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:
 <script>
 const users=['Kartikey','Ramshankar','Pranay'];
 const pins={Kartikey:'1213',Ramshankar:'1415',Pranay:'1617'};
-let balances={Kartikey:20000,Ramshankar:15000,Pranay:15000};
-let history=[];
-localStorage.removeItem('krp_balances');
-localStorage.removeItem('krp_history');
+
+// Persistent storage: load or initialize only if not exist
+let balances=JSON.parse(localStorage.getItem('krp_balances'));
+if(!balances){balances={Kartikey:20000,Ramshankar:15000,Pranay:15000}; localStorage.setItem('krp_balances',JSON.stringify(balances));}
+
+let history=JSON.parse(localStorage.getItem('krp_history'));
+if(!history){history=[]; localStorage.setItem('krp_history',JSON.stringify(history));}
+
 let current=null;
 
 function saveBalances(){localStorage.setItem('krp_balances',JSON.stringify(balances));}
@@ -97,13 +101,15 @@ function renderCard(){
 function parseBalance(t){if(!t)return 0; const m=t.replace(/[^0-9]/g,''); return m?parseInt(m,10):0;}
 function animateNumber(el,from,to,duration=700){const start=performance.now();function step(ts){const t=Math.min(1,(ts-start)/duration); el.textContent=formatRs(Math.floor(from+(to-from)*t)); if(t<1) requestAnimationFrame(step);} requestAnimationFrame(step);}
 
-// Popup
+// Popup handling
 document.getElementById('openSendBtn').addEventListener('click',()=>{
   if(!current)return showToast('Select a user first');
   const s=document.getElementById('senderSelect'); const r=document.getElementById('receiverSelect');
   s.innerHTML=''; r.innerHTML='';
-  users.forEach(u=>{const o1=document.createElement('option');o1.value=u;o1.text=`${u} — ${formatRs(balances[u])}`; s.appendChild(o1);
-  const o2=document.createElement('option');o2.value=u;o2.text=`${u} — ${formatRs(balances[u])}`; r.appendChild(o2);});
+  users.forEach(u=>{
+    const o1=document.createElement('option');o1.value=u;o1.text=`${u} — ${formatRs(balances[u])}`; s.appendChild(o1);
+    const o2=document.createElement('option');o2.value=u;o2.text=`${u} — ${formatRs(balances[u])}`; r.appendChild(o2);
+  });
   s.value=current;
   document.getElementById('sendPopup').style.display='flex';
 });
