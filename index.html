@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>KRP Bank — Send Money</title>
 <style>
+/* ORIGINAL STYLES (kept intact) */
 body{margin:0;background:radial-gradient(circle at top,#0d1226,#05060d);font-family:Poppins,Arial,sans-serif;color:#fff;min-height:100vh}
 *{box-sizing:border-box;transition:0.2s}
 .header{padding:18px 20px;text-align:center;font-weight:700;font-size:26px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(8px)}
@@ -24,19 +25,38 @@ body{margin:0;background:radial-gradient(circle at top,#0d1226,#05060d);font-fam
 select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#fff;font-size:16px}
 .receipt{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;padding:28px 22px;border-radius:6px;width:320px;text-align:left;font-family:monospace;font-size:13px;box-shadow:0 0 40px rgba(0,0,0,0.55);border:1px dashed #444;z-index:9999}
 .transfer-anim{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);background:linear-gradient(90deg,#00d4ff,#1f51ff);padding:14px 20px;border-radius:999px;color:#000;font-weight:800;display:none}
+.history-box{margin:18px;background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;max-height:260px;overflow-y:auto}
+.tx-item{padding:10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.02);font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.tx-left{line-height:1.2}
+.tx-status{font-weight:800;padding:6px 10px;border-radius:8px}
+.tx-success{background:rgba(0,128,0,0.12);color:#00a000;border:1px solid rgba(0,128,0,0.12)}
+.tx-failed{background:rgba(255,0,0,0.08);color:#ff3b30;border:1px solid rgba(255,0,0,0.12)}
+.shake{animation:shake 0.45s}
+@keyframes shake{
+ 0%{transform:translateX(0)}
+ 25%{transform:translateX(-6px)}
+ 50%{transform:translateX(6px)}
+ 75%{transform:translateX(-6px)}
+ 100%{transform:translateX(0)}
+}
 </style>
 </head>
 <body>
 <div class="header">KRP BANK</div>
 <div class="user-list" id="userList"></div>
+
 <div class="card" id="infoCard">
   <div class="name" id="cardName">Choose User</div>
   <div class="balance" id="cardBalance">—</div>
   <div class="tag" id="cardTag"></div>
   <button class="send-btn" id="openSendBtn">Send Money</button>
 </div>
+
+<!-- History box: shows transactions for selected user -->
+<div class="history-box" id="historyBox"><strong>Transactions</strong><div style="opacity:0.7;font-size:13px;margin-top:8px">No transactions yet</div></div>
+
 <div class="popup" id="sendPopup">
-  <div class="popup-box">
+  <div class="popup-box" id="popupBox">
     <h3>Send Money</h3>
     <label>From</label>
     <select id="senderSelect"></select>
@@ -48,120 +68,218 @@ select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:
     <button class="send-btn" id="cancelBtn" style="background:#444;margin-top:8px;">Cancel</button>
   </div>
 </div>
+
 <div class="transfer-anim" id="transferAnim">Sending...</div>
+
 <script type="module">
+/* Firebase imports */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* ---------- CONFIG / DATA ---------- */
+/* Users & PINs updated as requested */
+const users=["Ramshankar","Pranay","BANK"];
+const pins={Ramshankar:"1925",Pranay:"2468",BANK:"1990"};
+
+/* Firebase config (your existing API) */
 const firebaseConfig={apiKey:"AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",authDomain:"krp-bank.firebaseapp.com",databaseURL:"https://krp-bank-default-rtdb.firebaseio.com/",projectId:"krp-bank",storageBucket:"krp-bank.firebasestorage.app",messagingSenderId:"911407082396",appId:"1:911407082396:web:c5af104a844e2697797659"};
+
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
-const users=["Kartikey","Ramshankar","Pranay","BANK"];
-const pins={Kartikey:"1213",Ramshankar:"1415",Pranay:"1617",BANK:"1990"};
-let balances={};
-let current=null;
+/* Local state */
+let balances={}, historyObj={}, current=null;
 
-const cardBalance=document.getElementById("cardBalance");
+/* DOM refs */
+const userListEl = document.getElementById("userList");
+const cardName = document.getElementById("cardName");
+const cardBalance = document.getElementById("cardBalance");
+const cardTag = document.getElementById("cardTag");
+const historyBox = document.getElementById("historyBox");
+const popup = document.getElementById("sendPopup");
+const popupBox = document.getElementById("popupBox");
 
-onValue(ref(db,"balances"),snap=>{
-  balances=snap.val()||{};
+const senderSelect=document.getElementById("senderSelect"),
+      receiverSelect=document.getElementById("receiverSelect"),
+      amountInput=document.getElementById("amount"),
+      pinInput=document.getElementById("pin");
+
+/* ---------- FIREBASE LISTENERS ---------- */
+/* Balances node */
+onValue(ref(db,"balances"), snap => {
+  balances = snap.val() || {};
   renderUsers();
-  if(current) animateNumber(cardBalance,parseBalance(cardBalance.textContent)||0, balances[current]??0);
+  if(current) renderCard();
 });
 
-function parseBalance(text){return Number(text.replace(/[^0-9]/g,''))||0;}
-function saveBalances(){update(ref(db,"balances"),balances);}
-function addHistory(sender,receiver,amount,status){push(ref(db,"history"),{sender,receiver,amount,time:new Date().toLocaleString(),status});}
+/* History node (all transactions) */
+onValue(ref(db,"history"), snap => {
+  historyObj = snap.val() || {};
+  if(current) renderHistory();
+});
 
-function renderUsers(){
-  const list=document.getElementById("userList");
-  list.innerHTML="";
-  users.forEach(u=>{
-    const btn=document.createElement("button");
-    btn.className="user-btn";
-    btn.textContent=u;
-    btn.onclick=()=>selectUser(u,btn);
-    list.appendChild(btn);
-  });
+/* ---------- HELPERS ---------- */
+function parseBalance(text){ return Number(String(text).replace(/[^0-9]/g,'')) || 0; }
+function saveBalances(){ update(ref(db,"balances"), balances); }
+function addHistory(sender, receiver, amount, status){
+  push(ref(db,"history"), { sender, receiver, amount, time: new Date().toLocaleString(), status });
 }
 
-function selectUser(name,btn){
-  current=name;
-  document.querySelectorAll(".user-btn").forEach(b=>b.classList.remove("active"));
-  if(btn) btn.classList.add("active");
-  renderCard();
-}
-
-function renderCard(){
-  if(!current) return;
-  document.getElementById("cardName").textContent=current;
-  const bal=balances[current]??0;
-  if(current==="BANK"){
-    cardBalance.textContent="UNLIMITED";
-    document.getElementById("cardTag").className="tag high";
-    document.getElementById("cardTag").textContent="UNLIMITED";
-  } else {
-    document.getElementById("cardTag").className="tag "+(bal<5000?"low":bal<15000?"medium":"high");
-    document.getElementById("cardTag").textContent=bal<5000?"LOW":bal<15000?"MEDIUM":"HIGH";
-    animateNumber(cardBalance, parseBalance(cardBalance.textContent)||0, bal);
-  }
-}
-
-function animateNumber(el,from,to,duration=700){
-  const start=performance.now();
+/* Counting animation (original) */
+function animateNumber(el, from, to, duration=700){
+  const start = performance.now();
   function step(ts){
-    const t=Math.min(1,(ts-start)/duration);
-    el.textContent="₹ "+Math.floor(from+(to-from)*t).toLocaleString();
+    const t = Math.min(1, (ts-start)/duration);
+    el.textContent = "₹ "+Math.floor(from + (to-from)*t).toLocaleString();
     if(t<1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
 
-// Popup & send logic
-const senderSelect=document.getElementById("senderSelect"),receiverSelect=document.getElementById("receiverSelect"),amountInput=document.getElementById("amount"),pinInput=document.getElementById("pin");
-document.getElementById("openSendBtn").onclick=()=>{
-  if(!current) return;
-  senderSelect.innerHTML=""; receiverSelect.innerHTML="";
-  users.forEach(u=>{
-    senderSelect.innerHTML+=`<option value='${u}'>${u} — ₹ ${balances[u]??0}</option>`;
-    receiverSelect.innerHTML+=`<option value='${u}'>${u} — ₹ ${balances[u]??0}</option>`;
+/* ---------- RENDER UI ---------- */
+function renderUsers(){
+  userListEl.innerHTML = "";
+  users.forEach(u => {
+    const btn = document.createElement("button");
+    btn.className = "user-btn";
+    btn.textContent = u;
+    btn.onclick = () => selectUser(u, btn);
+    userListEl.appendChild(btn);
   });
-  senderSelect.value=current;
-  document.getElementById("sendPopup").style.display="flex";
-};
-document.getElementById("cancelBtn").onclick=()=>{document.getElementById("sendPopup").style.display="none";};
+}
 
-document.getElementById("confirmBtn").onclick=()=>{
-  const sender=senderSelect.value,receiver=receiverSelect.value,amt=Number(amountInput.value),pin=pinInput.value;
-  let status="SUCCESS";
-  if(sender===receiver||amt<=0||pin!==pins[sender]||(sender!="BANK"&&amt>(balances[sender]??0))){status="FAILED";}
+/* select user */
+function selectUser(name, btn){
+  current = name;
+  document.querySelectorAll(".user-btn").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  renderCard();
+  renderHistory();
+}
 
-  if(status==="SUCCESS"){
-    if(sender!="BANK"){
-      const prev=balances[sender];
-      balances[sender]-=amt;
-      animateNumber(cardBalance,prev,balances[sender]);
+/* render the main card (balance + tag) */
+function renderCard(){
+  if(!current) return;
+  cardName.textContent = current;
+
+  if(current === "BANK"){
+    // Display change requested: show N/A but logic stays unlimited
+    cardBalance.textContent = "N/A";
+    cardTag.className = "tag high";
+    cardTag.textContent = "HIGH";
+    return;
+  }
+
+  const bal = balances[current] ?? 0;
+  const prev = parseBalance(cardBalance.textContent) || 0;
+  cardTag.className = "tag " + (bal < 5000 ? "low" : bal < 15000 ? "medium" : "high");
+  cardTag.textContent = bal < 5000 ? "LOW" : bal < 15000 ? "MEDIUM" : "HIGH";
+  animateNumber(cardBalance, prev, bal);
+}
+
+/* render transaction history for current user */
+function renderHistory(){
+  // header + list
+  let html = "<strong>Transactions</strong>";
+  const items = Object.values(historyObj || {}).reverse(); // newest first
+  let found = false;
+  for(const tx of items){
+    if(tx.sender === current || tx.receiver === current){
+      found = true;
+      const left = `<div class="tx-left"><div style="font-weight:700">${tx.time}</div>
+                    <div style="opacity:0.85">FROM: ${tx.sender} → TO: ${tx.receiver}</div></div>`;
+      const amount = `₹ ${Number(tx.amount).toLocaleString()}`;
+      const statusClass = tx.status === "FAILED" ? "tx-failed" : "tx-success";
+      const statusHtml = `<div class="tx-status ${statusClass}">${tx.status}</div>`;
+      html += `<div class="tx-item">${left}<div style="text-align:right">${amount}<div style="height:8px"></div>${statusHtml}</div></div>`;
     }
-    balances[receiver]=(balances[receiver]??0)+amt;
+  }
+  if(!found){
+    html += `<div style="opacity:0.75;margin-top:10px">No transactions for ${current}</div>`;
+  }
+  historyBox.innerHTML = html;
+}
+
+/* ---------- POPUP & SEND LOGIC ---------- */
+document.getElementById("openSendBtn").onclick = () => {
+  if(!current) return;
+  senderSelect.innerHTML = ""; receiverSelect.innerHTML = "";
+  users.forEach(u=>{
+    senderSelect.innerHTML += `<option value='${u}'>${u} — ₹ ${balances[u]??0}</option>`;
+    receiverSelect.innerHTML += `<option value='${u}'>${u} — ₹ ${balances[u]??0}</option>`;
+  });
+  senderSelect.value = current;
+  popup.style.display = "flex";
+};
+
+document.getElementById("cancelBtn").onclick = () => { popup.style.display = "none"; };
+
+/* Confirm send */
+document.getElementById("confirmBtn").onclick = () => {
+  const sender = senderSelect.value, receiver = receiverSelect.value;
+  const amt = Number(amountInput.value), pin = pinInput.value;
+  let status = "SUCCESS";
+
+  if(sender === receiver || amt <= 0 || pin !== pins[sender] || (sender !== "BANK" && amt > (balances[sender] ?? 0))) {
+    status = "FAILED";
+
+    // Red + shake on invalid
+    popupBox.classList.add("shake");
+    popupBox.style.border = "2px solid #ff3b30";
+    setTimeout(()=>{ popupBox.classList.remove("shake"); popupBox.style.border = ""; }, 650);
+  }
+
+  if(status === "SUCCESS"){
+    if(sender !== "BANK"){
+      const prev = balances[sender] ?? 0;
+      balances[sender] = prev - amt;
+      animateNumber(cardBalance, prev, balances[sender]);
+    }
+    balances[receiver] = (balances[receiver] ?? 0) + amt;
     saveBalances();
   }
 
-  addHistory(sender,receiver,amt,status);
-  showReceipt(sender,receiver,amt,status);
-  document.getElementById("sendPopup").style.display="none";
-  amountInput.value=""; pinInput.value="";
+  // Save history and show receipt
+  addHistory(sender, receiver, amt, status);
+  showReceipt(sender, receiver, amt, status);
+
+  popup.style.display = "none";
+  amountInput.value = ""; pinInput.value = "";
 };
 
-function showReceipt(sender,receiver,amount,status){
-  const r=document.createElement("div"); r.className="receipt";
-  r.innerHTML=`<h4>KRP BANK RECEIPT</h4><div>${new Date().toLocaleString()}</div><pre>-------------------------------</pre><div><b>FROM:</b> ${sender}</div><div><b>TO:</b> ${receiver}</div><div><b>AMOUNT:</b> ₹ ${amount.toLocaleString()}</div><pre>-------------------------------</pre><div style='text-align:center;font-weight:bold;color:${status==="FAILED"?"#ff3b30":"#008000"}'>${status==="FAILED"?"❌ Transaction Failed":"Payment Successful ✓"}</div>`;
+/* receipt UI (works for success & failed) */
+function showReceipt(sender, receiver, amount, status){
+  const r = document.createElement("div");
+  r.className = "receipt";
+  r.innerHTML = `<h4>KRP BANK RECEIPT</h4>
+    <div>${new Date().toLocaleString()}</div>
+    <pre>-------------------------------</pre>
+    <div><b>FROM:</b> ${sender}</div>
+    <div><b>TO:</b> ${receiver}</div>
+    <div><b>AMOUNT:</b> ₹ ${Number(amount).toLocaleString()}</div>
+    <pre>-------------------------------</pre>
+    <div style='text-align:center;font-weight:bold;color:${status==="FAILED"?"#ff3b30":"#008000"}'>
+      ${status==="FAILED"?"❌ Transaction Failed":"Payment Successful ✓"}
+    </div>`;
   document.body.appendChild(r);
+  // sound
   new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg').play();
   setTimeout(()=>r.remove(),5500);
 }
 
-renderUsers(); selectUser("Kartikey",document.querySelector(".user-btn"));
+/* ---------- INIT ---------- */
+/* initial render will happen after firebase values arrive; set default selected user to Ramshankar when ready */
+renderUsers();
+/* attempt to set default active (if element exists after renderUsers) */
+setTimeout(()=>{
+  const firstBtn = document.querySelector(".user-btn");
+  if(firstBtn){
+    firstBtn.click(); // triggers selectUser -> refresh
+    // ensure default specifically to Ramshankar if present
+    const ramBtn = Array.from(document.querySelectorAll(".user-btn")).find(b=>b.textContent==="Ramshankar");
+    if(ramBtn) ramBtn.click();
+  }
+},200);
 </script>
 </body>
 </html>
