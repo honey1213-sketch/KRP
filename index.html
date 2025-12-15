@@ -29,15 +29,15 @@ body{margin:0;background:radial-gradient(circle at top,#0d1226,#05060d);font-fam
 }
 @keyframes blink{
   from{opacity:1}
-  to{opacity:0.35}
+  to{opacity:0.4}
 }
 
 .popup{position:fixed;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;z-index:50}
-.popup-box{width:92%;max-width:420px;background:rgba(10,10,10,0.92);padding:22px;border-radius:18px;text-align:center;box-shadow:0 0 22px rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.06)}
-select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#fff;font-size:16px}
-.receipt{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;padding:28px 22px;border-radius:6px;width:320px;text-align:left;font-family:monospace;font-size:13px;box-shadow:0 0 40px rgba(0,0,0,0.55);border:1px dashed #444;z-index:9999}
+.popup-box{width:92%;max-width:420px;background:rgba(10,10,10,0.92);padding:22px;border-radius:18px;text-align:center}
+select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#fff}
+.receipt{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;padding:28px;border-radius:6px;width:320px;font-family:monospace;z-index:9999}
 .history-box{margin:18px;background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;max-height:260px;overflow-y:auto}
-.tx-item{padding:10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.02);font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.tx-item{padding:10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.02);display:flex;justify-content:space-between}
 .tx-status{font-weight:800;padding:6px 10px;border-radius:8px}
 .tx-success{background:rgba(0,128,0,0.12);color:#00a000}
 .tx-failed{background:rgba(255,0,0,0.12);color:#ff3b30}
@@ -58,7 +58,7 @@ select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:
 <div class="history-box" id="historyBox"><strong>Transactions</strong></div>
 
 <div class="popup" id="sendPopup">
-  <div class="popup-box">
+  <div class="popup-box" id="popupBox">
     <h3>Send Money</h3>
     <select id="senderSelect"></select>
     <select id="receiverSelect"></select>
@@ -91,58 +91,97 @@ const db=getDatabase(app);
 
 let balances={},history={},current=null;
 
+const userList=document.getElementById("userList");
 const cardName=document.getElementById("cardName");
 const cardBalance=document.getElementById("cardBalance");
 const cardTag=document.getElementById("cardTag");
+const historyBox=document.getElementById("historyBox");
 
 onValue(ref(db,"balances"),s=>{balances=s.val()||{};renderUsers();if(current)renderCard()});
 onValue(ref(db,"history"),s=>{history=s.val()||{};renderHistory()});
 
+function animateNumber(el,from,to){
+ const start=performance.now();
+ function step(t){
+  const p=Math.min(1,(t-start)/700);
+  el.textContent="₹ "+Math.floor(from+(to-from)*p).toLocaleString();
+  if(p<1)requestAnimationFrame(step);
+ }
+ requestAnimationFrame(step);
+}
+
 function renderUsers(){
- document.getElementById("userList").innerHTML="";
+ userList.innerHTML="";
  users.forEach(u=>{
   const b=document.createElement("button");
   b.className="user-btn";
   b.textContent=u;
   b.onclick=()=>{current=u;document.querySelectorAll(".user-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderCard();renderHistory()};
-  document.getElementById("userList").appendChild(b);
+  userList.appendChild(b);
  });
 }
 
 function renderCard(){
  cardName.textContent=current;
+ cardBalance.className="balance";
 
  if(current==="BANK"){
   cardBalance.textContent="N/A";
-  cardTag.textContent="HIGH";
   cardTag.className="tag high";
+  cardTag.textContent="HIGH";
   return;
  }
 
  if(current==="Kartikey"){
   cardBalance.textContent="CLOSED";
-  cardBalance.className="balance closed";
-  cardTag.textContent="CLOSED";
+  cardBalance.classList.add("closed");
   cardTag.className="tag low";
+  cardTag.textContent="CLOSED";
   return;
  }
 
- cardBalance.className="balance";
- cardBalance.textContent="₹ "+(balances[current]||0);
+ const bal=balances[current]||0;
+ animateNumber(cardBalance,0,bal);
+ cardTag.className="tag "+(bal<5000?"low":bal<15000?"medium":"high");
+ cardTag.textContent=bal<5000?"LOW":bal<15000?"MEDIUM":"HIGH";
 }
 
 document.getElementById("openSendBtn").onclick=()=>{
  senderSelect.innerHTML="";
  receiverSelect.innerHTML="";
  users.forEach(u=>{
-  if(u==="Kartikey") return;
-  senderSelect.innerHTML+=`<option>${u}</option>`;
-  receiverSelect.innerHTML+=`<option>${u}</option>`;
+  if(u==="Kartikey")return;
+  senderSelect.innerHTML+=`<option value="${u}">${u}</option>`;
+  receiverSelect.innerHTML+=`<option value="${u}">${u}</option>`;
  });
  sendPopup.style.display="flex";
 };
 
-document.getElementById("cancelBtn").onclick=()=>sendPopup.style.display="none";
+cancelBtn.onclick=()=>sendPopup.style.display="none";
+
+confirmBtn.onclick=()=>{
+ const s=senderSelect.value,r=receiverSelect.value,a=+amount.value,p=pin.value;
+ let status="SUCCESS";
+ if(s===r||a<=0||p!==pins[s]||(s!=="BANK"&&a>(balances[s]||0)))status="FAILED";
+ if(status==="SUCCESS"){
+  if(s!=="BANK")balances[s]-=a;
+  balances[r]=(balances[r]||0)+a;
+  update(ref(db,"balances"),balances);
+ }
+ push(ref(db,"history"),{sender:s,receiver:r,amount:a,time:new Date().toLocaleString(),status});
+ showReceipt(s,r,a,status);
+ sendPopup.style.display="none";
+};
+
+function showReceipt(s,r,a,st){
+ const d=document.createElement("div");
+ d.className="receipt";
+ d.innerHTML=`<b>KRP BANK</b><br>${new Date().toLocaleString()}<hr>
+ FROM: ${s}<br>TO: ${r}<br>AMOUNT: ₹ ${a}<hr>
+ <b style="color:${st==="FAILED"?"red":"green"}">${st}</b>`;
+ document.body.appendChild(d);
+ setTimeout(()=>d.remove(),5000);
+}
 </script>
 </body>
 </html>
