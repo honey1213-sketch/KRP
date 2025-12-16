@@ -1,213 +1,286 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>KRP Bank — Send Money</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KRP Bank</title>
 
 <style>
-/* ORIGINAL STYLES */
-body{margin:0;background:radial-gradient(circle at top,#0d1226,#05060d);font-family:Poppins,Arial,sans-serif;color:#fff;min-height:100vh}
-*{box-sizing:border-box;transition:.2s}
-.header{padding:18px 20px;text-align:center;font-weight:700;font-size:26px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
-.user-list{display:flex;gap:12px;padding:16px;overflow-x:auto}
-.user-btn{min-width:120px;padding:14px;border-radius:14px;border:none;background:rgba(255,255,255,.08);color:#fff;font-weight:700;cursor:pointer}
-.user-btn.active{box-shadow:0 0 20px rgba(0,0,0,.6);transform:translateY(-2px)}
-.card{margin:18px;background:rgba(255,255,255,.06);border-radius:18px;padding:22px}
-.name{font-size:26px;font-weight:800}
-.balance{font-size:44px;margin-top:12px;font-weight:800;text-shadow:0 0 14px #00d4ff}
-.tag{display:inline-block;margin-top:12px;padding:8px 14px;border-radius:10px;font-weight:700}
-.low{background:#d62828}
-.medium{background:#f4a261;color:#000}
-.high{background:#2a9d8f;color:#000}
-.send-btn{margin-top:18px;padding:14px;border-radius:12px;width:100%;border:none;background:linear-gradient(45deg,#00d4ff,#0051ff);font-weight:800;font-size:18px;cursor:pointer}
+:root{--ease:cubic-bezier(.22,.61,.36,1)}
+*{box-sizing:border-box}
 
-/* Kartikey CLOSED */
-.closed{
-  color:#ff3b30;
-  text-shadow:0 0 14px rgba(255,59,48,.9);
-  animation:blink 1s infinite alternate;
-}
-@keyframes blink{from{opacity:1}to{opacity:.4}}
-
-.popup{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:50}
-.popup-box{width:92%;max-width:420px;background:rgba(10,10,10,.92);padding:22px;border-radius:18px}
-select,.input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:#fff}
-
-.receipt{
- position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
- background:#fff;color:#000;padding:28px 22px;border-radius:6px;
- width:320px;text-align:left;font-family:monospace;font-size:13px;
- box-shadow:0 0 40px rgba(0,0,0,.55);
- border:1px dashed #444;z-index:9999
+body{
+ margin:0;
+ min-height:100vh;
+ background:#000;
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+ color:#fff;
 }
 
-.history-box{margin:18px;background:rgba(255,255,255,.04);border-radius:14px;padding:16px;max-height:260px;overflow-y:auto}
-.tx-item{padding:10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.02);display:flex;justify-content:space-between}
-.tx-status{font-weight:800;padding:6px 10px;border-radius:8px}
-.tx-success{background:rgba(0,128,0,.12);color:#00a000}
-.tx-failed{background:rgba(255,0,0,.12);color:#ff3b30}
+/* HEADER */
+.header{
+ text-align:center;
+ padding:22px;
+ font-weight:700;
+}
+
+/* USERS */
+.users{
+ display:flex;
+ gap:12px;
+ padding:0 20px 12px;
+ overflow-x:auto;
+}
+.user{
+ padding:14px 20px;
+ border-radius:18px;
+ background:rgba(255,255,255,.1);
+ cursor:pointer;
+}
+.user.active{background:#fff;color:#000}
+
+/* BALANCE */
+.apple-card{
+ margin:20px;
+ padding:28px;
+ border-radius:28px;
+ background:rgba(255,255,255,.12);
+ backdrop-filter:blur(30px);
+ text-align:center;
+}
+.apple-label{font-size:14px;opacity:.7}
+.apple-balance{font-size:52px;font-weight:800;margin-top:8px}
+.apple-balance span{font-size:26px;opacity:.6}
+.apple-user{opacity:.7;margin-top:6px}
+
+/* SEND */
+.send-btn{
+ margin:24px 20px;
+ width:calc(100% - 40px);
+ padding:18px;
+ border-radius:22px;
+ border:none;
+ background:#fff;
+ color:#000;
+ font-weight:700;
+}
+
+/* PAY SHEET */
+.sheet{
+ position:fixed;
+ left:0;right:0;bottom:-100%;
+ background:#111;
+ border-radius:30px 30px 0 0;
+ padding:26px;
+ transition:.45s var(--ease);
+}
+.sheet.show{bottom:0}
+
+.sheet input,.sheet select{
+ width:100%;
+ margin-top:14px;
+ padding:15px;
+ border-radius:16px;
+ border:none;
+ background:rgba(255,255,255,.12);
+ color:#fff;
+}
+
+.pay-btn{
+ margin-top:22px;
+ height:56px;
+ border-radius:30px;
+ background:#000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:700;
+}
+
+/* RECEIPT */
+.apple-receipt{
+ position:fixed;
+ inset:0;
+ background:#f2f2f7;
+ display:flex;
+ justify-content:center;
+ align-items:flex-start;
+ padding-top:40px;
+ z-index:9999;
+}
+
+.receipt-card{
+ width:100%;
+ max-width:420px;
+ padding:18px;
+ color:#000;
+}
+
+.top{
+ color:#007aff;
+ font-size:17px;
+ cursor:pointer;
+}
+
+.big-amount{
+ font-size:48px;
+ font-weight:800;
+ text-align:center;
+ margin-top:18px;
+}
+
+.sub{
+ text-align:center;
+ color:#666;
+ font-size:14px;
+ margin-top:6px;
+}
+
+.status-box{
+ background:#fff;
+ border-radius:16px;
+ padding:16px;
+ margin-top:22px;
+ font-size:16px;
+}
+.status-box.fail{color:#ff3b30}
+
+.line{
+ display:flex;
+ justify-content:space-between;
+ margin-top:12px;
+ font-weight:600;
+}
+
+.txid{
+ margin-top:22px;
+ font-size:13px;
+ color:#888;
+}
 </style>
 </head>
 
 <body>
+
 <div class="header">KRP BANK</div>
-<div class="user-list" id="userList"></div>
+<div class="users" id="users"></div>
 
-<div class="card">
-  <div class="name" id="cardName">Choose User</div>
-  <div class="balance" id="cardBalance">—</div>
-  <div class="tag" id="cardTag"></div>
-  <button class="send-btn" id="openSendBtn">Send Money</button>
+<div class="apple-card">
+ <div class="apple-label">Available Balance</div>
+ <div class="apple-balance" id="balance"><span>₹</span>—</div>
+ <div class="apple-user" id="username">Select User</div>
 </div>
 
-<div class="history-box" id="historyBox">
-<strong>Transactions</strong>
-<div style="opacity:.7;margin-top:8px">No transactions yet</div>
-</div>
+<button class="send-btn" id="openPay">Send with KRP Pay</button>
 
-<div class="popup" id="sendPopup">
-  <div class="popup-box">
-    <h3>Send Money</h3>
-    <select id="senderSelect"></select>
-    <select id="receiverSelect"></select>
-    <input id="amount" class="input" type="number" placeholder="Amount">
-    <input id="pin" class="input" type="password" placeholder="PIN">
-    <button class="send-btn" id="confirmBtn">Confirm</button>
-    <button class="send-btn" id="cancelBtn" style="background:#444">Cancel</button>
-  </div>
+<div class="sheet" id="sheet">
+ <select id="sender"></select>
+ <select id="receiver"></select>
+ <input id="amount" type="number" placeholder="Amount">
+ <input id="pin" type="password" placeholder="PIN">
+ <div class="pay-btn" id="payBtn">Pay</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const users=["Kartikey","Aryan","Pranay","BANK"];
-const pins={Aryan:"9892",Pranay:"8081",BANK:"1990"};
-
-const firebaseConfig={
+const app=initializeApp({
  apiKey:"AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",
- authDomain:"krp-bank.firebaseapp.com",
- databaseURL:"https://krp-bank-default-rtdb.firebaseio.com/",
- projectId:"krp-bank",
- storageBucket:"krp-bank.firebasestorage.app",
- messagingSenderId:"911407082396",
- appId:"1:911407082396:web:c5af104a844e2697797659"
-};
-
-const app=initializeApp(firebaseConfig);
+ databaseURL:"https://krp-bank-default-rtdb.firebaseio.com/"
+});
 const db=getDatabase(app);
 
-let balances={},history={},current=null;
+const usersArr=["Kartikey","Aryan","Pranay","BANK"];
+const pins={Aryan:"9892",Pranay:"8081",BANK:"1990"};
+let balances={},current=null;
 
-onValue(ref(db,"balances"),s=>{balances=s.val()||{};renderUsers();if(current)renderCard()});
-onValue(ref(db,"history"),s=>{history=s.val()||{};renderHistory()});
+usersArr.forEach(u=>{
+ const d=document.createElement("div");
+ d.className="user";
+ d.textContent=u;
+ d.onclick=()=>{
+  document.querySelectorAll(".user").forEach(x=>x.classList.remove("active"));
+  d.classList.add("active");
+  current=u;
+  username.textContent=u;
+  render();
+ };
+ users.appendChild(d);
+});
 
-function animateNumber(el,f,t){
- const s=performance.now();
- function step(n){
-  const p=Math.min(1,(n-s)/700);
-  el.textContent="₹ "+Math.floor(f+(t-f)*p).toLocaleString();
-  if(p<1)requestAnimationFrame(step);
- }
- requestAnimationFrame(step);
+onValue(ref(db,"balances"),s=>{balances=s.val()||{};render()});
+
+function render(){
+ if(!current)return;
+ if(current==="Kartikey"){balance.textContent="CLOSED";return}
+ if(current==="BANK"){balance.textContent="N/A";return}
+ balance.innerHTML="<span>₹</span>"+(balances[current]||0).toLocaleString();
 }
 
-function renderUsers(){
- userList.innerHTML="";
- users.forEach(u=>{
-  const b=document.createElement("button");
-  b.className="user-btn";
-  b.textContent=u;
-  b.onclick=()=>{current=u;document.querySelectorAll(".user-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderCard();renderHistory()};
-  userList.appendChild(b);
+openPay.onclick=()=>{
+ sheet.classList.add("show");
+ sender.innerHTML=receiver.innerHTML="";
+ usersArr.forEach(u=>{
+  if(u!=="Kartikey"){
+   sender.innerHTML+=`<option>${u}</option>`;
+   receiver.innerHTML+=`<option>${u}</option>`;
+  }
  });
-}
-
-function renderCard(){
- cardName.textContent=current;
- cardBalance.className="balance";
-
- if(current==="BANK"){
-  cardBalance.textContent="N/A";
-  cardTag.className="tag high";
-  cardTag.textContent="HIGH";
-  return;
- }
- if(current==="Kartikey"){
-  cardBalance.textContent="CLOSED";
-  cardBalance.classList.add("closed");
-  cardTag.className="tag low";
-  cardTag.textContent="CLOSED";
-  return;
- }
-
- const bal=balances[current]||0;
- animateNumber(cardBalance,0,bal);
- cardTag.className="tag "+(bal<5000?"low":bal<15000?"medium":"high");
- cardTag.textContent=bal<5000?"LOW":bal<15000?"MEDIUM":"HIGH";
-}
-
-openSendBtn.onclick=()=>{
- senderSelect.innerHTML="";receiverSelect.innerHTML="";
- users.forEach(u=>{
-  if(u==="Kartikey")return;
-  senderSelect.innerHTML+=`<option>${u}</option>`;
-  receiverSelect.innerHTML+=`<option>${u}</option>`;
- });
- sendPopup.style.display="flex";
 };
 
-cancelBtn.onclick=()=>sendPopup.style.display="none";
+payBtn.onclick=()=>{
+ const s=sender.value,r=receiver.value,a=+amount.value,p=pin.value;
+ const ok=!(s===r||a<=0||p!==pins[s]||(s!=="BANK"&&a>(balances[s]||0)));
 
-confirmBtn.onclick=()=>{
- const s=senderSelect.value,r=receiverSelect.value,a=+amount.value,p=pin.value;
- let status="SUCCESS";
- if(s===r||a<=0||p!==pins[s]||(s!=="BANK"&&a>(balances[s]||0)))status="FAILED";
- if(status==="SUCCESS"){
+ if(ok){
   if(s!=="BANK")balances[s]-=a;
   balances[r]=(balances[r]||0)+a;
   update(ref(db,"balances"),balances);
+
+  /* 🔑 USER-WISE HISTORY */
+  push(ref(db,"history/"+s),{
+    to:r,
+    amount:a,
+    status:"SUCCESS",
+    time:Date.now()
+  });
+ }else{
+  push(ref(db,"history/"+s),{
+    to:r,
+    amount:a,
+    status:"FAILED",
+    time:Date.now()
+  });
  }
- push(ref(db,"history"),{sender:s,receiver:r,amount:a,time:new Date().toLocaleString(),status});
- showReceipt(s,r,a,status);
- sendPopup.style.display="none";
+
+ showReceipt({amount:a,sender:s,receiver:r,status:ok?"SUCCESS":"FAILED"});
+ sheet.classList.remove("show");
 };
 
-function renderHistory(){
- let html="<strong>Transactions</strong>";
- const arr=Object.values(history).reverse();
- let f=false;
- for(const t of arr){
-  if(t.sender===current||t.receiver===current){
-   f=true;
-   html+=`<div class="tx-item">
-    <div>${t.time}<br>${t.sender} → ${t.receiver}</div>
-    <div>₹ ${t.amount}<div class="tx-status ${t.status==="FAILED"?"tx-failed":"tx-success"}">${t.status}</div></div>
-   </div>`;
-  }
- }
- if(!f)html+=`<div style="opacity:.7;margin-top:10px">No transactions</div>`;
- historyBox.innerHTML=html;
-}
+function showReceipt({amount,sender,receiver,status}){
+ const success=status==="SUCCESS";
+ const w=document.createElement("div");
+ w.className="apple-receipt";
+ w.innerHTML=`
+  <div class="receipt-card">
+   <div class="top" id="backBtn">‹ Back</div>
+   <div class="big-amount">₹${amount.toLocaleString()}</div>
+   <div class="sub">To ${receiver}<br>${new Date().toLocaleString()}</div>
+   <div class="status-box ${success?"":"fail"}">
+    <b>Status:</b> ${success?"Completed":"Failed"}
+    <div style="font-size:13px;color:#888;margin-top:4px">
+     Sent from ${sender}
+    </div>
+   </div>
+   <div class="line"><span>Sent</span><span>₹${amount.toLocaleString()}</span></div>
+   <div class="txid">Transaction ID<br><b>${Math.random().toString(36).slice(2,14)}</b></div>
+  </div>
+ `;
+ document.body.appendChild(w);
 
-function showReceipt(sender,receiver,amount,status){
- const r=document.createElement("div");
- r.className="receipt";
- r.innerHTML=`
- <h4>KRP BANK RECEIPT</h4>
- <div>${new Date().toLocaleString()}</div>
- <pre>-------------------------------</pre>
- <div><b>FROM:</b> ${sender}</div>
- <div><b>TO:</b> ${receiver}</div>
- <div><b>AMOUNT:</b> ₹ ${Number(amount).toLocaleString()}</div>
- <pre>-------------------------------</pre>
- <div style="text-align:center;font-weight:bold;color:${status==="FAILED"?"#ff3b30":"#008000"}">
- ${status==="FAILED"?"❌ Transaction Failed":"Payment Successful ✓"}
- </div>`;
- document.body.appendChild(r);
- new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play();
- setTimeout(()=>r.remove(),5500);
+ w.querySelector("#backBtn").onclick=()=>w.remove();
 }
 </script>
 </body>
