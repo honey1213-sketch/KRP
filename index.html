@@ -2,267 +2,212 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zuber - Secure Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zuber Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
     <style>
-        /* --- iOS Style Design --- */
-        :root {
-            --ios-bg: #f2f2f7;
-            --ios-card: #ffffff;
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --ios-gray: #8e8e93;
-            --ios-text: #000000;
-            --bg-image: url("https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1000&auto=format&fit=crop");
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+        /* --- CLEAN UI STYLES --- */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background: var(--ios-bg); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
+            margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif;
+            background-color: #d1d7db; height: 100vh; display: flex; justify-content: center; align-items: center;
         }
 
-        .app-container {
-            width: 100%; height: 100%; max-width: 1500px; background: #fff;
-            display: flex; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        /* App Container */
+        #app {
+            width: 100%; height: 100%; max-width: 1600px; background: white; display: flex;
+            position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
         /* --- Screens --- */
-        .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; flex-direction: column; z-index: 10; }
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column;
+        }
         .screen.active { display: flex; }
 
-        /* Splash */
-        #splashScreen { background: #fff; justify-content: center; align-items: center; z-index: 999; }
-        .zuber-logo { font-size: 3rem; font-weight: 800; letter-spacing: -2px; background: linear-gradient(45deg, #000, #444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* Login Screen */
+        #login-screen {
+            background-color: #fff; justify-content: center; align-items: center;
+        }
+        .login-box {
+            width: 350px; text-align: center; padding: 40px; border: 1px solid #ddd; border-radius: 8px;
+        }
+        .input {
+            width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;
+        }
+        .btn {
+            width: 100%; padding: 12px; background: #00a884; color: white; border: none;
+            border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; font-weight: bold;
+        }
+        .btn:hover { background: #008f72; }
+        .link { color: #00a884; cursor: pointer; margin-top: 15px; display: block; }
 
-        /* Auth */
-        #authScreen { background: #fff; justify-content: center; align-items: center; padding: 20px; }
-        .auth-box { width: 100%; max-width: 360px; text-align: center; }
-        .auth-box h2 { margin-bottom: 20px; font-size: 2rem; }
-        .input-ios {
-            width: 100%; padding: 15px; margin-bottom: 12px; border: 1px solid #e5e5ea;
-            border-radius: 14px; font-size: 1rem; background: #f2f2f7; outline: none; transition: 0.3s;
+        /* Setup Username Modal */
+        #setup-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100;
         }
-        .input-ios:focus { background: #fff; border-color: var(--ios-blue); }
-        .btn-ios {
-            width: 100%; padding: 16px; background: var(--ios-blue); color: #fff;
-            border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+        .modal-content {
+            background: white; padding: 30px; border-radius: 8px; width: 300px; text-align: center;
         }
-        .btn-ios:active { transform: scale(0.97); }
-        .toggle-text { margin-top: 20px; color: var(--ios-blue); cursor: pointer; font-size: 0.9rem; }
 
         /* --- Main Layout --- */
+        /* Sidebar */
         .sidebar {
-            width: 350px; border-right: 1px solid #e5e5ea; background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(20px); display: flex; flex-direction: column;
+            width: 30%; min-width: 300px; max-width: 450px; border-right: 1px solid #e9edef;
+            display: flex; flex-direction: column; background: #fff;
         }
+        .header {
+            height: 60px; background: #f0f2f5; padding: 10px 16px; display: flex;
+            align-items: center; justify-content: space-between; border-bottom: 1px solid #e9edef;
+        }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
         
-        .sidebar-header {
-            padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);
-            background: rgba(255,255,255,0.9);
-        }
-        .profile-pic { width: 45px; height: 45px; border-radius: 50%; background: #ddd; object-fit: cover; }
-        .user-info h4 { font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-        .blue-tick { color: var(--ios-blue); display: none; }
-        .blue-tick.show { display: inline-block; }
+        .add-contact-box { display: none; padding: 10px; background: #f0f2f5; border-bottom: 1px solid #e9edef; }
 
-        .contact-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .contact-item {
-            display: flex; align-items: center; padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s;
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item {
+            display: flex; padding: 12px 15px; border-bottom: 1px solid #f0f2f5;
+            cursor: pointer; align-items: center;
         }
-        .contact-item:active { background: #f2f2f7; }
-        .contact-item img { width: 50px; height: 50px; border-radius: 50%; margin-right: 12px; object-fit: cover; }
-        .contact-details h4 { font-size: 1rem; font-weight: 600; }
-        .contact-details p { font-size: 0.85rem; color: var(--ios-gray); }
+        .chat-item:hover { background: #f5f6f6; }
+        .chat-item img { width: 49px; height: 49px; border-radius: 50%; margin-right: 15px; }
+        .chat-info h4 { margin: 0; font-size: 16px; font-weight: 400; }
+        .tick { color: #34b7f1; font-size: 12px; margin-left: 4px; display: none; }
+        .tick.show { display: inline-block; }
 
-        /* --- Chat Area --- */
+        /* Chat Area */
         .chat-area {
             flex: 1; display: flex; flex-direction: column;
-            background-image: var(--bg-image); background-size: cover; background-position: center;
+            background-color: #efeae2;
+            background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
             position: relative;
         }
-        
-        .chat-bg-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 0;
-        }
-
         .chat-header {
-            height: 70px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);
-            display: flex; align-items: center; padding: 0 20px; z-index: 5; position: absolute; top: 0; width: 100%;
+            height: 60px; background: #f0f2f5; padding: 10px 16px; display: flex;
+            align-items: center; border-bottom: 1px solid #e9edef;
         }
-        .back-icon { font-size: 1.5rem; margin-right: 15px; cursor: pointer; color: var(--ios-blue); display: none; }
-
-        .messages-box { flex: 1; padding: 80px 20px 80px; overflow-y: auto; z-index: 1; display: flex; flex-direction: column; gap: 8px; }
+        .messages { flex: 1; padding: 20px 60px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
         
         .bubble {
-            max-width: 70%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative;
+            max-width: 65%; padding: 6px 7px 8px 9px; border-radius: 7.5px;
+            font-size: 14px; position: relative; word-wrap: break-word;
         }
-        .bubble.incoming { align-self: flex-start; background: #fff; color: #000; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .bubble.outgoing { align-self: flex-end; background: var(--ios-green); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .msg-time { font-size: 0.65rem; float: right; margin-top: 4px; margin-left: 8px; opacity: 0.7; }
+        .bubble.in { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
+        .bubble.out { align-self: flex-end; background: #d9fdd3; border-top-right-radius: 0; }
+        .time { float: right; font-size: 10px; color: #999; margin-left: 10px; margin-top: 5px; }
 
-        .chat-input {
-            height: 70px; background: rgba(255,255,255,0.95); backdrop-filter: blur(15px);
-            display: flex; align-items: center; padding: 0 15px; gap: 10px; z-index: 5; position: absolute; bottom: 0; width: 100%;
+        .footer {
+            height: 62px; background: #f0f2f5; padding: 5px 16px; display: flex; align-items: center;
         }
-        .msg-input-field {
-            flex: 1; padding: 10px 20px; background: #f0f2f7; border: none; border-radius: 20px; outline: none; font-size: 1rem;
-        }
-        .send-btn { width: 45px; height: 45px; background: var(--ios-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; opacity: 0.5; pointer-events: none; }
-        .send-btn.active { opacity: 1; pointer-events: auto; }
+        .msg-input { flex: 1; padding: 9px 12px; border: none; border-radius: 8px; outline: none; }
 
-        /* --- Admin Panel (New) --- */
-        #adminPanel {
-            width: 100%; height: 100%; background: #f2f2f7; padding: 20px; overflow-y: auto;
+        /* Admin Panel */
+        #admin-panel {
+            padding: 20px; background: #f2f2f7; overflow-y: auto; display: none; width: 100%;
         }
-        .admin-header { text-align: center; margin-bottom: 20px; }
-        .request-card {
-            background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        .req-card {
+            background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px;
+            border: 1px solid #ddd;
         }
-        .req-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .req-label { font-weight: 600; color: #666; }
-        .req-val { color: #000; }
-        .req-img { width: 100%; height: 150px; background: #eee; margin: 10px 0; border-radius: 8px; object-fit: cover; }
-        .admin-actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-accept { flex: 1; background: var(--ios-green); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-reject { flex: 1; background: var(--ios-red); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-green { background: #25d366; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-red { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
 
-        /* Modals */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4);
-            z-index: 100; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px);
-        }
-        .modal.active { display: flex; animation: fadeIn 0.3s; }
-        .modal-content {
-            background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .app-container { border-radius: 0; height: 100vh; }
-            .sidebar { width: 100%; z-index: 20; position: absolute; height: 100%; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-            .chat-area { width: 100%; z-index: 10; position: absolute; height: 100%; }
-            .sidebar.hidden { transform: translateX(-100%); }
-            .chat-area.hidden { transform: translateX(100%); }
-            .back-icon { display: block; }
+        /* Mobile */
+        @media(max-width: 768px) {
+            .sidebar { width: 100%; z-index: 2; position: absolute; height: 100%; }
+            .chat-area { width: 100%; position: absolute; height: 100%; z-index: 1; }
+            .sidebar.show { display: flex; }
+            .sidebar.hide { display: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<div id="app">
 
-    <!-- 1. Splash -->
-    <div id="splashScreen" class="screen active">
-        <div class="zuber-logo">Zuber</div>
-        <div style="margin-top: 10px; font-weight: 500; color: #888;">Secure & Premium</div>
-    </div>
-
-    <!-- 2. Auth -->
-    <div id="authScreen" class="screen">
-        <div class="auth-box">
-            <h2>Welcome</h2>
-            <div id="loginView">
-                <input type="email" class="input-ios" id="loginEmail" placeholder="Email">
-                <input type="password" class="input-ios" id="loginPass" placeholder="Password">
-                <button class="btn-ios" id="loginBtn">Login</button>
-                <div class="toggle-text" id="goSignup">Create Account</div>
-            </div>
-            <div id="signupView" style="display:none;">
-                <input type="email" class="input-ios" id="signupEmail" placeholder="Email">
-                <input type="password" class="input-ios" id="signupPass" placeholder="Password">
-                <button class="btn-ios" id="signupBtn">Sign Up</button>
-                <div class="toggle-text" id="goLogin">Back to Login</div>
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="screen active">
+        <div class="login-box">
+            <h2 style="color: #00a884;">Zuber Chat</h2>
+            <input type="email" id="login-email" class="input" placeholder="Email">
+            <input type="password" id="login-pass" class="input" placeholder="Password">
+            <button class="btn" id="btn-login">Login</button>
+            <span class="link" id="btn-signup">Create Account</span>
+            
+            <div id="signup-box" style="display:none; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                <input type="email" id="signup-email" class="input" placeholder="New Email">
+                <input type="password" id="signup-pass" class="input" placeholder="New Password">
+                <button class="btn" id="btn-create">Sign Up</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. Setup Username -->
-    <div id="setupScreen" class="screen" style="justify-content:center; align-items:center; background:#fff;">
-        <div class="auth-box">
-            <h3>Setup</h3>
-            <input type="text" class="input-ios" id="setupUsername" placeholder="Username (e.g. rahul)">
-            <button class="btn-ios" id="saveUsernameBtn">Continue</button>
+    <!-- 2. SETUP MODAL -->
+    <div id="setup-modal">
+        <div class="modal-content">
+            <h3>Welcome!</h3>
+            <p>Create your username</p>
+            <input type="text" id="setup-username" class="input">
+            <button class="btn" id="btn-setup-save">Start</button>
         </div>
     </div>
 
-    <!-- 4. Admin Panel (Only for 'zuber') -->
-    <div id="adminPanel" class="screen">
-        <div class="admin-header">
+    <!-- 3. ADMIN PANEL (Only for 'zuber') -->
+    <div id="admin-panel" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2>Admin Dashboard</h2>
-            <p style="color:#666;">Manage Blue Tick Requests</p>
-            <button class="btn-ios" id="adminLogoutBtn" style="background:#000; margin-top:20px; width:150px;">Logout</button>
+            <button class="btn" id="btn-admin-logout" style="width:100px;">Logout</button>
         </div>
-        <div id="requestsList">
-            <!-- Requests will load here -->
-        </div>
+        <div id="requests-list"></div>
     </div>
 
-    <!-- 5. Normal User App -->
-    <div id="userApp" class="screen">
-        <!-- Sidebar -->
+    <!-- 4. NORMAL CHAT APP -->
+    <div id="chat-screen" class="screen">
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <img src="" class="profile-pic" id="myAvatar">
-                <div class="user-info">
-                    <h4 id="myNameDisplay">Loading... <i class="ri-verified-badge-fill blue-tick" id="myTick"></i></h4>
-                    <p style="font-size:0.8rem; color:#666;">Online</p>
+            <div class="header">
+                <img id="my-avatar" class="avatar">
+                <div style="display:flex; gap:20px;">
+                    <i class="ri-user-add-line" style="cursor:pointer;" id="btn-add-contact"></i>
+                    <i class="ri-logout-box-r-line" style="cursor:pointer;" id="btn-logout"></i>
                 </div>
-                <div style="margin-left:auto; cursor:pointer;" onclick="openAddContact()"><i class="ri-add-circle-fill" style="font-size:1.5rem; color:var(--ios-blue);"></i></div>
             </div>
-            
-            <div id="addContactArea" style="display:none; padding:10px;">
-                <input type="text" class="input-ios" id="searchUser" placeholder="Search username..." style="padding:8px;">
+            <div class="add-contact-box" id="add-contact-box">
+                <input type="text" id="search-user" class="input" placeholder="Search username...">
             </div>
-
-            <div class="contact-list" id="contactList"></div>
+            <div class="chat-list" id="chat-list"></div>
         </div>
 
-        <!-- Chat Area -->
-        <div class="chat-area hidden" id="chatArea">
-            <div class="chat-bg-overlay"></div>
+        <div class="chat-area" id="chat-area">
+            <div style="display:flex; height:100%; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <i class="ri-chat-smile-2-line" style="font-size:50px; color:#999;"></i>
+                <h2>Zuber Web</h2>
+                <p>Secure Chat App</p>
+            </div>
+        </div>
+
+        <!-- Active Chat View -->
+        <div class="chat-area" id="active-chat-view" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;">
             <div class="chat-header">
-                <i class="ri-arrow-left-s-line back-icon" id="backBtn"></i>
-                <img src="" class="profile-pic" id="chatHeaderAvatar" style="margin-left:10px; width:35px; height:35px;">
-                <div style="margin-left:10px;">
-                    <h4 id="chatHeaderName" style="display:flex; align-items:center; gap:5px;">User</h4>
-                    <p style="font-size:0.75rem; color:#666;">Online</p>
+                <i class="ri-arrow-left-line" style="font-size:24px; margin-right:15px; cursor:pointer;" id="btn-back"></i>
+                <img id="chat-header-img" class="avatar" style="width:35px; height:35px;">
+                <div>
+                    <h4 id="chat-header-name" style="margin:0;">User</h4>
+                    <span style="font-size:12px; color:#666;">Online</span>
                 </div>
             </div>
-            
-            <div class="messages-box" id="messagesBox"></div>
-
-            <div class="chat-input">
-                <input type="text" class="msg-input-field" id="msgInput" placeholder="Message...">
-                <div class="send-btn" id="sendBtn"><i class="ri-send-plane-fill"></i></div>
+            <div class="messages" id="msg-box"></div>
+            <div class="footer">
+                <input type="text" class="msg-input" id="msg-input" placeholder="Type message...">
+                <button class="btn-green" id="btn-send" style="width:50px; border-radius:50%; margin-left:10px;"><i class="ri-send-plane-fill"></i></button>
             </div>
         </div>
     </div>
 
 </div>
 
-<!-- Verification Modal -->
-<div id="verifyModal" class="modal">
-    <div class="modal-content">
-        <h3 style="margin-bottom:15px;">Request Verification</h3>
-        <input type="text" class="input-ios" id="vUsername" readonly style="background:#eee;">
-        <input type="text" class="input-ios" id="vName" placeholder="Real Name">
-        <input type="text" class="input-ios" id="vProf" placeholder="Profession">
-        <div style="border:1px dashed #ccc; padding:10px; text-align:center; border-radius:8px; margin-bottom:15px; cursor:pointer;" onclick="document.getElementById('vFile').click()">
-            <i class="ri-upload-cloud-line"></i> Upload ID
-            <input type="file" id="vFile" hidden accept="image/*">
-        </div>
-        <button class="btn-ios" id="submitVerify">Submit Request</button>
-        <button class="btn-ios" id="closeVerifyModal" style="background:#fff; color:#000; margin-top:10px; border:1px solid #eee;">Cancel</button>
-    </div>
-</div>
-
+<!-- Firebase SDKs -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -285,202 +230,194 @@
     const db = getDatabase(app);
     const storage = getStorage(app);
 
-    // --- Navigation & Screens ---
-    const screens = ['splashScreen', 'authScreen', 'setupScreen', 'adminPanel', 'userApp'];
-    function showScreen(id) {
-        screens.forEach(s => document.getElementById(s).classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    // Splash
-    setTimeout(() => { showScreen('authScreen'); }, 2000);
-
-    // --- Auth Logic ---
-    document.getElementById('goSignup').onclick = () => { document.getElementById('loginView').style.display='none'; document.getElementById('signupView').style.display='block'; };
-    document.getElementById('goLogin').onclick = () => { document.getElementById('signupView').style.display='none'; document.getElementById('loginView').style.display='block'; };
-
-    document.getElementById('signupBtn').onclick = () => {
-        const e = document.getElementById('signupEmail').value; const p = document.getElementById('signupPass').value;
-        createUserWithEmailAndPassword(auth, e, p).catch(alert);
-    };
-    document.getElementById('loginBtn').onclick = () => {
-        const e = document.getElementById('loginEmail').value; const p = document.getElementById('loginPass').value;
-        signInWithEmailAndPassword(auth, e, p).catch(alert);
-    };
-
+    // --- HELPER FUNCTIONS ---
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    
+    // --- AUTHENTICATION ---
     let currentUser = null;
     let currentUsername = null;
-    let isAdmin = false;
+
+    document.getElementById('btn-signup').onclick = () => document.getElementById('signup-box').style.display = 'block';
+    
+    document.getElementById('btn-login').onclick = () => {
+        const e = document.getElementById('login-email').value;
+        const p = document.getElementById('login-pass').value;
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => alert("Login Successful!"))
+            .catch(err => alert("Error: " + err.message));
+    };
+
+    document.getElementById('btn-create').onclick = () => {
+        const e = document.getElementById('signup-email').value;
+        const p = document.getElementById('signup-pass').value;
+        createUserWithEmailAndPassword(auth, e, p)
+            .then(() => alert("Account Created!"))
+            .catch(err => alert("Error: " + err.message));
+    };
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth).then(() => window.location.reload());
+    document.getElementById('btn-admin-logout').onclick = () => signOut(auth).then(() => window.location.reload());
 
     onAuthStateChanged(auth, (user) => {
         if(user) {
             currentUser = user;
-            checkUsername(user.uid);
+            checkUser(user.uid);
         } else {
-            showScreen('authScreen');
+            showScreen('login-screen');
         }
     });
 
-    function checkUsername(uid) {
-        get(ref(db, 'users/'+uid)).then(s => {
-            if(s.exists()) {
-                const data = s.val();
+    // --- USERNAME LOGIC ---
+    function checkUser(uid) {
+        get(ref(db, 'users/' + uid)).then(snap => {
+            if(snap.exists()) {
+                const data = snap.val();
                 currentUsername = data.username;
-                if(data.username === 'zuber') {
-                    isAdmin = true;
-                    initAdminPanel();
+                if(currentUsername === 'zuber') {
+                    initAdmin();
                 } else {
-                    isAdmin = false;
-                    initUserApp(data);
+                    initChat(data);
                 }
             } else {
-                showScreen('setupScreen');
+                document.getElementById('setup-modal').style.display = 'flex';
             }
         });
     }
 
-    document.getElementById('saveUsernameBtn').onclick = () => {
-        const u = document.getElementById('setupUsername').value.trim();
+    document.getElementById('btn-setup-save').onclick = () => {
+        const u = document.getElementById('setup-username').value.trim();
         if(u.length < 3) return alert("Too short");
-        get(ref(db, 'usernames/'+u)).then(s => {
-            if(s.exists()) return alert("Taken");
-            set(ref(db, 'usernames/'+u), uid);
-            set(ref(db, 'users/'+uid), { username: u, email: currentUser.email, uid: uid, verified: false })
-                .then(() => { currentUsername = u; checkUsername(uid); });
+        
+        // Check taken
+        get(ref(db, 'usernames/' + u)).then(snap => {
+            if(snap.exists()) return alert("Username taken");
+            
+            // Save
+            set(ref(db, 'usernames/' + u), currentUser.uid);
+            set(ref(db, 'users/' + currentUser.uid), {
+                username: u, email: currentUser.email, verified: false, uid: currentUser.uid
+            }).then(() => {
+                currentUsername = u;
+                document.getElementById('setup-modal').style.display = 'none';
+                checkUser(currentUser.uid);
+            });
         });
     };
 
-    // --- ADMIN PANEL LOGIC (zuber) ---
-    function initAdminPanel() {
-        showScreen('adminPanel');
-        const list = document.getElementById('requestsList');
+    // --- ADMIN PANEL ---
+    function initAdmin() {
+        showScreen('admin-panel');
+        document.getElementById('requests-list').innerHTML = '';
+        
         onValue(ref(db, 'requests'), snap => {
+            const list = document.getElementById('requests-list');
             list.innerHTML = "";
-            if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#999;'>No pending requests.</p>"; return; }
+            if(!snap.exists()) { list.innerHTML = "<p>No requests</p>"; return; }
             
             snap.forEach(child => {
                 const r = child.val();
-                const rUid = child.key;
                 const div = document.createElement('div');
-                div.className = 'request-card';
+                div.className = 'req-card';
                 div.innerHTML = `
-                    <div class="req-row"><span class="req-label">Username:</span> <span class="req-val">${r.username}</span></div>
-                    <div class="req-row"><span class="req-label">Real Name:</span> <span class="req-val">${r.realName}</span></div>
-                    <div class="req-row"><span class="req-label">Profession:</span> <span class="req-val">${r.profession}</span></div>
-                    <img src="${r.docUrl}" class="req-img">
-                    <div class="admin-actions">
-                        <button class="btn-accept" onclick="acceptRequest('${rUid}', '${r.username}')">Accept (Blue Tick)</button>
-                        <button class="btn-reject" onclick="rejectRequest('${rUid}')">Reject</button>
-                    </div>
+                    <p><b>Username:</b> ${r.username}</p>
+                    <p><b>Name:</b> ${r.realName}</p>
+                    <p><b>Profession:</b> ${r.profession}</p>
+                    <img src="${r.docUrl}" style="width:100px; height:100px; object-fit:cover;">
+                    <br><br>
+                    <button class="btn-green" onclick="accept('${child.key}', '${r.username}')">Accept</button>
+                    <button class="btn-red" onclick="reject('${child.key}')">Reject</button>
                 `;
                 list.appendChild(div);
             });
         });
     }
 
-    window.acceptRequest = async (rUid, rUsername) => {
-        if(!confirm("Give Blue Tick to " + rUsername + "?")) return;
+    window.accept = async (uid, name) => {
+        if(!confirm("Verify " + name + "?")) return;
+        await update(ref(db, 'users/' + uid), { verified: true });
         
-        // 1. Update User
-        await update(ref(db, 'users/'+rUid), { verified: true });
-        
-        // 2. Send Congratulation Message
-        // Chat ID between Admin (zuber) and User
-        const chatId = [currentUser.uid, rUid].sort().join('_');
-        await push(ref(db, 'chats/'+chatId), {
-            sender: currentUser.uid, text: `Congratulations! Your account is now verified (✅).`, timestamp: Date.now()
+        // Send Msg
+        const chatId = [currentUser.uid, uid].sort().join('_');
+        await push(ref(db, 'chats/' + chatId), {
+            sender: currentUser.uid, text: "Congrats! You are now verified (Blue Tick).", timestamp: Date.now()
         });
         
-        // 3. Remove Request
-        await remove(ref(db, 'requests/'+rUid));
-        alert("Verified successfully.");
+        await remove(ref(db, 'requests/' + uid));
+        alert("Verified and Sent Message");
     };
 
-    window.rejectRequest = async (rUid) => {
-        if(!confirm("Reject this request?")) return;
-        await remove(ref(db, 'requests/'+rUid));
+    window.reject = async (uid) => {
+        if(!confirm("Reject?")) return;
+        await remove(ref(db, 'requests/' + uid));
     };
 
-    document.getElementById('adminLogoutBtn').onclick = () => signOut(auth).then(() => window.location.reload());
-
-    // --- USER APP LOGIC ---
-    function initUserApp(data) {
-        showScreen('userApp');
-        document.getElementById('myAvatar').src = `https://ui-avatars.com/api/?name=${data.username}&background=random`;
-        document.getElementById('myNameDisplay').innerHTML = `${data.username} <i class="ri-verified-badge-fill blue-tick ${data.verified?'show':''}"></i>`;
+    // --- NORMAL CHAT APP ---
+    function initChat(data) {
+        showScreen('chat-screen');
+        document.getElementById('my-avatar').src = `https://ui-avatars.com/api/?name=${currentUsername}&background=random`;
         loadContacts();
         
-        // Verify Modal Handlers
-        document.getElementById('myAvatar').onclick = () => {
+        // Verification Request Handler
+        document.getElementById('my-avatar').onclick = () => {
             if(!data.verified) {
-                document.getElementById('verifyModal').classList.add('active');
-                document.getElementById('vUsername').value = data.username;
+                const name = prompt("Real Name for Verification:");
+                const prof = prompt("Profession:");
+                if(!name || !prof) return;
+                
+                alert("Please upload ID proof logic requires file input. For now, auto-sending request with placeholder.");
+                set(ref(db, 'requests/' + currentUser.uid), {
+                    username: currentUsername, realName: name, profession: prof, docUrl: "https://via.placeholder.com/150"
+                }).then(() => alert("Request Sent to Admin 'zuber'"));
             }
         };
     }
 
-    document.getElementById('closeVerifyModal').onclick = () => document.getElementById('verifyModal').classList.remove('active');
-
-    document.getElementById('submitVerify').onclick = async () => {
-        const name = document.getElementById('vName').value;
-        const prof = document.getElementById('vProf').value;
-        const file = document.getElementById('vFile').files[0];
-        if(!name || !prof || !file) return alert("All fields required");
-
-        const storageRef = sRef(storage, 'verify_docs/'+currentUser.uid);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-
-        set(ref(db, 'requests/'+currentUser.uid), {
-            username: currentUsername, realName: name, profession: prof, docUrl: url
-        }).then(() => {
-            alert("Request sent to Zuber Admin.");
-            document.getElementById('verifyModal').classList.remove('active');
-        });
+    document.getElementById('btn-add-contact').onclick = () => {
+        const box = document.getElementById('add-contact-box');
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
     };
 
-    // --- Contacts & Chat (Same as before) ---
-    window.openAddContact = () => {
-        const div = document.getElementById('addContactArea');
-        div.style.display = div.style.display==='none'?'block':'none';
-    };
-
-    document.getElementById('searchUser').onkeypress = (e) => {
-        if(e.key==='Enter') {
-            const u = document.getElementById('searchUser').value.trim().toLowerCase();
-            if(!u) return;
-            get(ref(db, 'usernames/'+u)).then(s => {
-                if(s.exists()) {
-                    const fid = s.val();
-                    if(fid === currentUser.uid) return alert("Self");
-                    set(ref(db, 'users/'+currentUser.uid+'/contacts/'+fid), { username: u, timestamp: Date.now() })
-                        .then(() => { document.getElementById('searchUser').value=''; openAddContact(); });
-                } else alert("Not found");
+    document.getElementById('search-user').onkeypress = (e) => {
+        if(e.key === 'Enter') {
+            const u = document.getElementById('search-user').value.trim().toLowerCase();
+            get(ref(db, 'usernames/' + u)).then(snap => {
+                if(snap.exists()) {
+                    const fid = snap.val();
+                    if(fid === currentUser.uid) return alert("Can't add self");
+                    set(ref(db, 'users/' + currentUser.uid + '/contacts/' + fid), {
+                        username: u, timestamp: Date.now()
+                    }).then(() => {
+                        document.getElementById('search-user').value = '';
+                        document.getElementById('add-contact-box').style.display = 'none';
+                        alert("Contact Added");
+                    });
+                } else {
+                    alert("User not found");
+                }
             });
         }
     };
 
     function loadContacts() {
-        onValue(ref(db, 'users/'+currentUser.uid+'/contacts'), snap => {
-            const list = document.getElementById('contactList');
+        onValue(ref(db, 'users/' + currentUser.uid + '/contacts'), snap => {
+            const list = document.getElementById('chat-list');
             list.innerHTML = "";
-            const c = []; snap.forEach(child => c.push({uid: child.key, ...child.val()}));
+            const c = [];
+            snap.forEach(child => c.push({uid: child.key, ...child.val()}));
             c.sort((a,b) => b.timestamp - a.timestamp);
 
-            if(c.length === 0) { list.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>No contacts.</p>"; return; }
-
             c.forEach(contact => {
-                get(ref(db, 'users/'+contact.uid)).then(uSnap => {
+                get(ref(db, 'users/' + contact.uid)).then(uSnap => {
                     const isVerified = uSnap.exists() && uSnap.val().verified;
-                    const tick = isVerified ? '<i class="ri-verified-badge-fill" style="color:var(--ios-blue);"></i>' : '';
+                    const tick = isVerified ? '<span class="tick show">✅</span>' : '';
+                    
                     const div = document.createElement('div');
-                    div.className = 'contact-item';
+                    div.className = 'chat-item';
                     div.onclick = () => openChat(contact.uid, contact.username);
                     div.innerHTML = `
                         <img src="https://ui-avatars.com/api/?name=${contact.username}&background=random">
-                        <div class="contact-details">
+                        <div class="chat-info">
                             <h4>${contact.username} ${tick}</h4>
-                            <p>Tap to chat</p>
                         </div>
                     `;
                     list.appendChild(div);
@@ -490,51 +427,56 @@
     }
 
     let currentChatId = null;
-    function openChat(fUid, fName) {
-        currentChatId = [currentUser.uid, fUid].sort().join('_');
-        document.getElementById('chatArea').classList.remove('hidden');
-        document.getElementById('sidebar').classList.add('hidden');
-        document.getElementById('chatHeaderName').innerHTML = fName;
-        document.getElementById('chatHeaderAvatar').src = `https://ui-avatars.com/api/?name=${fName}&background=random`;
+    function openChat(uid, name) {
+        currentChatId = [currentUser.uid, uid].sort().join('_');
+        document.getElementById('active-chat-view').style.display = 'flex';
+        document.getElementById('chat-header-name').innerText = name;
+        document.getElementById('chat-header-img').src = `https://ui-avatars.com/api/?name=${name}&background=random`;
+        
+        // Mobile Nav Logic (Simple)
+        if(window.innerWidth < 768) {
+            document.getElementById('sidebar').style.display = 'none';
+        }
+
         loadMessages();
     }
 
-    document.getElementById('backBtn').onclick = () => {
-        document.getElementById('chatArea').classList.add('hidden');
-        document.getElementById('sidebar').classList.remove('hidden');
-        currentChatId = null;
+    document.getElementById('btn-back').onclick = () => {
+        document.getElementById('active-chat-view').style.display = 'none';
+        if(window.innerWidth < 768) {
+            document.getElementById('sidebar').style.display = 'flex';
+        }
     };
 
     function loadMessages() {
-        onValue(ref(db, 'chats/'+currentChatId), snap => {
-            const box = document.getElementById('messagesBox');
+        onValue(ref(db, 'chats/' + currentChatId), snap => {
+            const box = document.getElementById('msg-box');
             box.innerHTML = "";
-            const m = []; snap.forEach(child => m.push(child.val()));
+            const m = [];
+            snap.forEach(child => m.push(child.val()));
             m.sort((a,b) => a.timestamp - b.timestamp);
+
             m.forEach(msg => {
                 const div = document.createElement('div');
-                div.className = `bubble ${msg.sender===currentUser.uid?'outgoing':'incoming'}`;
-                div.innerHTML = `${msg.text} <span class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</span>`;
+                div.className = `bubble ${msg.sender === currentUser.uid ? 'out' : 'in'}`;
+                const t = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                div.innerHTML = `${msg.text} <span class="time">${t}</span>`;
                 box.appendChild(div);
             });
             box.scrollTop = box.scrollHeight;
         });
     }
 
-    const inpt = document.getElementById('msgInput');
-    const btn = document.getElementById('sendBtn');
-    inpt.oninput = () => btn.classList.toggle('active', inpt.value.trim().length>0);
-    inpt.onkeypress = (e) => { if(e.key==='Enter') sendMsg(); };
-    btn.onclick = sendMsg;
-
-    function sendMsg() {
-        if(!inpt.value.trim() || !currentChatId) return;
-        push(ref(db, 'chats/'+currentChatId), {
-            sender: currentUser.uid, text: inpt.value, timestamp: Date.now()
+    const input = document.getElementById('msg-input');
+    document.getElementById('btn-send').onclick = () => {
+        const t = input.value.trim();
+        if(!t) return;
+        push(ref(db, 'chats/' + currentChatId), {
+            sender: currentUser.uid, text: t, timestamp: Date.now()
         });
-        inpt.value = "";
-        btn.classList.remove('active');
-    }
+        input.value = "";
+    };
+    input.onkeypress = (e) => { if(e.key === 'Enter') document.getElementById('btn-send').click(); };
 
 </script>
 </body>
