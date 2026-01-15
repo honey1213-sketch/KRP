@@ -1,287 +1,614 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KRP Bank</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zuber - Social App</title>
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fafafa;
+            --white: #ffffff;
+            --border: #dbdbdb;
+            --text-main: #262626;
+            --text-light: #8e8e8e;
+            --primary: #0095f6;
+            --button-blue: #0095f6;
+            --story-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
 
-<style>
-:root{--ease:cubic-bezier(.22,.61,.36,1)}
-*{box-sizing:border-box}
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; overflow-x: hidden; }
 
-body{
- margin:0;
- min-height:100vh;
- background:#000;
- font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
- color:#fff;
-}
+        /* --- Screens Logic --- */
+        .screen { display: none; width: 100%; height: 100%; }
+        .screen.active { display: flex; flex-direction: column; }
 
-/* HEADER */
-.header{
- text-align:center;
- padding:22px;
- font-weight:700;
-}
+        /* --- Auth & Setup Screen --- */
+        .auth-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
 
-/* USERS */
-.users{
- display:flex;
- gap:12px;
- padding:0 20px 12px;
- overflow-x:auto;
-}
-.user{
- padding:14px 20px;
- border-radius:18px;
- background:rgba(255,255,255,.1);
- cursor:pointer;
-}
-.user.active{background:#fff;color:#000}
+        .login-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 40px;
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 10px;
+        }
 
-/* BALANCE */
-.apple-card{
- margin:20px;
- padding:28px;
- border-radius:28px;
- background:rgba(255,255,255,.12);
- backdrop-filter:blur(30px);
- text-align:center;
-}
-.apple-label{font-size:14px;opacity:.7}
-.apple-balance{font-size:52px;font-weight:800;margin-top:8px}
-.apple-balance span{font-size:26px;opacity:.6}
-.apple-user{opacity:.7;margin-top:6px}
+        .app-logo { font-family: 'Billabong', cursive; font-size: 3rem; margin-bottom: 20px; display: block; }
+        .app-logo span { background: linear-gradient(45deg, #f09433, #bc1888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-/* SEND */
-.send-btn{
- margin:24px 20px;
- width:calc(100% - 40px);
- padding:18px;
- border-radius:22px;
- border:none;
- background:#fff;
- color:#000;
- font-weight:700;
-}
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 9px 8px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            margin-bottom: 10px;
+            background: #fafafa;
+            outline: none;
+        }
 
-/* PAY SHEET */
-.sheet{
- position:fixed;
- left:0;right:0;bottom:-100%;
- background:#111;
- border-radius:30px 30px 0 0;
- padding:26px;
- transition:.45s var(--ease);
-}
-.sheet.show{bottom:0}
+        .btn-google {
+            background-color: var(--button-blue);
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-.sheet input,.sheet select{
- width:100%;
- margin-top:14px;
- padding:15px;
- border-radius:16px;
- border:none;
- background:rgba(255,255,255,.12);
- color:#fff;
-}
+        /* --- Main App Layout --- */
+        nav {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-content {
+            width: 100%;
+            max-width: 630px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
 
-.pay-btn{
- margin-top:22px;
- height:56px;
- border-radius:30px;
- background:#000;
- display:flex;
- align-items:center;
- justify-content:center;
- font-weight:700;
-}
+        .nav-icons i { font-size: 1.5rem; margin-left: 20px; cursor: pointer; }
 
-/* RECEIPT */
-.apple-receipt{
- position:fixed;
- inset:0;
- background:#f2f2f7;
- display:flex;
- justify-content:center;
- align-items:flex-start;
- padding-top:40px;
- z-index:9999;
-}
+        /* --- Feed --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding-top: 30px;
+            overflow-y: auto;
+        }
 
-.receipt-card{
- width:100%;
- max-width:420px;
- padding:18px;
- color:#000;
-}
+        .feed-container {
+            width: 100%;
+            max-width: 470px;
+            padding-bottom: 60px;
+        }
 
-.top{
- color:#007aff;
- font-size:17px;
- cursor:pointer;
-}
+        /* Stories */
+        .stories-wrapper {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 0;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            display: flex;
+            gap: 15px;
+            padding-left: 15px;
+            scrollbar-width: none; /* Hide scrollbar */
+        }
+        .stories-wrapper::-webkit-scrollbar { display: none; }
 
-.big-amount{
- font-size:48px;
- font-weight:800;
- text-align:center;
- margin-top:18px;
-}
+        .story {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            min-width: 66px;
+        }
+        
+        .story-ring {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            padding: 2px;
+            background: var(--story-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .story-ring img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--white);
+            object-fit: cover;
+        }
 
-.sub{
- text-align:center;
- color:#666;
- font-size:14px;
- margin-top:6px;
-}
+        .story-username { font-size: 0.75rem; margin-top: 5px; color: var(--text-main); }
 
-.status-box{
- background:#fff;
- border-radius:16px;
- padding:16px;
- margin-top:22px;
- font-size:16px;
-}
-.status-box.fail{color:#ff3b30}
+        /* Post Card */
+        .post-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
 
-.line{
- display:flex;
- justify-content:space-between;
- margin-top:12px;
- font-weight:600;
-}
+        .post-header {
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-.txid{
- margin-top:22px;
- font-size:13px;
- color:#888;
-}
-</style>
+        .post-user { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
+        .post-user img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+
+        .post-image { width: 100%; display: block; min-height: 300px; background: #efefef; object-fit: cover; }
+
+        .post-actions { padding: 10px 14px; font-size: 1.5rem; display: flex; gap: 15px; }
+        .post-actions i { cursor: pointer; transition: transform 0.1s; }
+        .post-actions i:active { transform: scale(0.9); }
+        .post-actions i.liked { color: #ed4956; }
+
+        .post-likes { padding: 0 14px; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; }
+        .post-caption { padding: 0 14px 14px 14px; font-size: 0.9rem; }
+        .post-caption span { font-weight: 600; margin-right: 5px; }
+
+        /* --- Create Post Modal --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.65);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--white);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .close-modal { position: absolute; right: 15px; top: 12px; cursor: pointer; color: var(--primary); font-weight: bold; }
+
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .preview-img { width: 100%; height: 200px; object-fit: contain; background: #fafafa; border: 1px solid var(--border); display: none; }
+
+        .upload-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            .nav-content { padding: 0 10px; }
+            .app-logo { font-size: 2rem; }
+            .feed-container { max-width: 100%; padding: 0; border: none; }
+            .post-card { border-radius: 0; border-left: none; border-right: none; }
+            .stories-wrapper { border: none; border-radius: 0; margin-bottom: 10px; background: transparent; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="header">KRP BANK</div>
-<div class="users" id="users"></div>
-
-<div class="apple-card">
- <div class="apple-label">Available Balance</div>
- <div class="apple-balance" id="balance"><span>₹</span>—</div>
- <div class="apple-user" id="username">Select User</div>
-</div>
-
-<button class="send-btn" id="openPay">Send with KRP Pay</button>
-
-<div class="sheet" id="sheet">
- <select id="sender"></select>
- <select id="receiver"></select>
- <input id="amount" type="number" placeholder="Amount">
- <input id="pin" type="password" placeholder="PIN">
- <div class="pay-btn" id="payBtn">Pay</div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const app=initializeApp({
- apiKey:"AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",
- databaseURL:"https://krp-bank-default-rtdb.firebaseio.com/"
-});
-const db=getDatabase(app);
-
-const usersArr=["Kartikey","Aryan","Pranay","BANK"];
-const pins={Aryan:"9892",Pranay:"8081",BANK:"1990"};
-let balances={},current=null;
-
-usersArr.forEach(u=>{
- const d=document.createElement("div");
- d.className="user";
- d.textContent=u;
- d.onclick=()=>{
-  document.querySelectorAll(".user").forEach(x=>x.classList.remove("active"));
-  d.classList.add("active");
-  current=u;
-  username.textContent=u;
-  render();
- };
- users.appendChild(d);
-});
-
-onValue(ref(db,"balances"),s=>{balances=s.val()||{};render()});
-
-function render(){
- if(!current)return;
- if(current==="Kartikey"){balance.textContent="CLOSED";return}
- if(current==="BANK"){balance.textContent="N/A";return}
- balance.innerHTML="<span>₹</span>"+(balances[current]||0).toLocaleString();
-}
-
-openPay.onclick=()=>{
- sheet.classList.add("show");
- sender.innerHTML=receiver.innerHTML="";
- usersArr.forEach(u=>{
-  if(u!=="Kartikey"){
-   sender.innerHTML+=`<option>${u}</option>`;
-   receiver.innerHTML+=`<option>${u}</option>`;
-  }
- });
-};
-
-payBtn.onclick=()=>{
- const s=sender.value,r=receiver.value,a=+amount.value,p=pin.value;
- const ok=!(s===r||a<=0||p!==pins[s]||(s!=="BANK"&&a>(balances[s]||0)));
-
- if(ok){
-  if(s!=="BANK")balances[s]-=a;
-  balances[r]=(balances[r]||0)+a;
-  update(ref(db,"balances"),balances);
-
-  /* 🔑 USER-WISE HISTORY */
-  push(ref(db,"history/"+s),{
-    to:r,
-    amount:a,
-    status:"SUCCESS",
-    time:Date.now()
-  });
- }else{
-  push(ref(db,"history/"+s),{
-    to:r,
-    amount:a,
-    status:"FAILED",
-    time:Date.now()
-  });
- }
-
- showReceipt({amount:a,sender:s,receiver:r,status:ok?"SUCCESS":"FAILED"});
- sheet.classList.remove("show");
-};
-
-function showReceipt({amount,sender,receiver,status}){
- const success=status==="SUCCESS";
- const w=document.createElement("div");
- w.className="apple-receipt";
- w.innerHTML=`
-  <div class="receipt-card">
-   <div class="top" id="backBtn">‹ Back</div>
-   <div class="big-amount">₹${amount.toLocaleString()}</div>
-   <div class="sub">To ${receiver}<br>${new Date().toLocaleString()}</div>
-   <div class="status-box ${success?"":"fail"}">
-    <b>Status:</b> ${success?"Completed":"Failed"}
-    <div style="font-size:13px;color:#888;margin-top:4px">
-     Sent from ${sender}
+    <!-- 1. Login Screen -->
+    <div id="authScreen" class="screen active">
+        <div class="auth-container">
+            <div class="login-box">
+                <h1 class="app-logo"><span>Zuber</span></h1>
+                <p style="color:var(--text-light); margin-bottom:20px;">Sign in to see photos and videos from your friends.</p>
+                <button class="btn-google" id="googleLoginBtn">
+                    <i class="ri-google-fill"></i> Log in with Google
+                </button>
+            </div>
+        </div>
     </div>
-   </div>
-   <div class="line"><span>Sent</span><span>₹${amount.toLocaleString()}</span></div>
-   <div class="txid">Transaction ID<br><b>${Math.random().toString(36).slice(2,14)}</b></div>
-  </div>
- `;
- document.body.appendChild(w);
 
- w.querySelector("#backBtn").onclick=()=>w.remove();
-}
-</script>
+    <!-- 2. Username Setup Screen -->
+    <div id="setupScreen" class="screen">
+        <div class="auth-container">
+            <div class="login-box">
+                <img id="setupProfilePic" src="" style="width:80px; height:80px; border-radius:50%; margin-bottom:10px;">
+                <h2>Welcome to Zuber</h2>
+                <p style="margin-bottom:20px;">Please choose a username to continue.</p>
+                <input type="text" id="usernameInput" placeholder="Create a username">
+                <button class="btn-google" id="saveUsernameBtn" style="margin-top:10px;">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Main App Screen -->
+    <div id="appScreen" class="screen">
+        <nav>
+            <div class="nav-content">
+                <h1 class="app-logo" style="margin:0; font-size: 1.8rem;"><span>Zuber</span></h1>
+                <div class="nav-icons">
+                    <i class="ri-home-5-fill"></i>
+                    <i class="ri-messenger-line"></i>
+                    <i class="ri-add-circle-line" id="openCreatePostBtn"></i>
+                    <i class="ri-compass-3-line"></i>
+                    <img id="navProfilePic" src="" style="width:24px; height:24px; border-radius:50%; cursor:pointer; margin-left:20px;">
+                </div>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <div class="feed-container">
+                
+                <!-- Stories -->
+                <div class="stories-wrapper">
+                    <!-- Dynamic Stories will load here -->
+                    <div class="story">
+                        <div class="story-ring"><img src="https://picsum.photos/seed/my/100/100"></div>
+                        <span class="story-username">Your Story</span>
+                    </div>
+                </div>
+
+                <!-- Posts Feed -->
+                <div id="feedList">
+                    <!-- Posts will load here -->
+                    <div style="text-align:center; padding:40px; color:#8e8e8e;">Loading feed...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Create new post
+                <span class="close-modal" id="closeModalBtn">Cancel</span>
+            </div>
+            <div class="modal-body">
+                <input type="file" id="postFileInput" accept="image/*">
+                <img id="postPreview" class="preview-img">
+                <input type="text" id="postCaption" placeholder="Write a caption...">
+                <button class="upload-btn" id="sharePostBtn">Share</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs (Module Type) -->
+    <script type="module">
+        // Import functions from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // Your web app's Firebase configuration (Provided by User)
+        const firebaseConfig = {
+            apiKey: "AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",
+            authDomain: "krp-bank.firebaseapp.com",
+            databaseURL: "https://krp-bank-default-rtdb.firebaseio.com",
+            projectId: "krp-bank",
+            storageBucket: "krp-bank.firebasestorage.app",
+            messagingSenderId: "911407082396",
+            appId: "1:911407082396:web:c5af104a844e2697797659",
+            measurementId: "G-R0J2TLLC3T"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        // --- DOM Elements ---
+        const authScreen = document.getElementById('authScreen');
+        const setupScreen = document.getElementById('setupScreen');
+        const appScreen = document.getElementById('appScreen');
+        const feedList = document.getElementById('feedList');
+        
+        // Auth Elements
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const usernameInput = document.getElementById('usernameInput');
+        const saveUsernameBtn = document.getElementById('saveUsernameBtn');
+        const setupProfilePic = document.getElementById('setupProfilePic');
+        const navProfilePic = document.getElementById('navProfilePic');
+
+        // Post Elements
+        const openCreatePostBtn = document.getElementById('openCreatePostBtn');
+        const createPostModal = document.getElementById('createPostModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const postFileInput = document.getElementById('postFileInput');
+        const postPreview = document.getElementById('postPreview');
+        const postCaption = document.getElementById('postCaption');
+        const sharePostBtn = document.getElementById('sharePostBtn');
+
+        // --- Global State ---
+        let currentUser = null;
+        let currentUsername = null;
+
+        // --- Authentication Logic ---
+        
+        // 1. Google Login
+        googleLoginBtn.addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    // User signed in, handled by onAuthStateChanged
+                }).catch((error) => {
+                    alert(error.message);
+                });
+        });
+
+        // 2. Listen for Auth Changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                setupProfilePic.src = user.photoURL;
+                // Check if user has username in DB
+                checkUsernameExists(user.uid);
+            } else {
+                showScreen('authScreen');
+                currentUser = null;
+            }
+        });
+
+        // 3. Check Username in DB
+        function checkUsernameExists(uid) {
+            const userRef = ref(db, 'users/' + uid);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    currentUsername = snapshot.val().username;
+                    navProfilePic.src = currentUser.photoURL;
+                    showScreen('appScreen');
+                    loadFeed();
+                    loadStories();
+                } else {
+                    showScreen('setupScreen');
+                }
+            });
+        }
+
+        // 4. Save Username
+        saveUsernameBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username.length < 3) {
+                alert("Username must be at least 3 characters");
+                return;
+            }
+            
+            set(ref(db, 'users/' + currentUser.uid), {
+                username: username,
+                email: currentUser.email,
+                profilePic: currentUser.photoURL
+            }).then(() => {
+                currentUsername = username;
+                navProfilePic.src = currentUser.photoURL;
+                showScreen('appScreen');
+                loadFeed();
+                loadStories();
+            });
+        });
+
+        // --- UI Helpers ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // --- Feed & Posts Logic ---
+
+        function loadFeed() {
+            const postsRef = ref(db, 'posts');
+            onValue(postsRef, (snapshot) => {
+                feedList.innerHTML = "";
+                const posts = [];
+                
+                snapshot.forEach((childSnapshot) => {
+                    posts.push(childSnapshot.val());
+                });
+
+                // Reverse to show newest first
+                posts.reverse().forEach(post => {
+                    createPostElement(post);
+                });
+            });
+        }
+
+        function createPostElement(post) {
+            const isLiked = post.likes && post.likes[currentUser.uid];
+            const likeClass = isLiked ? 'ri-heart-3-fill liked' : 'ri-heart-3-line';
+            const likesCount = post.likes ? Object.keys(post.likes).length : 0;
+
+            const div = document.createElement('div');
+            div.className = 'post-card';
+            div.innerHTML = `
+                <div class="post-header">
+                    <div class="post-user">
+                        <img src="${post.userProfilePic || 'https://picsum.photos/50'}" alt="User">
+                        <span>${post.username}</span>
+                    </div>
+                    <i class="ri-more-fill" style="cursor:pointer;"></i>
+                </div>
+                <img src="${post.imageUrl}" class="post-image" ondblclick="handleLike('${post.postId}')">
+                <div class="post-actions">
+                    <i class="${likeClass}" id="likeBtn-${post.postId}" onclick="handleLike('${post.postId}')"></i>
+                    <i class="ri-chat-3-line"></i>
+                    <i class="ri-send-plane-fill"></i>
+                    <i class="ri-bookmark-line" style="margin-left:auto;"></i>
+                </div>
+                <div class="post-likes" id="likesCount-${post.postId}">${likesCount} likes</div>
+                <div class="post-caption">
+                    <span>${post.username}</span> ${post.caption}
+                </div>
+            `;
+            feedList.appendChild(div);
+        }
+
+        // --- Likes Logic ---
+        window.handleLike = function(postId) {
+            const postRef = ref(db, 'posts/' + postId + '/likes/' + currentUser.uid);
+            get(postRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    // Unlike
+                    set(postRef, null);
+                } else {
+                    // Like
+                    set(postRef, true);
+                }
+            });
+        }
+        
+        // Expose function globally for HTML onclick
+        window.handleLike = handleLike;
+
+        // Listen for realtime like updates to update UI immediately without re-rendering whole list
+        // (Optimization: In a bigger app we'd bind individual listeners, here we re-render for simplicity or just handle click visual)
+        // For this demo, let's keep it simple: The `onValue` in loadFeed already handles re-rendering.
+        // But to make it smoother, we could just toggle the class visually and let DB sync in background.
+
+        // --- Stories Logic ---
+        function loadStories() {
+            const usersRef = ref(db, 'users');
+            onValue(usersRef, (snapshot) => {
+                const storiesWrapper = document.querySelector('.stories-wrapper');
+                // Keep the "Your Story" element
+                storiesWrapper.innerHTML = `
+                    <div class="story">
+                        <div class="story-ring"><img src="${currentUser.photoURL}"></div>
+                        <span class="story-username">Your Story</span>
+                    </div>
+                `;
+                
+                snapshot.forEach((childSnapshot) => {
+                    const user = childSnapshot.val();
+                    // Don't show self in stories list
+                    if(user.username !== currentUsername) {
+                        const div = document.createElement('div');
+                        div.className = 'story';
+                        div.innerHTML = `
+                            <div class="story-ring"><img src="${user.profilePic}"></div>
+                            <span class="story-username">${user.username}</span>
+                        `;
+                        storiesWrapper.appendChild(div);
+                    }
+                });
+            });
+        }
+
+        // --- Create Post Logic ---
+        openCreatePostBtn.addEventListener('click', () => {
+            createPostModal.classList.add('active');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            createPostModal.classList.remove('active');
+            resetCreateForm();
+        });
+
+        postFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                postPreview.src = URL.createObjectURL(file);
+                postPreview.style.display = 'block';
+            }
+        });
+
+        sharePostBtn.addEventListener('click', async () => {
+            const file = postFileInput.files[0];
+            const caption = postCaption.value;
+
+            if (!file && !caption) return;
+
+            const postId = push(ref(db, 'posts')).key;
+            let imageUrl = `https://picsum.photos/seed/${postId}/600/600`; // Default placeholder
+
+            sharePostBtn.innerText = "Sharing...";
+
+            // Try to upload image
+            if (file) {
+                try {
+                    const storageRef = sRef(storage, 'posts/' + postId);
+                    await uploadBytes(storageRef, file);
+                    imageUrl = await getDownloadURL(storageRef);
+                } catch (error) {
+                    console.warn("Upload failed (Check Storage Rules), using placeholder.", error);
+                    alert("Image upload failed (Check Firebase Console Rules). Using placeholder image instead.");
+                    // imageUrl remains the placeholder url defined above
+                }
+            }
+
+            // Save Post Data to Database
+            set(ref(db, 'posts/' + postId), {
+                postId: postId,
+                uid: currentUser.uid,
+                username: currentUsername,
+                userProfilePic: currentUser.photoURL,
+                imageUrl: imageUrl,
+                caption: caption,
+                timestamp: Date.now()
+            }).then(() => {
+                createPostModal.classList.remove('active');
+                resetCreateForm();
+                sharePostBtn.innerText = "Share";
+            });
+        });
+
+        function resetCreateForm() {
+            postFileInput.value = '';
+            postCaption.value = '';
+            postPreview.style.display = 'none';
+            postPreview.src = '';
+        }
+
+    </script>
 </body>
 </html>
