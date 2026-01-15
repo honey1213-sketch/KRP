@@ -29,14 +29,17 @@
         
         body { background-color: var(--bg-color); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         
-        #app-container { width: 100%; height: 100%; max-width: 1600px; background: var(--white); display: flex; position: relative; overflow: hidden; }
-        @media (min-width: 900px) { #app-container { height: 95vh; width: 95vw; box-shadow: var(--shadow); } }
+        #app-container { width: 100%; height: 100%; max-width: 1400px; background: var(--white); display: flex; position: relative; overflow: hidden; margin: 10px; border-radius: 12px; box-shadow: var(--shadow); }
         
+        /* Mobile Adjustment */
+        @media (max-width: 768px) { #app-container { margin: 0; border-radius: 0; height: 100vh; } }
+
         .chat-area { background-color: #e3dacd; background-image: radial-gradient(#c5bfba 1.5px, transparent 1.5px); background-size: 20px 20px; }
 
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; background: var(--light-gray); z-index: 20; }
         .screen.active { display: flex; }
 
+        /* Login/Setup Cards */
         .login-card, .setup-card { background: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: var(--shadow); text-align: center; width: 90%; max-width: 400px; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .brand-logo { font-size: 2.5rem; color: var(--primary-color); font-weight: 800; }
@@ -77,7 +80,10 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .msg-in { align-self: flex-start; background: var(--incoming-bubble); border-top-left-radius: 0; }
         .msg-out { align-self: flex-end; background: var(--outgoing-bubble); border-top-right-radius: 0; }
-        .msg-time { display: block; font-size: 0.7rem; color: #999; text-align: right; margin-top: 4px; }
+        .msg-meta { display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; margin-top: 4px; }
+        .msg-time { font-size: 0.7rem; color: #999; }
+        .msg-tick { font-size: 0.85rem; color: #8696a0; transition: color 0.3s; }
+        .msg-tick.read { color: var(--blue-tick); }
         
         .chat-input-area { padding: 10px 16px; background: var(--light-gray); display: flex; align-items: center; gap: 10px; z-index: 50; position: relative; flex-shrink: 0; }
         .chat-input { flex: 1; padding: 12px; border: none; border-radius: 24px; outline: none; font-size: 1rem; }
@@ -331,6 +337,7 @@
                     <div id="admin-reports-list"></div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -369,10 +376,11 @@
         let currentUserData = null;
         let selectedChatId = null;
         let selectedUser = null;
-        let activeChatListener = null; // To unsubscribe from previous chat
+        let activeChatListener = null; 
+        let activeMessageRef = null; // To listen to specific message changes
         let setupBase64 = "";
         let editBase64 = "";
-        let renderedMsgTimestamps = new Set(); // Track to prevent duplicates
+        let renderedMsgTimestamps = new Set();
 
         const els = {
             screens: document.querySelectorAll('.screen'),
@@ -483,7 +491,6 @@
         onAuthStateChanged(auth, async (u) => {
             if(u) {
                 currentUser = u;
-                // Check LocalStorage Profile first
                 const localProfile = LS.get('my_profile');
                 if(localProfile && localProfile.uid === u.uid) {
                     currentUserData = localProfile;
@@ -495,14 +502,12 @@
                     }
                     showScreen('main-screen');
                     initApp();
-                    // Update Firebase Status in background
                     setupPresence();
                 } else {
-                    // Fetch from Firebase
                     const s = await get(ref(db, 'users/'+u.uid));
                     if(s.exists()) {
                         currentUserData = s.val();
-                        LS.set('my_profile', currentUserData); // Save to LS
+                        LS.set('my_profile', currentUserData);
                         if(currentUserData.isBanned) {
                             showScreen('main-screen');
                             els.bannedOverlay.classList.add('active');
@@ -556,22 +561,16 @@
             if(!un) return showToast("Enter username", 'error');
             const check = await get(ref(db, 'usernames/'+un));
             if(check.exists()) return showToast("Taken", 'error');
-            
             const profile = { 
                 username: un, photoURL: setupBase64, uid: currentUser.uid, verified: false, isBanned: false 
             };
-            
             await set(ref(db, 'users/'+currentUser.uid), profile);
             await set(ref(db, 'usernames/'+un), currentUser.uid);
             currentUserData = profile;
-            
-            // SAVE TO LOCAL STORAGE
             LS.set('my_profile', profile);
-            
             showScreen('main-screen'); initApp(); setupPresence();
         };
 
-        // --- PRESENCE ---
         function setupPresence() {
             const userStatusRef = ref(db, 'users/' + currentUser.uid + '/status');
             const lastOnlineRef = ref(db, 'users/' + currentUser.uid + '/lastOnline');
@@ -585,7 +584,6 @@
             });
         }
 
-        // --- MAIN APP ---
         function initApp() {
             els.myAvatar.src = currentUserData.photoURL;
             els.myUsernameDisplay.innerText = currentUserData.username;
@@ -599,7 +597,6 @@
                 els.verifyBtn.style.display = 'block';
             }
 
-            // Load Contacts (LS first, then FB update)
             const localContacts = LS.get('my_contacts');
             if(localContacts) renderContacts(localContacts);
 
@@ -607,20 +604,19 @@
                 const val = snap.val();
                 if(val) {
                     const uids = Object.keys(val);
-                    // Fetch details
                     Promise.all(uids.map(async uid => {
                         let u = LS.get(`user_cache_${uid}`);
                         if(!u) {
                             const s = await get(ref(db, 'users/'+uid));
                             if(s.exists()) {
                                 u = s.val();
-                                LS.set(`user_cache_${u.uid}`, u); // Cache profile
+                                LS.set(`user_cache_${u.uid}`, u);
                             }
                         }
                         return u;
                     })).then(users => {
                         renderContacts(users.filter(u=>u));
-                        LS.set('my_contacts', users.filter(u=>u)); // Save list to LS
+                        LS.set('my_contacts', users.filter(u=>u));
                     });
                 }
             });
@@ -638,11 +634,12 @@
             });
         }
 
-        // --- CHAT LOGIC (THE FIX) ---
+        // --- CHAT LOGIC (READ RECEIPTS & AUTO DELETE) ---
         async function openChat(user) {
             selectedUser = user;
-            // 1. DETACH OLD LISTENER (Crucial Fix)
-            if(activeChatListener) activeChatListener();
+            // Detach previous listeners
+            if(activeChatListener) off(activeChatListener);
+            if(activeMessageRef) off(activeMessageRef);
 
             if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
             
@@ -656,10 +653,12 @@
             const cid = [currentUser.uid, user.uid].sort().join('_');
             selectedChatId = cid;
 
-            // 2. RENDER FROM LOCAL STORAGE ONLY (Initially)
+            // Load from LS
             const localMsgs = LS.getMsgs(cid);
-            localMsgs.forEach(m => renderMsg(m));
-            renderedMsgTimestamps = new Set(localMsgs.map(m => m.timestamp));
+            localMsgs.forEach(m => {
+                renderMsg(m);
+                renderedMsgTimestamps.add(m.timestamp);
+            });
             scrollToBottom();
 
             // Block/Unblock Logic
@@ -695,7 +694,25 @@
                  els.messagesContainer.innerHTML = '<div style="text-align:center;color:#ef5350;margin-top:20px"><i class="fas fa-ban"></i> You are blocked by this user</div>';
             }
 
-            // Status Listener
+            // Report Button Logic
+            els.reportUserBtn.onclick = () => { els.reportModal.classList.add('open'); };
+            els.submitReportBtn.onclick = async () => {
+                const reason = els.reportReason.value;
+                if(!reason) return showToast("Enter reason", 'error');
+                await push(ref(db, 'reports'), {
+                    reporter: currentUser.uid,
+                    reported: user.uid,
+                    username: user.username,
+                    reason: reason,
+                    status: 'pending',
+                    timestamp: Date.now()
+                });
+                showToast("Report Submitted", 'success');
+                els.reportModal.classList.remove('open');
+                els.reportReason.value = '';
+            };
+
+            // Online/Offline
             const partnerStatusRef = ref(db, 'users/' + user.uid + '/status');
             const partnerLastSeenRef = ref(db, 'users/' + user.uid + '/lastOnline');
             
@@ -717,45 +734,61 @@
                 }
             });
 
-            // Report Logic
-            els.reportUserBtn.onclick = () => { els.reportModal.classList.add('open'); };
-            els.submitReportBtn.onclick = async () => {
-                const reason = els.reportReason.value;
-                if(!reason) return showToast("Enter reason", 'error');
-                await push(ref(db, 'reports'), {
-                    reporter: currentUser.uid,
-                    reported: user.uid,
-                    username: user.username,
-                    reason: reason,
-                    status: 'pending',
-                    timestamp: Date.now()
-                });
-                showToast("Report Submitted", 'success');
-                els.reportModal.classList.remove('open');
-                els.reportReason.value = '';
-            };
-
-            // 3. REALTIME LISTENER (CHILD_ADDED) - Prevents Double Messages
+            // --- REALTIME LISTENER (NO MORE AUTO-DELETE TIMER) ---
             if(!isBlocked && !theirBlockSnap.exists()) {
                 const chatRef = ref(db, 'chats/'+cid);
+                
+                // 1. Listen for NEW messages (Sent by others or me)
                 activeChatListener = onChildAdded(chatRef, (snapshot) => {
                     const msg = snapshot.val();
                     const msgKey = snapshot.key;
-
-                    // CHECK DUPLICATES
+                    
+                    // Check Duplicates
                     if(renderedMsgTimestamps.has(msg.timestamp)) return;
 
                     // Save to LS immediately
                     LS.saveMsg(cid, msg);
                     renderedMsgTimestamps.add(msg.timestamp);
                     
+                    // Update Local UI immediately
                     renderMsg(msg);
                     scrollToBottom();
-
-                    // DELETE FROM FIREBASE AFTER 5 SECONDS (DB Saver)
-                    setTimeout(() => {
-                        remove(ref(db, `chats/${cid}/${msgKey}`));
-                    }, 5000);
+                    
+                    // Listen for 'read' status changes for THIS specific message
+                    const specificMsgRef = ref(db, `chats/${cid}/${msgKey}`);
+                    onValue(specificMsgRef, (readSnap) => {
+                        if(readSnap.exists()) {
+                            const msgData = readSnap.val();
+                            if(msgData.read) {
+                                // 1. Find the UI element for this message (using timestamp for simplicity or key)
+                                // In this simple version, we will iterate DOM to find the match to update tick
+                                // Ideally we store DOM reference, but timestamp match is safer for this demo
+                                const msgDiv = Array.from(els.messagesContainer.children).find(el => el.innerText.includes(msgData.text.substring(0, 15))); // Simple match
+                                if(msgDiv) {
+                                    const tickIcon = msgDiv.querySelector('.msg-tick');
+                                    if(tickIcon) {
+                                        tickIcon.classList.add('read');
+                                        tickIcon.classList.remove('fa-check');
+                                        tickIcon.classList.add('fa-check-double');
+                                    }
+                                }
+                                
+                                // 2. DELETE FROM DB (AND LS) AFTER READ (User's Request)
+                                // Remove from Local Storage too to match "Self Destruct on Read"
+                                setTimeout(() => {
+                                    remove(specificMsgRef);
+                                    const lsHistory = LS.getMsgs(cid).filter(m => m.timestamp !== msgData.timestamp);
+                                    LS.set(`chat_${cid}`, lsHistory);
+                                    
+                                    // Remove from DOM smoothly
+                                    if(msgDiv) {
+                                        msgDiv.style.opacity = '0';
+                                        setTimeout(() => msgDiv.remove(), 300);
+                                    }
+                                }, 1000); // 1 sec delay to allow blue tick animation
+                            }
+                        }
+                    });
                 });
             }
         }
@@ -764,7 +797,14 @@
             const d = document.createElement('div');
             const isMe = m.sender === currentUser.uid;
             d.className = `message ${isMe ? 'msg-out' : 'msg-in'}`;
-            d.innerHTML = `${m.text}<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
+            
+            // Tick logic (Only for outgoing)
+            let metaHtml = `<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
+            if(isMe) {
+                metaHtml += `<i class="fas fa-check msg-tick"></i>`;
+            }
+            
+            d.innerHTML = `${m.text}${metaHtml}`;
             els.messagesContainer.appendChild(d);
         };
 
@@ -779,25 +819,25 @@
 
             await set(ref(db, `users/${selectedUser.uid}/contacts/${currentUser.uid}`), true);
 
-            const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
+            const msg = { 
+                text: txt, 
+                sender: currentUser.uid, 
+                timestamp: Date.now(), 
+                read: false // Default state
+            };
             
             // 1. Save to LocalStorage
             LS.saveMsg(selectedChatId, msg);
             renderedMsgTimestamps.add(msg.timestamp);
             
-            // 2. Render UI
+            // 2. Render UI immediately (Grey Tick)
             renderMsg(msg);
             scrollToBottom();
             els.messageInput.value = '';
 
-            // 3. Send to Firebase for Transport
+            // 3. Send to Firebase (Transport)
             const msgRef = push(ref(db, 'chats/'+selectedChatId));
             await set(msgRef, msg);
-
-            // 4. Delete from Firebase after 5s
-            setTimeout(() => {
-                remove(msgRef);
-            }, 5000);
         };
 
         els.messageInput.onkeypress = e => { if(e.key==='Enter') els.sendBtn.click(); };
@@ -814,14 +854,13 @@
             if(confirm("Clear local chat history?")) {
                 LS.clearChat(selectedChatId);
                 els.messagesContainer.innerHTML = '';
-                // Optional: Clear from Firebase too if any exists
+                renderedMsgTimestamps.clear();
                 remove(ref(db, 'chats/'+selectedChatId));
             }
         };
 
         // --- ADMIN PANEL ---
         function loadAdminPanel() {
-            // Tab Logic
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -893,8 +932,8 @@
                         item.style.borderColor = '#ff9800';
                         item.innerHTML = `<b style="color:#ff9800">${report.username}</b> reported<br>
                             <small>${report.reason}</small><br>
-                            <button class="btn-small btn-acc" onclick="window.acceptReport('${repKey}', '${report.reported}')">Ban</button>
-                            <button class="btn-small btn-rej" onclick="window.rejectReport('${repKey}')">Reject</button>
+                            <button class="btn-small btn-acc" onclick="window.acceptReport('${repKey}', '${report.reported}')">Ban User</button>
+                            <button class="btn-small btn-rej" onclick="window.rejectReport('${repKey}')">Reject Report</button>
                         `;
                         els.adminReportsList.appendChild(item);
                     }
@@ -924,9 +963,8 @@
             await update(ref(db, 'users/'+uid), { isBanned: false });
             await remove(ref(db, 'banAppeals/'+uid));
             sendSystemMsg(uid, "Your ban appeal has been accepted. Unbanned.");
-            showToast("Unbanned", 'success');
+            showToast("User Unbanned", 'success');
         };
-
         window.rejectAppeal = async (uid) => {
             await remove(ref(db, 'banAppeals/'+uid));
             sendSystemMsg(uid, "Your ban appeal has been rejected.");
@@ -947,9 +985,9 @@
             await set(ref(db, `users/${uid}/contacts/${currentUser.uid}`), true);
             const cid = [currentUser.uid, uid].sort().join('_');
             const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
-            LS.saveMsg(cid, msg); // Admin saves locally
-            const refMsg = push(ref(db, 'chats/'+cid));
-            await set(refMsg, msg);
+            // System messages are not self-destructing
+            const msgRef = push(ref(db, 'chats/'+cid));
+            await set(msgRef, msg);
         };
 
         els.adminBanBtn.onclick = async () => {
@@ -1000,11 +1038,8 @@
 
         els.saveEditProfileBtn.onclick = async () => {
             if(editBase64) {
-                // Update LS
                 currentUserData.photoURL = editBase64;
                 LS.set('my_profile', currentUserData);
-                
-                // Update Firebase
                 await update(ref(db, 'users/'+currentUser.uid), { photoURL: editBase64 });
                 els.myAvatar.src = editBase64;
                 els.editProfileModal.classList.remove('open');
@@ -1014,13 +1049,12 @@
             }
         };
 
-        // --- ADD CONTACT ---
+        // Add Contact
         document.getElementById('add-contact-btn').onclick = () => els.addContactModal.classList.add('open');
         els.addContactConfirmBtn.onclick = async () => {
             const un = els.newUsernameInput.value.trim().toLowerCase();
             const s = await get(ref(db, 'usernames/'+un));
             if(s.exists()) {
-                // Update LS for contacts
                 const uid = s.val();
                 const uSnap = await get(ref(db, 'users/'+uid));
                 if(uSnap.exists()) {
@@ -1032,13 +1066,13 @@
                         renderContacts(currentContacts);
                     }
                 }
-                await set(ref(db, `users/${currentUser.uid}/contacts/${uid}`), true);
+                await set(ref(db, `users/${currentUser.uid}/contacts/${s.val()}`), true);
                 showToast("Added", 'success'); 
                 els.addContactModal.classList.remove('open');
             } else showToast("Not found", 'error');
         };
         
-        // --- VERIFY MODAL ---
+        // Verify Modal
         els.verifyBtn.onclick = () => els.verifyModal.classList.add('open');
         els.submitVerifyBtn.onclick = async () => {
             const data = { profession: els.verifyProfession.value, reason: els.verifyReason.value, status: 'pending' };
@@ -1047,7 +1081,6 @@
             els.verifyModal.classList.remove('open');
         };
 
-        // --- ADMIN BUTTON CLICK EVENT ---
         els.adminPanelBtn.onclick = () => { els.adminModal.classList.add('open'); }
 
         // --- CLOSE MODALS ---
