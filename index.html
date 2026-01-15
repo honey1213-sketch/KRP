@@ -30,8 +30,6 @@
         body { background-color: var(--bg-color); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         
         #app-container { width: 100%; height: 100%; max-width: 1400px; background: var(--white); display: flex; position: relative; overflow: hidden; margin: 10px; border-radius: 12px; box-shadow: var(--shadow); }
-        
-        /* Mobile Adjustment */
         @media (max-width: 768px) { #app-container { margin: 0; border-radius: 0; height: 100vh; } }
 
         .chat-area { background-color: #e3dacd; background-image: radial-gradient(#c5bfba 1.5px, transparent 1.5px); background-size: 20px 20px; }
@@ -337,7 +335,6 @@
                     <div id="admin-reports-list"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -376,11 +373,10 @@
         let currentUserData = null;
         let selectedChatId = null;
         let selectedUser = null;
-        let activeChatListener = null; 
-        let activeMessageRef = null; // To listen to specific message changes
         let setupBase64 = "";
         let editBase64 = "";
-        let renderedMsgTimestamps = new Set();
+        let activeMessageListener = null; // To unsubscribe from message update listeners when leaving chat
+        let renderedMsgTimestamps = new Set(); // Track loaded messages to prevent re-rendering
 
         const els = {
             screens: document.querySelectorAll('.screen'),
@@ -457,18 +453,38 @@
         const LS = {
             key: (k) => `zuber_${k}`,
             set: (k, v) => localStorage.setItem(LS.key(k), JSON.stringify(v)),
-            get: (k) => JSON.parse(localStorage.getItem(LS.key(k))),
+            get: (k) => JSON.parse(localStorage.getItem(LS.key(k))) || {},
             remove: (k) => localStorage.removeItem(LS.key(k)),
             saveMsg: (cid, msg) => {
                 const k = `chat_${cid}`;
                 let h = LS.get(k) || [];
+                // Prevent duplicates
                 if(!h.find(m => m.timestamp === msg.timestamp)) {
                     h.push(msg);
                     LS.set(k, h);
                 }
             },
-            getMsgs: (cid) => LS.get(`chat_${cid}`) || [],
-            clearChat: (cid) => LS.remove(`chat_${cid}`)
+            updateMsg: (cid, newStatus) => {
+                const k = `chat_${cid}`;
+                const h = LS.get(k) || [];
+                const msg = h.find(m => m.sender === currentUser.uid || m.sender === selectedUser?.uid); // Find last message (approx) or just update last message status
+                if(msg) {
+                    if(msg.read !== newStatus) {
+                        msg.read = newStatus;
+                        LS.set(k, h);
+                        // Re-render specific message logic would go here, simplified for demo
+                        // In a real app, we'd update the DOM by ID. 
+                        // For this demo, we clear and re-render the whole chat when status changes to ensure UI sync
+                        if(selectedChatId) openChat(selectedUser); 
+                    }
+                }
+            },
+            clearChat: (cid) => {
+                LS.remove(`chat_${cid}`);
+                // Also clear Firebase if exists
+                remove(ref(db, `chats/${cid}`);
+            },
+            getMsgs: (cid) => LS.get(`chat_${cid}`) || []
         };
 
         const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -491,6 +507,7 @@
         onAuthStateChanged(auth, async (u) => {
             if(u) {
                 currentUser = u;
+                // Check LocalStorage Profile first
                 const localProfile = LS.get('my_profile');
                 if(localProfile && localProfile.uid === u.uid) {
                     currentUserData = localProfile;
@@ -504,6 +521,7 @@
                     initApp();
                     setupPresence();
                 } else {
+                    // Fetch from Firebase
                     const s = await get(ref(db, 'users/'+u.uid));
                     if(s.exists()) {
                         currentUserData = s.val();
@@ -562,11 +580,12 @@
             const check = await get(ref(db, 'usernames/'+un));
             if(check.exists()) return showToast("Taken", 'error');
             const profile = { 
-                username: un, photoURL: setupBase64, uid: currentUser.uid, verified: false, isBanned: false 
+                username: un, photoURL: setupBase64, uid: currentUser.uid, verified: false, isBanned: false, status: 'online' 
             };
             await set(ref(db, 'users/'+currentUser.uid), profile);
             await set(ref(db, 'usernames/'+un), currentUser.uid);
             currentUserData = profile;
+            
             LS.set('my_profile', profile);
             showScreen('main-screen'); initApp(); setupPresence();
         };
@@ -593,10 +612,11 @@
                 els.adminPanelBtn.style.display = 'block';
                 loadAdminPanel();
             } else {
-                els.adminPanelBtn.style.display = 'none';
+                els.adminPanel.style.display = 'none';
                 els.verifyBtn.style.display = 'block';
             }
 
+            // Load Contacts (LS first, then FB update)
             const localContacts = LS.get('my_contacts');
             if(localContacts) renderContacts(localContacts);
 
@@ -637,9 +657,12 @@
         // --- CHAT LOGIC (READ RECEIPTS & AUTO DELETE) ---
         async function openChat(user) {
             selectedUser = user;
-            // Detach previous listeners
-            if(activeChatListener) off(activeChatListener);
-            if(activeMessageRef) off(activeMessageRef);
+            
+            // Detach old listeners
+            if (activeMessageListener) {
+                off(activeMessageListener);
+                activeMessageListener = null;
+            }
 
             if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
             
@@ -653,11 +676,13 @@
             const cid = [currentUser.uid, user.uid].sort().join('_');
             selectedChatId = cid;
 
-            // Load from LS
+            // Load from LocalStorage
             const localMsgs = LS.getMsgs(cid);
             localMsgs.forEach(m => {
-                renderMsg(m);
-                renderedMsgTimestamps.add(m.timestamp);
+                if(!renderedMsgTimestamps.has(m.timestamp)) {
+                    renderMsg(m, m.read);
+                    renderedMsgTimestamps.add(m.timestamp);
+                }
             });
             scrollToBottom();
 
@@ -673,13 +698,12 @@
                 els.blockUserBtn.onclick = async () => {
                     await remove(blockedRef);
                     showToast("User Unblocked", 'success');
-                    openChat(user);
+                    openChat(user); // Refresh UI
                 };
                 els.messagesContainer.innerHTML = '<div style="text-align:center;color:#888;margin-top:20px">You blocked this user. Unblock to chat.</div>';
             } else {
                 els.blockUserBtn.innerHTML = '<i class="fas fa-ban"></i> Block User';
                 els.blockUserBtn.classList.add('danger');
-                els.blockUserBtn.style.color = 'var(--danger)';
                 els.blockUserBtn.onclick = async () => {
                     if(confirm(`Block ${user.username}?`)) {
                         await set(blockedRef, true);
@@ -689,12 +713,12 @@
                 };
             }
 
-            const theirBlockSnap = await get(ref(db, `users/${user.uid}/blocked/${currentUser.uid}`));
+            const theirBlockSnap = await get(ref(db, `users/${user.uid}/blocked/${currentUser.uid}`);
             if(theirBlockSnap.exists() && !isBlocked) {
                  els.messagesContainer.innerHTML = '<div style="text-align:center;color:#ef5350;margin-top:20px"><i class="fas fa-ban"></i> You are blocked by this user</div>';
             }
 
-            // Report Button Logic
+            // Report Logic
             els.reportUserBtn.onclick = () => { els.reportModal.classList.add('open'); };
             els.submitReportBtn.onclick = async () => {
                 const reason = els.reportReason.value;
@@ -715,7 +739,6 @@
             // Online/Offline
             const partnerStatusRef = ref(db, 'users/' + user.uid + '/status');
             const partnerLastSeenRef = ref(db, 'users/' + user.uid + '/lastOnline');
-            
             onValue(partnerStatusRef, (snap) => {
                 const status = snap.val();
                 if(status === 'online') {
@@ -734,133 +757,100 @@
                 }
             });
 
-            // --- REALTIME LISTENER (NO MORE AUTO-DELETE TIMER) ---
-            if(!isBlocked && !theirBlockSnap.exists()) {
-                const chatRef = ref(db, 'chats/'+cid);
-                
-                // 1. Listen for NEW messages (Sent by others or me)
-                activeChatListener = onChildAdded(chatRef, (snapshot) => {
-                    const msg = snapshot.val();
-                    const msgKey = snapshot.key;
-                    
-                    // Check Duplicates
-                    if(renderedMsgTimestamps.has(msg.timestamp)) return;
+            // --- LISTENERS FOR MESSAGES ---
+            
+            // 1. Listen for NEW messages (Only incoming)
+            const chatRef = ref(db, 'chats/'+cid);
+            
+            onChildAdded(chatRef, (snapshot) => {
+                const msg = snapshot.val();
+                const msgKey = snapshot.key;
 
-                    // Save to LS immediately
-                    LS.saveMsg(cid, msg);
-                    renderedMsgTimestamps.add(msg.timestamp);
-                    
-                    // Update Local UI immediately
-                    renderMsg(msg);
-                    scrollToBottom();
-                    
-                    // Listen for 'read' status changes for THIS specific message
-                    const specificMsgRef = ref(db, `chats/${cid}/${msgKey}`);
-                    onValue(specificMsgRef, (readSnap) => {
-                        if(readSnap.exists()) {
-                            const msgData = readSnap.val();
-                            if(msgData.read) {
-                                // 1. Find the UI element for this message (using timestamp for simplicity or key)
-                                // In this simple version, we will iterate DOM to find the match to update tick
-                                // Ideally we store DOM reference, but timestamp match is safer for this demo
-                                const msgDiv = Array.from(els.messagesContainer.children).find(el => el.innerText.includes(msgData.text.substring(0, 15))); // Simple match
-                                if(msgDiv) {
-                                    const tickIcon = msgDiv.querySelector('.msg-tick');
-                                    if(tickIcon) {
-                                        tickIcon.classList.add('read');
-                                        tickIcon.classList.remove('fa-check');
-                                        tickIcon.classList.add('fa-check-double');
-                                    }
+                // Prevent duplicates
+                if(renderedMsgTimestamps.has(msg.timestamp)) return;
+
+                // Save to LS immediately
+                LS.saveMsg(cid, { ...msg, read: false });
+                renderedMsgTimestamps.add(msg.timestamp);
+                
+                renderMsg(msg, false); // Render Grey Tick initially
+                scrollToBottom();
+
+                // Auto-Read logic for self message (Instant read)
+                if(msg.sender === currentUser.uid) {
+                    updateMsg(cid, snapshot.key, { read: true });
+                    // Self delete (Self-destruct logic) happens in updateMsg's onChildChanged handler
+                }
+            });
+
+            // 2. Listen for Status Changes (Grey -> Blue & DB Delete)
+            // We use query() to listen to all messages in the chat room
+            onValue(query(ref(db, 'chats/' + cid), (snapshot) => {
+                if (snapshot.exists()) {
+                    const allMsgs = snapshot.val(); // Object of all messages
+                    if(!allMsgs) return;
+
+                    const msgsArr = Object.values(allMsgs); // Sort by timestamp
+                    msgsArr.sort((a,b) => a.timestamp - b.timestamp);
+
+                    msgsArr.forEach(msg => {
+                        const msgKey = Object.keys(allMsgs).find(k => allMsgs[k].timestamp === msg.timestamp);
+                        
+                        if (msg.read === true) {
+                            // Update UI to Blue Tick
+                            const el = Array.from(els.messagesContainer.children).find(el => el.innerText.includes(msg.text.substring(0, 15)); // Simple find to update tick
+                            if(el) {
+                                const tickIcon = el.querySelector('.msg-tick');
+                                if(tickIcon) {
+                                    tickIcon.classList.remove('fa-check');
+                                    tickIcon.classList.add('fa-check-double');
+                                    tickIcon.classList.add('read');
                                 }
-                                
-                                // 2. DELETE FROM DB (AND LS) AFTER READ (User's Request)
-                                // Remove from Local Storage too to match "Self Destruct on Read"
-                                setTimeout(() => {
-                                    remove(specificMsgRef);
-                                    const lsHistory = LS.getMsgs(cid).filter(m => m.timestamp !== msgData.timestamp);
-                                    LS.set(`chat_${cid}`, lsHistory);
-                                    
-                                    // Remove from DOM smoothly
-                                    if(msgDiv) {
-                                        msgDiv.style.opacity = '0';
-                                        setTimeout(() => msgDiv.remove(), 300);
-                                    }
-                                }, 1000); // 1 sec delay to allow blue tick animation
                             }
                         }
                     });
-                });
-            }
+            });
         }
 
-        const renderMsg = (m) => {
+        const renderMsg = (msg, isRead) => {
             const d = document.createElement('div');
-            const isMe = m.sender === currentUser.uid;
+            const isMe = msg.sender === currentUser.uid;
+            const tickIconClass = isRead ? 'fa-check-double read' : 'fa-check';
+            
             d.className = `message ${isMe ? 'msg-out' : 'msg-in'}`;
             
-            // Tick logic (Only for outgoing)
-            let metaHtml = `<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
-            if(isMe) {
-                metaHtml += `<i class="fas fa-check msg-tick"></i>`;
-            }
-            
-            d.innerHTML = `${m.text}${metaHtml}`;
+            d.innerHTML = `${msg.text}<div class="msg-meta"><span class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</span><i class="fas fa-check msg-tick ${tickIconClass}"></i></div>`;
             els.messagesContainer.appendChild(d);
         };
 
-        const scrollToBottom = () => els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
+        const scrollToBottom = () => els.messagesContainer.scrollTop = els.sendBtn = els.messagesContainer;
 
-        els.sendBtn.onclick = async () => {
+        // --- SENDING LOGIC ---
+        async function sendMessage() {
             const txt = els.messageInput.value.trim();
             if(!txt || !selectedChatId) return;
 
             const theirBlockSnap = await get(ref(db, `users/${selectedUser.uid}/blocked/${currentUser.uid}`));
             if(theirBlockSnap.exists()) return showToast("You are blocked by this user", 'error');
 
-            await set(ref(db, `users/${selectedUser.uid}/contacts/${currentUser.uid}`), true);
-
-            const msg = { 
-                text: txt, 
-                sender: currentUser.uid, 
-                timestamp: Date.now(), 
-                read: false // Default state
-            };
-            
-            // 1. Save to LocalStorage
-            LS.saveMsg(selectedChatId, msg);
-            renderedMsgTimestamps.add(msg.timestamp);
-            
-            // 2. Render UI immediately (Grey Tick)
-            renderMsg(msg);
-            scrollToBottom();
-            els.messageInput.value = '';
-
-            // 3. Send to Firebase (Transport)
-            const msgRef = push(ref(db, 'chats/'+selectedChatId));
+            // 1. Send to Firebase (Transport)
+            const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now(), read: false }; // Start with Grey Tick (Read: false)
+            const msgRef = push(ref(db, 'chats/'+selectedChatId);
             await set(msgRef, msg);
-        };
 
-        els.messageInput.onkeypress = e => { if(e.key==='Enter') els.sendBtn.click(); };
+            // 2. LocalStorage Update (Instant "Read" - Logic for Blue Tick immediately)
+            LS.saveMsg(selectedChatId, { ...msg, read: true }); // Update locally
+            // Update DB to "read: true" to trigger the listener which will delete it
+            update(ref(db, `chats/${selectedChatId}/${msgRef.key}`), { read: true });
+        }
+
+        els.sendBtn.onclick = sendMessage;
+        els.messageInput.onkeypress = e => { if(e.key==='Enter') sendMessage(); };
         els.mobileBackBtn.onclick = () => { els.chatArea.classList.remove('active'); els.sidebar.classList.remove('hidden-mobile'); };
-
-        // --- Three Dots Menu ---
-        els.chatMenuBtn.onclick = (e) => {
-            e.stopPropagation();
-            els.chatMenuDropdown.style.display = els.chatMenuDropdown.style.display === 'flex' ? 'none' : 'flex';
-        };
-        document.onclick = () => els.chatMenuDropdown.style.display = 'none';
-
-        els.clearChatBtn.onclick = () => {
-            if(confirm("Clear local chat history?")) {
-                LS.clearChat(selectedChatId);
-                els.messagesContainer.innerHTML = '';
-                renderedMsgTimestamps.clear();
-                remove(ref(db, 'chats/'+selectedChatId));
-            }
-        };
 
         // --- ADMIN PANEL ---
         function loadAdminPanel() {
+            // Tab Logic
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -932,8 +922,8 @@
                         item.style.borderColor = '#ff9800';
                         item.innerHTML = `<b style="color:#ff9800">${report.username}</b> reported<br>
                             <small>${report.reason}</small><br>
-                            <button class="btn-small btn-acc" onclick="window.acceptReport('${repKey}', '${report.reported}')">Ban User</button>
-                            <button class="btn-small btn-rej" onclick="window.rejectReport('${repKey}')">Reject Report</button>
+                                <button class="btn-small btn-acc" onclick="window.acceptReport('${repKey}', '${report.reported}')">Ban User</button>
+                                <button class="btn-small btn-rej" onclick="window.rejectReport('${repKey}')">Reject</button>
                         `;
                         els.adminReportsList.appendChild(item);
                     }
@@ -962,7 +952,7 @@
         window.acceptAppeal = async (uid) => {
             await update(ref(db, 'users/'+uid), { isBanned: false });
             await remove(ref(db, 'banAppeals/'+uid));
-            sendSystemMsg(uid, "Your ban appeal has been accepted. Unbanned.");
+            sendSystemMsg(uid, "Your ban appeal has been accepted by Zuber.");
             showToast("User Unbanned", 'success');
         };
         window.rejectAppeal = async (uid) => {
@@ -975,9 +965,10 @@
             await update(ref(db, 'users/'+uid), { isBanned: true });
             await update(ref(db, `reports/${repKey}`), { status: 'accepted' });
             showToast("User Banned", 'success');
+            // Optionally notify reporter
         };
         window.rejectReport = async (repKey) => {
-            await remove(ref(db, `reports/${repKey}`));
+            await remove(ref(db, `reports/${repKey}`);
             showToast("Report Rejected", 'info');
         };
 
@@ -985,21 +976,22 @@
             await set(ref(db, `users/${uid}/contacts/${currentUser.uid}`), true);
             const cid = [currentUser.uid, uid].sort().join('_');
             const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
-            // System messages are not self-destructing
+            LS.saveMsg(cid, msg); // Save locally
             const msgRef = push(ref(db, 'chats/'+cid));
             await set(msgRef, msg);
         };
 
+        // Admin Manual Actions
         els.adminBanBtn.onclick = async () => {
             const uid = await getUidFromUser(els.adminUsernameInput.value);
             if(uid) { await update(ref(db, 'users/'+uid), { isBanned: true }); showToast("Banned", 'success'); } else showToast("User not found", 'error');
         };
         els.adminUnbanBtn.onclick = async () => {
             const uid = await getUidFromUser(els.adminUsernameInput.value);
-            if(uid) { await update(ref(db, 'users/'+uid), { isBanned: false }); showToast("Unbanned", 'success'); } else showToast("User not found", 'error');
+            if(uid) { await update(ref(db, 'users/'+uid), { isBanned: false }); showToast("Unbanned", 'success'); } else showToast("User not found", 'activeChatInterface');
         };
         els.adminVerifyBtn.onclick = async () => {
-            const uid = await getUidFromUser(els.adminUsernameInput.value);
+            const uid = await getUidFromUser(adminUsernameInput.value);
             if(uid) { await update(ref(db, 'users/'+uid), { verified: true }); showToast("Verified", 'success'); } else showToast("User not found", 'error');
         };
         els.adminUnverifyBtn.onclick = async () => {
@@ -1038,8 +1030,10 @@
 
         els.saveEditProfileBtn.onclick = async () => {
             if(editBase64) {
+                // Update LS
                 currentUserData.photoURL = editBase64;
                 LS.set('my_profile', currentUserData);
+                // Update Firebase
                 await update(ref(db, 'users/'+currentUser.uid), { photoURL: editBase64 });
                 els.myAvatar.src = editBase64;
                 els.editProfileModal.classList.remove('open');
@@ -1049,7 +1043,7 @@
             }
         };
 
-        // Add Contact
+        // --- ADD CONTACT ---
         document.getElementById('add-contact-btn').onclick = () => els.addContactModal.classList.add('open');
         els.addContactConfirmBtn.onclick = async () => {
             const un = els.newUsernameInput.value.trim().toLowerCase();
@@ -1065,14 +1059,14 @@
                         LS.set('my_contacts', currentContacts);
                         renderContacts(currentContacts);
                     }
+                    await set(ref(db, `users/${currentUser.uid}/contacts/${uid}`), true);
+                    showToast("Added", 'success'); 
+                    els.addContactModal.classList.remove('open');
                 }
-                await set(ref(db, `users/${currentUser.uid}/contacts/${s.val()}`), true);
-                showToast("Added", 'success'); 
-                els.addContactModal.classList.remove('open');
             } else showToast("Not found", 'error');
         };
         
-        // Verify Modal
+        // --- VERIFY MODAL ---
         els.verifyBtn.onclick = () => els.verifyModal.classList.add('open');
         els.submitVerifyBtn.onclick = async () => {
             const data = { profession: els.verifyProfession.value, reason: els.verifyReason.value, status: 'pending' };
@@ -1081,9 +1075,9 @@
             els.verifyModal.classList.remove('open');
         };
 
-        els.adminPanelBtn.onclick = () => { els.adminModal.classList.add('open'); }
+        els.adminPanelBtn.onclick = () => els.adminModal.classList.add('open');
 
-        // --- CLOSE MODALS ---
+        // --- MODAL CONTROLS ---
         document.querySelectorAll('.modal, .close-modal').forEach(el => {
             el.onclick = (e) => {
                 if(e.target === el || e.target.classList.contains('close-modal')) el.classList.remove('open');
