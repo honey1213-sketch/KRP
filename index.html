@@ -2,147 +2,155 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zuber Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zuber - Secure Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
     <style>
-        /* --- WhatsApp UI Theme --- */
+        /* --- iOS Style Design --- */
         :root {
-            --bg-color: #d1d7db;
-            --header-bg: #00a884;
-            --sidebar-bg: #ffffff;
-            --chat-bg: #efeae2;
-            --incoming-bubble: #ffffff;
-            --outgoing-bubble: #d9fdd3;
-            --text-primary: #111b21;
-            --text-secondary: #667781;
-            --border-color: #e9edef;
-            --tick-color: #53bdeb;
+            --ios-bg: #f2f2f7;
+            --ios-card: #ffffff;
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-gray: #8e8e93;
+            --ios-text: #000000;
+            --bg-image: url("https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1000&auto=format&fit=crop");
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        body { background-color: var(--bg-color); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: var(--ios-bg); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
 
         .app-container {
-            width: 100%; height: 100%; max-width: 1600px; background: #fff; display: flex;
-            position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%; height: 100%; max-width: 1500px; background: #fff;
+            display: flex; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
 
         /* --- Screens --- */
-        .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; flex-direction: column; }
-        .screen.active { display: flex; z-index: 10; }
+        .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; flex-direction: column; z-index: 10; }
+        .screen.active { display: flex; }
 
-        /* Splash Screen */
-        #splashScreen {
-            background-color: #fff; justify-content: center; align-items: center; z-index: 999;
-        }
-        .zuber-logo { font-size: 2.5rem; color: #00a884; font-weight: bold; letter-spacing: -1px; }
-        .loader { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #00a884; border-radius: 50%; animation: spin 1s linear infinite; margin-top: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Splash */
+        #splashScreen { background: #fff; justify-content: center; align-items: center; z-index: 999; }
+        .zuber-logo { font-size: 3rem; font-weight: 800; letter-spacing: -2px; background: linear-gradient(45deg, #000, #444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Auth Screen */
-        #authScreen {
-            background: linear-gradient(to bottom, #00a884, #008f72); justify-content: center; align-items: center; color: white;
+        /* Auth */
+        #authScreen { background: #fff; justify-content: center; align-items: center; padding: 20px; }
+        .auth-box { width: 100%; max-width: 360px; text-align: center; }
+        .auth-box h2 { margin-bottom: 20px; font-size: 2rem; }
+        .input-ios {
+            width: 100%; padding: 15px; margin-bottom: 12px; border: 1px solid #e5e5ea;
+            border-radius: 14px; font-size: 1rem; background: #f2f2f7; outline: none; transition: 0.3s;
         }
-        .auth-card {
-            background: #fff; width: 100%; max-width: 350px; padding: 30px; text-align: center; border-radius: 4px;
+        .input-ios:focus { background: #fff; border-color: var(--ios-blue); }
+        .btn-ios {
+            width: 100%; padding: 16px; background: var(--ios-blue); color: #fff;
+            border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
-        .auth-card h2 { color: #00a884; margin-bottom: 20px; font-weight: 600; }
-        .input-box {
-            width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; outline: none;
-        }
-        .btn-auth { width: 100%; padding: 10px; background: #00a884; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .toggle-link { margin-top: 15px; font-size: 0.9rem; color: #00a884; cursor: pointer; }
+        .btn-ios:active { transform: scale(0.97); }
+        .toggle-text { margin-top: 20px; color: var(--ios-blue); cursor: pointer; font-size: 0.9rem; }
 
-        /* Sidebar */
+        /* --- Main Layout --- */
         .sidebar {
-            width: 30%; min-width: 300px; max-width: 450px; border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; background: var(--sidebar-bg);
+            width: 350px; border-right: 1px solid #e5e5ea; background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(20px); display: flex; flex-direction: column;
         }
         
-        .header {
-            height: 60px; background-color: var(--header-bg); padding: 10px 16px; display: flex;
-            align-items: center; justify-content: space-between; border-bottom: 1px solid #00906f;
+        .sidebar-header {
+            padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.9);
         }
-        .user-avatar { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; object-fit: cover; }
-        .icon-btn { cursor: pointer; font-size: 1.2rem; color: white; background: none; border: none; }
+        .profile-pic { width: 45px; height: 45px; border-radius: 50%; background: #ddd; object-fit: cover; }
+        .user-info h4 { font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .blue-tick { color: var(--ios-blue); display: none; }
+        .blue-tick.show { display: inline-block; }
 
-        .add-contact-area { padding: 10px; background: #f0f2f5; display: none; border-bottom: 1px solid var(--border-color); }
-        .add-contact-area input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
-
-        .chat-list { flex: 1; overflow-y: auto; }
-        .chat-item {
-            display: flex; padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0f2f5;
+        .contact-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .contact-item {
+            display: flex; align-items: center; padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s;
         }
-        .chat-item:hover { background-color: #f5f6f6; }
-        .chat-item.active { background-color: #f0f2f5; }
-        .chat-item img { width: 49px; height: 49px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
-        .chat-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .chat-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .chat-name { font-size: 1.05rem; color: var(--text-primary); font-weight: 500; display: flex; align-items: center; }
-        .verified-tick { color: var(--tick-color); font-size: 0.9rem; margin-left: 4px; display: none; }
-        .verified-tick.show { display: inline-block; }
-        .chat-time { font-size: 0.75rem; color: var(--text-secondary); }
-        .chat-preview { font-size: 0.85rem; color: var(--text-secondary); }
+        .contact-item:active { background: #f2f2f7; }
+        .contact-item img { width: 50px; height: 50px; border-radius: 50%; margin-right: 12px; object-fit: cover; }
+        .contact-details h4 { font-size: 1rem; font-weight: 600; }
+        .contact-details p { font-size: 0.85rem; color: var(--ios-gray); }
 
-        /* Chat Area */
+        /* --- Chat Area --- */
         .chat-area {
             flex: 1; display: flex; flex-direction: column;
-            background-color: var(--chat-bg);
-            background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+            background-image: var(--bg-image); background-size: cover; background-position: center;
             position: relative;
+        }
+        
+        .chat-bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 0;
         }
 
         .chat-header {
-            height: 60px; background-color: var(--header-bg); padding: 0 16px; display: flex;
-            align-items: center; border-bottom: 1px solid #00906f; z-index: 5;
+            height: 70px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);
+            display: flex; align-items: center; padding: 0 20px; z-index: 5; position: absolute; top: 0; width: 100%;
         }
-        .back-btn { display: none; margin-right: 10px; font-size: 1.5rem; cursor: pointer; color: white; }
+        .back-icon { font-size: 1.5rem; margin-right: 15px; cursor: pointer; color: var(--ios-blue); display: none; }
 
-        .messages-container { flex: 1; padding: 20px 60px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+        .messages-box { flex: 1; padding: 80px 20px 80px; overflow-y: auto; z-index: 1; display: flex; flex-direction: column; gap: 8px; }
         
-        .message { max-width: 65%; padding: 6px 7px 8px 9px; border-radius: 7.5px; font-size: 0.9rem; position: relative; word-wrap: break-word; box-shadow: 0 1px 0.5px rgba(11,20,26,0.13); }
-        .message.incoming { align-self: flex-start; background: var(--incoming-bubble); border-top-left-radius: 0; }
-        .message.outgoing { align-self: flex-end; background: var(--outgoing-bubble); border-top-right-radius: 0; }
-        .msg-meta { display: flex; justify-content: flex-end; align-items: center; margin-top: 2px; margin-left: 10px; float: right; gap: 4px; font-size: 0.65rem; color: #8696a0; }
-
-        .input-footer {
-            min-height: 62px; background: var(--header-bg); padding: 5px 16px; display: flex;
-            align-items: center; gap: 15px; z-index: 5;
+        .bubble {
+            max-width: 70%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative;
         }
-        .msg-input { flex: 1; background: #fff; border-radius: 8px; padding: 9px 12px; border: none; outline: none; font-size: 0.95rem; }
-        .send-icon { color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
-        .send-icon.active { opacity: 1; }
+        .bubble.incoming { align-self: flex-start; background: #fff; color: #000; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble.outgoing { align-self: flex-end; background: var(--ios-green); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .msg-time { font-size: 0.65rem; float: right; margin-top: 4px; margin-left: 8px; opacity: 0.7; }
 
-        .empty-state {
-            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: #f0f2f5; border-bottom: 6px solid #00a884; text-align: center; color: #41525d;
+        .chat-input {
+            height: 70px; background: rgba(255,255,255,0.95); backdrop-filter: blur(15px);
+            display: flex; align-items: center; padding: 0 15px; gap: 10px; z-index: 5; position: absolute; bottom: 0; width: 100%;
         }
+        .msg-input-field {
+            flex: 1; padding: 10px 20px; background: #f0f2f7; border: none; border-radius: 20px; outline: none; font-size: 1rem;
+        }
+        .send-btn { width: 45px; height: 45px; background: var(--ios-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; opacity: 0.5; pointer-events: none; }
+        .send-btn.active { opacity: 1; pointer-events: auto; }
 
-        /* Verification Modal */
+        /* --- Admin Panel (New) --- */
+        #adminPanel {
+            width: 100%; height: 100%; background: #f2f2f7; padding: 20px; overflow-y: auto;
+        }
+        .admin-header { text-align: center; margin-bottom: 20px; }
+        .request-card {
+            background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .req-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .req-label { font-weight: 600; color: #666; }
+        .req-val { color: #000; }
+        .req-img { width: 100%; height: 150px; background: #eee; margin: 10px 0; border-radius: 8px; object-fit: cover; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-accept { flex: 1; background: var(--ios-green); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-reject { flex: 1; background: var(--ios-red); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+        /* Modals */
         .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; justify-content: center; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4);
+            z-index: 100; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
-        .modal.active { display: flex; }
-        .modal-content { background: white; width: 400px; border-radius: 8px; padding: 20px; }
-        .modal-header { font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 0.8rem; margin-bottom: 5px; color: #666; }
-        .file-box { border: 1px dashed #ccc; padding: 10px; text-align: center; cursor: pointer; background: #f9f9f9; }
-        .progress-bar { height: 4px; background: #ddd; margin-top: 10px; border-radius: 2px; overflow: hidden; display: none; }
-        .progress-fill { height: 100%; background: #00a884; width: 0%; transition: width 1s; }
-        .success-msg { display: none; color: green; text-align: center; margin-top: 20px; font-weight: bold; }
+        .modal.active { display: flex; animation: fadeIn 0.3s; }
+        .modal-content {
+            background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        /* Mobile */
-        @media (max-width: 900px) {
-            .sidebar { width: 100%; max-width: none; z-index: 20; }
-            .chat-area { display: none; width: 100%; position: absolute; height: 100%; z-index: 30; }
-            .app-container.chat-active .sidebar { display: none; }
-            .app-container.chat-active .chat-area { display: flex; }
-            .back-btn { display: block; }
-            .messages-container { padding: 10px 15px; }
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .app-container { border-radius: 0; height: 100vh; }
+            .sidebar { width: 100%; z-index: 20; position: absolute; height: 100%; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+            .chat-area { width: 100%; z-index: 10; position: absolute; height: 100%; }
+            .sidebar.hidden { transform: translateX(-100%); }
+            .chat-area.hidden { transform: translateX(100%); }
+            .back-icon { display: block; }
         }
     </style>
 </head>
@@ -152,154 +160,113 @@
 
     <!-- 1. Splash -->
     <div id="splashScreen" class="screen active">
-        <div class="zuber-logo">ZUBER</div>
-        <div class="loader"></div>
-        <p style="margin-top: 10px; color: #666;">Loading your information...</p>
+        <div class="zuber-logo">Zuber</div>
+        <div style="margin-top: 10px; font-weight: 500; color: #888;">Secure & Premium</div>
     </div>
 
     <!-- 2. Auth -->
     <div id="authScreen" class="screen">
-        <div class="auth-card">
-            <h2>Zuber Login</h2>
-            <input type="email" id="loginEmail" class="input-box" placeholder="Email">
-            <input type="password" id="loginPass" class="input-box" placeholder="Password">
-            <button class="btn-auth" id="loginBtn">LOGIN</button>
-            <div class="toggle-link" id="goSignup">Create Account</div>
-            
-            <div style="display:none; margin-top:15px;" id="signupView">
-                <input type="email" id="signupEmail" class="input-box" placeholder="Email">
-                <input type="password" id="signupPass" class="input-box" placeholder="Password">
-                <button class="btn-auth" id="signupBtn">SIGN UP</button>
-                <div class="toggle-link" id="goLogin">Back to Login</div>
+        <div class="auth-box">
+            <h2>Welcome</h2>
+            <div id="loginView">
+                <input type="email" class="input-ios" id="loginEmail" placeholder="Email">
+                <input type="password" class="input-ios" id="loginPass" placeholder="Password">
+                <button class="btn-ios" id="loginBtn">Login</button>
+                <div class="toggle-text" id="goSignup">Create Account</div>
+            </div>
+            <div id="signupView" style="display:none;">
+                <input type="email" class="input-ios" id="signupEmail" placeholder="Email">
+                <input type="password" class="input-ios" id="signupPass" placeholder="Password">
+                <button class="btn-ios" id="signupBtn">Sign Up</button>
+                <div class="toggle-text" id="goLogin">Back to Login</div>
             </div>
         </div>
     </div>
 
     <!-- 3. Setup Username -->
     <div id="setupScreen" class="screen" style="justify-content:center; align-items:center; background:#fff;">
-        <div class="auth-card">
-            <h3>Setup Profile</h3>
-            <input type="text" id="setupUsername" class="input-box" placeholder="Username (e.g. rahul)">
-            <button class="btn-auth" id="saveUsernameBtn">START</button>
+        <div class="auth-box">
+            <h3>Setup</h3>
+            <input type="text" class="input-ios" id="setupUsername" placeholder="Username (e.g. rahul)">
+            <button class="btn-ios" id="saveUsernameBtn">Continue</button>
         </div>
     </div>
 
-    <!-- 4. Main App -->
-    <div id="appScreen" class="screen">
-        <aside class="sidebar">
-            <div class="header">
-                <img src="" alt="Me" class="user-avatar" id="myAvatar" onclick="openSettings()">
-                <div style="display:flex; gap:20px;">
-                    <button class="icon-btn" id="toggleAddBtn"><i class="ri-user-add-line"></i></button>
-                    <button class="icon-btn" id="logoutBtn"><i class="ri-more-2-fill"></i></button>
+    <!-- 4. Admin Panel (Only for 'zuber') -->
+    <div id="adminPanel" class="screen">
+        <div class="admin-header">
+            <h2>Admin Dashboard</h2>
+            <p style="color:#666;">Manage Blue Tick Requests</p>
+            <button class="btn-ios" id="adminLogoutBtn" style="background:#000; margin-top:20px; width:150px;">Logout</button>
+        </div>
+        <div id="requestsList">
+            <!-- Requests will load here -->
+        </div>
+    </div>
+
+    <!-- 5. Normal User App -->
+    <div id="userApp" class="screen">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="" class="profile-pic" id="myAvatar">
+                <div class="user-info">
+                    <h4 id="myNameDisplay">Loading... <i class="ri-verified-badge-fill blue-tick" id="myTick"></i></h4>
+                    <p style="font-size:0.8rem; color:#666;">Online</p>
+                </div>
+                <div style="margin-left:auto; cursor:pointer;" onclick="openAddContact()"><i class="ri-add-circle-fill" style="font-size:1.5rem; color:var(--ios-blue);"></i></div>
+            </div>
+            
+            <div id="addContactArea" style="display:none; padding:10px;">
+                <input type="text" class="input-ios" id="searchUser" placeholder="Search username..." style="padding:8px;">
+            </div>
+
+            <div class="contact-list" id="contactList"></div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area hidden" id="chatArea">
+            <div class="chat-bg-overlay"></div>
+            <div class="chat-header">
+                <i class="ri-arrow-left-s-line back-icon" id="backBtn"></i>
+                <img src="" class="profile-pic" id="chatHeaderAvatar" style="margin-left:10px; width:35px; height:35px;">
+                <div style="margin-left:10px;">
+                    <h4 id="chatHeaderName" style="display:flex; align-items:center; gap:5px;">User</h4>
+                    <p style="font-size:0.75rem; color:#666;">Online</p>
                 </div>
             </div>
             
-            <div class="add-contact-area" id="addContactArea">
-                <input type="text" id="searchUser" placeholder="Search exact username...">
+            <div class="messages-box" id="messagesBox"></div>
+
+            <div class="chat-input">
+                <input type="text" class="msg-input-field" id="msgInput" placeholder="Message...">
+                <div class="send-btn" id="sendBtn"><i class="ri-send-plane-fill"></i></div>
             </div>
-
-            <div class="chat-list" id="chatList">
-                <!-- Contacts -->
-            </div>
-        </aside>
-
-        <main class="chat-area" id="chatArea">
-            <div class="empty-state" id="emptyState">
-                <div style="margin-bottom:20px;"><i class="ri-whatsapp-line" style="font-size:4rem; color:#25d366;"></i></div>
-                <h2>Zuber Web</h2>
-                <p>Send and receive messages securely.</p>
-            </div>
-
-            <div style="display:none; flex-direction: column; height: 100%;" id="activeChatView">
-                <header class="chat-header">
-                    <i class="ri-arrow-left-line back-btn" id="backBtn"></i>
-                    <img src="" alt="User" class="user-avatar" id="chatAvatar" style="margin-right:10px;">
-                    <div>
-                        <div style="font-weight:bold; font-size:1rem;" id="chatName">User</div>
-                        <div style="font-size:0.75rem; color:#fff;">online</div>
-                    </div>
-                </header>
-
-                <div class="messages-container" id="messagesContainer"></div>
-
-                <footer class="input-footer">
-                    <input type="text" class="msg-input" id="msgInput" placeholder="Type a message">
-                    <i class="ri-send-plane-fill send-icon" id="sendBtn"></i>
-                </footer>
-            </div>
-        </main>
+        </div>
     </div>
 
-</div>
-
-<!-- Settings Modal -->
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <span>Settings</span>
-            <span style="cursor:pointer; color:#00a884;" onclick="closeModal('settingsModal')">X</span>
-        </div>
-        <div style="padding:10px; cursor:pointer;" onclick="openVerifyModal()">
-            <span style="font-weight:bold;">Request Verification ✅</span>
-            <p style="font-size:0.8rem; color:#666;">Get blue tick on your profile</p>
-        </div>
-        <hr style="margin:10px 0; border:0; border-top:1px solid #eee;">
-        <div style="padding:10px; cursor:pointer; color:red;" onclick="logout()">Log Out</div>
-    </div>
 </div>
 
 <!-- Verification Modal -->
 <div id="verifyModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <span>Blue Tick Request</span>
-            <span style="cursor:pointer; color:#00a884;" onclick="closeModal('verifyModal')">X</span>
+        <h3 style="margin-bottom:15px;">Request Verification</h3>
+        <input type="text" class="input-ios" id="vUsername" readonly style="background:#eee;">
+        <input type="text" class="input-ios" id="vName" placeholder="Real Name">
+        <input type="text" class="input-ios" id="vProf" placeholder="Profession">
+        <div style="border:1px dashed #ccc; padding:10px; text-align:center; border-radius:8px; margin-bottom:15px; cursor:pointer;" onclick="document.getElementById('vFile').click()">
+            <i class="ri-upload-cloud-line"></i> Upload ID
+            <input type="file" id="vFile" hidden accept="image/*">
         </div>
-
-        <div id="verifyForm">
-            <div class="form-group">
-                <label>Username (Auto)</label>
-                <input type="text" id="vUsername" class="input-box" readonly style="background:#f0f0f0;">
-            </div>
-            <div class="form-group">
-                <label>Real Name</label>
-                <input type="text" id="vName" class="input-box" placeholder="Full Name">
-            </div>
-            <div class="form-group">
-                <label>Profession</label>
-                <input type="text" id="vProf" class="input-box" placeholder="e.g. Doctor">
-            </div>
-            <div class="form-group">
-                <label>Aadhar Card</label>
-                <div class="file-box" onclick="document.getElementById('vFile').click()">
-                    <i class="ri-upload-cloud-line"></i> Upload Image
-                    <input type="file" id="vFile" hidden accept="image/*">
-                </div>
-            </div>
-            <button class="btn-auth" id="submitVerify" style="margin-top:10px;">Submit to Zuber Team</button>
-        </div>
-
-        <!-- Simulation UI -->
-        <div id="verifySim" style="display:none;">
-            <p>Dispatching verification request to...</p>
-            <h4 id="simEmail" style="margin:5px 0;"></h4>
-            <div class="progress-bar" id="pBar" style="display:block;">
-                <div class="progress-fill" id="pFill"></div>
-            </div>
-            <div class="success-msg" id="sMsg">
-                <i class="ri-checkbox-circle-fill"></i><br>
-                Request Sent Successfully!<br>
-                <span style="font-weight:normal; font-size:0.8rem; color:#666;">(Note: This is a simulation. Real email requires backend server)</span>
-            </div>
-        </div>
+        <button class="btn-ios" id="submitVerify">Submit Request</button>
+        <button class="btn-ios" id="closeVerifyModal" style="background:#fff; color:#000; margin-top:10px; border:1px solid #eee;">Cancel</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, onValue, push, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
@@ -318,10 +285,17 @@
     const db = getDatabase(app);
     const storage = getStorage(app);
 
-    // --- DOM ---
-    const splash = document.getElementById('splashScreen');
-    setTimeout(() => { splash.classList.remove('active'); }, 2500); // Splash delay
+    // --- Navigation & Screens ---
+    const screens = ['splashScreen', 'authScreen', 'setupScreen', 'adminPanel', 'userApp'];
+    function showScreen(id) {
+        screens.forEach(s => document.getElementById(s).classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
 
+    // Splash
+    setTimeout(() => { showScreen('authScreen'); }, 2000);
+
+    // --- Auth Logic ---
     document.getElementById('goSignup').onclick = () => { document.getElementById('loginView').style.display='none'; document.getElementById('signupView').style.display='block'; };
     document.getElementById('goLogin').onclick = () => { document.getElementById('signupView').style.display='none'; document.getElementById('loginView').style.display='block'; };
 
@@ -329,7 +303,6 @@
         const e = document.getElementById('signupEmail').value; const p = document.getElementById('signupPass').value;
         createUserWithEmailAndPassword(auth, e, p).catch(alert);
     };
-
     document.getElementById('loginBtn').onclick = () => {
         const e = document.getElementById('loginEmail').value; const p = document.getElementById('loginPass').value;
         signInWithEmailAndPassword(auth, e, p).catch(alert);
@@ -337,64 +310,151 @@
 
     let currentUser = null;
     let currentUsername = null;
+    let isAdmin = false;
 
     onAuthStateChanged(auth, (user) => {
         if(user) {
             currentUser = user;
             checkUsername(user.uid);
         } else {
-            document.getElementById('authScreen').classList.add('active');
+            showScreen('authScreen');
         }
     });
-
-    window.logout = () => signOut(auth).then(() => window.location.reload());
-    document.getElementById('logoutBtn').onclick = logout;
 
     function checkUsername(uid) {
         get(ref(db, 'users/'+uid)).then(s => {
             if(s.exists()) {
-                currentUsername = s.val().username;
-                initApp();
+                const data = s.val();
+                currentUsername = data.username;
+                if(data.username === 'zuber') {
+                    isAdmin = true;
+                    initAdminPanel();
+                } else {
+                    isAdmin = false;
+                    initUserApp(data);
+                }
             } else {
-                document.getElementById('setupScreen').classList.add('active');
+                showScreen('setupScreen');
             }
         });
     }
 
     document.getElementById('saveUsernameBtn').onclick = () => {
         const u = document.getElementById('setupUsername').value.trim();
-        if(u.length < 3) return alert("Short username");
+        if(u.length < 3) return alert("Too short");
         get(ref(db, 'usernames/'+u)).then(s => {
             if(s.exists()) return alert("Taken");
             set(ref(db, 'usernames/'+u), uid);
             set(ref(db, 'users/'+uid), { username: u, email: currentUser.email, uid: uid, verified: false })
-                .then(() => { currentUsername = u; initApp(); });
+                .then(() => { currentUsername = u; checkUsername(uid); });
         });
     };
 
-    function initApp() {
-        document.getElementById('setupScreen').classList.remove('active');
-        document.getElementById('appScreen').classList.add('active');
-        document.getElementById('myAvatar').src = `https://ui-avatars.com/api/?name=${currentUsername}&background=random`;
-        loadContacts();
+    // --- ADMIN PANEL LOGIC (zuber) ---
+    function initAdminPanel() {
+        showScreen('adminPanel');
+        const list = document.getElementById('requestsList');
+        onValue(ref(db, 'requests'), snap => {
+            list.innerHTML = "";
+            if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#999;'>No pending requests.</p>"; return; }
+            
+            snap.forEach(child => {
+                const r = child.val();
+                const rUid = child.key;
+                const div = document.createElement('div');
+                div.className = 'request-card';
+                div.innerHTML = `
+                    <div class="req-row"><span class="req-label">Username:</span> <span class="req-val">${r.username}</span></div>
+                    <div class="req-row"><span class="req-label">Real Name:</span> <span class="req-val">${r.realName}</span></div>
+                    <div class="req-row"><span class="req-label">Profession:</span> <span class="req-val">${r.profession}</span></div>
+                    <img src="${r.docUrl}" class="req-img">
+                    <div class="admin-actions">
+                        <button class="btn-accept" onclick="acceptRequest('${rUid}', '${r.username}')">Accept (Blue Tick)</button>
+                        <button class="btn-reject" onclick="rejectRequest('${rUid}')">Reject</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        });
     }
 
-    // --- Add Contact ---
-    document.getElementById('toggleAddBtn').onclick = () => {
+    window.acceptRequest = async (rUid, rUsername) => {
+        if(!confirm("Give Blue Tick to " + rUsername + "?")) return;
+        
+        // 1. Update User
+        await update(ref(db, 'users/'+rUid), { verified: true });
+        
+        // 2. Send Congratulation Message
+        // Chat ID between Admin (zuber) and User
+        const chatId = [currentUser.uid, rUid].sort().join('_');
+        await push(ref(db, 'chats/'+chatId), {
+            sender: currentUser.uid, text: `Congratulations! Your account is now verified (✅).`, timestamp: Date.now()
+        });
+        
+        // 3. Remove Request
+        await remove(ref(db, 'requests/'+rUid));
+        alert("Verified successfully.");
+    };
+
+    window.rejectRequest = async (rUid) => {
+        if(!confirm("Reject this request?")) return;
+        await remove(ref(db, 'requests/'+rUid));
+    };
+
+    document.getElementById('adminLogoutBtn').onclick = () => signOut(auth).then(() => window.location.reload());
+
+    // --- USER APP LOGIC ---
+    function initUserApp(data) {
+        showScreen('userApp');
+        document.getElementById('myAvatar').src = `https://ui-avatars.com/api/?name=${data.username}&background=random`;
+        document.getElementById('myNameDisplay').innerHTML = `${data.username} <i class="ri-verified-badge-fill blue-tick ${data.verified?'show':''}"></i>`;
+        loadContacts();
+        
+        // Verify Modal Handlers
+        document.getElementById('myAvatar').onclick = () => {
+            if(!data.verified) {
+                document.getElementById('verifyModal').classList.add('active');
+                document.getElementById('vUsername').value = data.username;
+            }
+        };
+    }
+
+    document.getElementById('closeVerifyModal').onclick = () => document.getElementById('verifyModal').classList.remove('active');
+
+    document.getElementById('submitVerify').onclick = async () => {
+        const name = document.getElementById('vName').value;
+        const prof = document.getElementById('vProf').value;
+        const file = document.getElementById('vFile').files[0];
+        if(!name || !prof || !file) return alert("All fields required");
+
+        const storageRef = sRef(storage, 'verify_docs/'+currentUser.uid);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+
+        set(ref(db, 'requests/'+currentUser.uid), {
+            username: currentUsername, realName: name, profession: prof, docUrl: url
+        }).then(() => {
+            alert("Request sent to Zuber Admin.");
+            document.getElementById('verifyModal').classList.remove('active');
+        });
+    };
+
+    // --- Contacts & Chat (Same as before) ---
+    window.openAddContact = () => {
         const div = document.getElementById('addContactArea');
-        div.style.display = div.style.display === 'none' ? 'block' : 'none';
+        div.style.display = div.style.display==='none'?'block':'none';
     };
 
     document.getElementById('searchUser').onkeypress = (e) => {
-        if(e.key === 'Enter') {
+        if(e.key==='Enter') {
             const u = document.getElementById('searchUser').value.trim().toLowerCase();
             if(!u) return;
             get(ref(db, 'usernames/'+u)).then(s => {
                 if(s.exists()) {
                     const fid = s.val();
-                    if(fid === currentUser.uid) return alert("Can't add self");
+                    if(fid === currentUser.uid) return alert("Self");
                     set(ref(db, 'users/'+currentUser.uid+'/contacts/'+fid), { username: u, timestamp: Date.now() })
-                        .then(() => { document.getElementById('searchUser').value=''; document.getElementById('addContactArea').style.display='none'; });
+                        .then(() => { document.getElementById('searchUser').value=''; openAddContact(); });
                 } else alert("Not found");
             });
         }
@@ -402,29 +462,25 @@
 
     function loadContacts() {
         onValue(ref(db, 'users/'+currentUser.uid+'/contacts'), snap => {
-            const list = document.getElementById('chatList');
+            const list = document.getElementById('contactList');
             list.innerHTML = "";
-            const c = [];
-            snap.forEach(child => c.push({uid: child.key, ...child.val()}));
+            const c = []; snap.forEach(child => c.push({uid: child.key, ...child.val()}));
             c.sort((a,b) => b.timestamp - a.timestamp);
 
+            if(c.length === 0) { list.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>No contacts.</p>"; return; }
+
             c.forEach(contact => {
-                // FIX: Fetch user data to check verification status
                 get(ref(db, 'users/'+contact.uid)).then(uSnap => {
                     const isVerified = uSnap.exists() && uSnap.val().verified;
-                    const tickClass = isVerified ? 'show' : '';
-                    
+                    const tick = isVerified ? '<i class="ri-verified-badge-fill" style="color:var(--ios-blue);"></i>' : '';
                     const div = document.createElement('div');
-                    div.className = 'chat-item';
+                    div.className = 'contact-item';
                     div.onclick = () => openChat(contact.uid, contact.username);
                     div.innerHTML = `
                         <img src="https://ui-avatars.com/api/?name=${contact.username}&background=random">
-                        <div class="chat-info">
-                            <div class="chat-top">
-                                <span class="chat-name">${contact.username} <i class="ri-verified-badge-fill verified-tick ${tickClass}"></i></span>
-                                <span class="chat-time"></span>
-                            </div>
-                            <div class="chat-preview">Tap to chat</div>
+                        <div class="contact-details">
+                            <h4>${contact.username} ${tick}</h4>
+                            <p>Tap to chat</p>
                         </div>
                     `;
                     list.appendChild(div);
@@ -433,125 +489,52 @@
         });
     }
 
-    // --- Chat Logic (FIXED for multiple messages) ---
     let currentChatId = null;
     function openChat(fUid, fName) {
         currentChatId = [currentUser.uid, fUid].sort().join('_');
-        document.getElementById('emptyState').style.display = 'none';
-        document.getElementById('activeChatView').style.display = 'flex';
-        document.getElementById('chatName').innerText = fName;
-        document.getElementById('chatAvatar').src = `https://ui-avatars.com/api/?name=${fName}&background=random`;
-        
-        document.getElementById('appContainer').classList.add('chat-active');
+        document.getElementById('chatArea').classList.remove('hidden');
+        document.getElementById('sidebar').classList.add('hidden');
+        document.getElementById('chatHeaderName').innerHTML = fName;
+        document.getElementById('chatHeaderAvatar').src = `https://ui-avatars.com/api/?name=${fName}&background=random`;
         loadMessages();
     }
 
-    function loadMessages() {
-        onValue(ref(db, 'chats/'+currentChatId), snap => {
-            const con = document.getElementById('messagesContainer');
-            con.innerHTML = "";
-            const m = [];
-            snap.forEach(child => m.push(child.val()));
-            m.sort((a,b) => a.timestamp - b.timestamp);
-
-            m.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.sender === currentUser.uid ? 'outgoing' : 'incoming'}`;
-                const time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                div.innerHTML = `
-                    ${msg.text}
-                    <span class="msg-meta">${time}</span>
-                `;
-                con.appendChild(div);
-            });
-            con.scrollTop = con.scrollHeight;
-        });
-    }
-
-    const input = document.getElementById('msgInput');
-    const btn = document.getElementById('sendBtn');
-
-    // FIX: Ensure input clears properly and event listener is robust
-    function sendMsg() {
-        const txt = input.value.trim();
-        if(!txt || !currentChatId) return;
-        
-        // Push to DB
-        push(ref(db, 'chats/'+currentChatId), {
-            sender: currentUser.uid, text: txt, timestamp: Date.now()
-        }).then(() => {
-            // FIX: Clear input immediately after success
-            input.value = ""; 
-            input.focus();
-        }).catch(err => alert(err));
-    }
-
-    input.oninput = () => btn.classList.toggle('active', input.value.length > 0);
-    input.onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
-    btn.onclick = sendMsg;
-
     document.getElementById('backBtn').onclick = () => {
-        document.getElementById('appContainer').classList.remove('chat-active');
+        document.getElementById('chatArea').classList.add('hidden');
+        document.getElementById('sidebar').classList.remove('hidden');
         currentChatId = null;
     };
 
-    // --- Verification & Blue Tick Logic (Fixed) ---
-    window.openSettings = () => document.getElementById('settingsModal').classList.add('active');
-    window.openVerifyModal = () => {
-        closeModal('settingsModal');
-        document.getElementById('verifyModal').classList.add('active');
-        document.getElementById('vUsername').value = currentUsername;
-        document.getElementById('verifyForm').style.display = 'block';
-        document.getElementById('verifySim').style.display = 'none';
-    };
-    window.closeModal = (id) => document.getElementById(id).classList.remove('active');
-
-    document.getElementById('submitVerify').onclick = async () => {
-        const btn = document.getElementById('submitVerify');
-        const name = document.getElementById('vName').value;
-        const prof = document.getElementById('vProf').value;
-        const file = document.getElementById('vFile').files[0];
-
-        if(!name || !prof) return alert("Fill details");
-        
-        btn.innerText = "Uploading & Sending...";
-        try {
-            let url = "none";
-            if(file) {
-                const sRef1 = sRef(storage, 'verify_docs/'+currentUser.uid);
-                await uploadBytes(sRef1, file);
-                url = await getDownloadURL(sRef1);
-            }
-
-            // Save Request
-            await set(ref(db, 'admin/requests/'+currentUser.uid), {
-                username: currentUsername, realName: name, profession: prof, docUrl: url, email: currentUser.email
+    function loadMessages() {
+        onValue(ref(db, 'chats/'+currentChatId), snap => {
+            const box = document.getElementById('messagesBox');
+            box.innerHTML = "";
+            const m = []; snap.forEach(child => m.push(child.val()));
+            m.sort((a,b) => a.timestamp - b.timestamp);
+            m.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `bubble ${msg.sender===currentUser.uid?'outgoing':'incoming'}`;
+                div.innerHTML = `${msg.text} <span class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</span>`;
+                box.appendChild(div);
             });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
 
-            // --- SIMULATION ---
-            document.getElementById('verifyForm').style.display = 'none';
-            document.getElementById('verifySim').style.display = 'block';
-            document.getElementById('simEmail').innerText = currentUser.email;
-            document.getElementById('pFill').style.width = "100%"; // Animation
-            
-            setTimeout(() => {
-                document.getElementById('sMsg').style.display = 'block';
-                
-                // AUTO APPROVE FOR HONEY
-                if(currentUser.email.toLowerCase() === 'honey232124@gmail.com') {
-                    setTimeout(() => {
-                        update(ref(db, 'users/'+currentUser.uid), { verified: true });
-                        alert("Congratulations! You are now VERIFIED.");
-                        closeModal('verifyModal');
-                        initApp(); // Refresh UI to show tick
-                    }, 1500);
-                }
-            }, 1500);
+    const inpt = document.getElementById('msgInput');
+    const btn = document.getElementById('sendBtn');
+    inpt.oninput = () => btn.classList.toggle('active', inpt.value.trim().length>0);
+    inpt.onkeypress = (e) => { if(e.key==='Enter') sendMsg(); };
+    btn.onclick = sendMsg;
 
-        } catch(err) {
-            alert("Error: " + err.message);
-        }
-    };
+    function sendMsg() {
+        if(!inpt.value.trim() || !currentChatId) return;
+        push(ref(db, 'chats/'+currentChatId), {
+            sender: currentUser.uid, text: inpt.value, timestamp: Date.now()
+        });
+        inpt.value = "";
+        btn.classList.remove('active');
+    }
 
 </script>
 </body>
