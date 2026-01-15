@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zuber - Secure Chat</title>
+    <title>Zuber - Ultimate Chat</title>
     <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
@@ -11,10 +11,10 @@
     
     <style>
         :root {
-            --primary-color: #008069; /* Zuber Green */
+            --primary-color: #008069;
             --primary-dark: #005d4b;
             --bg-color: #d1d7db;
-            --chat-bg: #e5ddd5; /* Generic WhatsApp-like tone but custom pattern */
+            --chat-bg: #e5ddd5;
             --white: #ffffff;
             --light-gray: #f0f2f5;
             --text-primary: #111b21;
@@ -26,225 +26,121 @@
             --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        
+        #app-container { width: 100%; height: 100%; max-width: 1600px; background: var(--white); display: flex; position: relative; overflow: hidden; }
+        @media (min-width: 900px) { #app-container { height: 95vh; width: 95vw; box-shadow: var(--shadow); } }
+        
+        /* Background Pattern */
+        .chat-area { background-color: #e3dacd; background-image: radial-gradient(#c5bfba 1.5px, transparent 1.5px); background-size: 20px 20px; }
 
-        body {
-            background-color: var(--bg-color);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        /* --- App Container --- */
-        #app-container {
-            width: 100%;
-            height: 100%;
-            max-width: 1600px;
-            background: var(--white);
-            display: flex;
-            position: relative;
-            overflow: hidden;
-        }
-
-        @media (min-width: 900px) {
-            #app-container {
-                height: 95vh;
-                width: 95vw;
-                box-shadow: var(--shadow);
-            }
-        }
-
-        /* --- Generic Pattern Background (Legal Safe) --- */
-        .chat-area {
-            background-color: #e3dacd;
-            /* Creating a geometric pattern using CSS gradients instead of an image */
-            background-image: 
-                radial-gradient(#c5bfba 1.5px, transparent 1.5px);
-            background-size: 20px 20px;
-        }
-
-        /* --- Screens --- */
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: var(--light-gray);
-            z-index: 20;
-            transition: opacity 0.3s ease;
-        }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; background: var(--light-gray); z-index: 20; }
         .screen.active { display: flex; }
 
-        /* --- Login Screen --- */
-        .login-card {
-            background: var(--white);
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            animation: slideUp 0.4s ease-out;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .brand-logo { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 0.5rem; font-weight: 800; }
-        .brand-tagline { color: var(--text-secondary); margin-bottom: 2.5rem; font-size: 0.95rem; }
-        .btn-google {
-            background: var(--white); color: var(--text-primary); border: 1px solid #dadce0;
-            padding: 12px 24px; border-radius: 24px; cursor: pointer; font-weight: 500;
-            display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; transition: all 0.2s;
-        }
-        .btn-google:hover { background: #f8f9fa; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .btn-google img { width: 20px; height: 20px; }
-
-        /* --- Setup Screen --- */
-        .setup-card {
-            background: var(--white); padding: 2rem; border-radius: 16px; box-shadow: var(--shadow);
-            width: 90%; max-width: 400px; text-align: center;
-        }
+        /* Login/Setup Cards */
+        .login-card, .setup-card { background: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: var(--shadow); text-align: center; width: 90%; max-width: 400px; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .brand-logo { font-size: 2.5rem; color: var(--primary-color); font-weight: 800; }
         .input-group { margin-bottom: 1.5rem; text-align: left; }
         .input-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
-        .input-field {
-            width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 8px;
-            font-size: 1rem; outline: none; transition: border-color 0.2s;
-        }
-        .input-field:focus { border-color: var(--primary-color); }
-        .btn-primary {
-            background: var(--primary-color); color: var(--white); border: none;
-            padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%;
-            font-size: 1rem; transition: background 0.2s;
-        }
+        .input-field { width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; }
+        .btn-google { background: var(--white); color: var(--text-primary); border: 1px solid #dadce0; padding: 12px 24px; border-radius: 24px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; margin-top: 10px; }
+        .btn-primary { background: var(--primary-color); color: var(--white); border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
         .btn-primary:hover { background: var(--primary-dark); }
-        .btn-primary:disabled { background: #aebac1; cursor: not-allowed; }
 
-        /* --- Main Layout --- */
+        /* Layout */
         .chat-layout { display: flex; width: 100%; height: 100%; }
-        .sidebar {
-            width: 100%; background: var(--white); display: flex; flex-direction: column; z-index: 5;
-        }
-        @media (min-width: 768px) {
-            .sidebar { width: 30%; min-width: 320px; border-right: 1px solid #e0e0e0; }
-            .chat-area { display: flex !important; }
-            .mobile-back-btn { display: none !important; }
-        }
-        @media (max-width: 767px) {
-            .chat-area { display: none; width: 100%; position: absolute; top:0; left:0; height: 100%; z-index: 10;}
-            .chat-area.active { display: flex; }
-            .sidebar.hidden-mobile { display: none; }
-        }
+        .sidebar { width: 100%; background: var(--white); display: flex; flex-direction: column; z-index: 5; }
+        @media (min-width: 768px) { .sidebar { width: 30%; min-width: 320px; border-right: 1px solid #e0e0e0; } .chat-area { display: flex !important; } .mobile-back-btn { display: none !important; } }
+        @media (max-width: 767px) { .chat-area { display: none; width: 100%; position: absolute; top:0; left:0; height: 100%; z-index: 10; } .chat-area.active { display: flex; } .sidebar.hidden-mobile { display: none; } }
 
-        /* Sidebar Components */
+        /* Sidebar */
         .sidebar-header { padding: 16px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; height: 60px; }
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; position: relative; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; object-fit: cover; border: 1px solid rgba(0,0,0,0.05); }
-        .my-username { font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 5px; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
+        .my-username { font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .blue-tick { color: var(--blue-tick); font-size: 0.8rem; }
-        .action-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem; padding: 8px; border-radius: 50%; transition: background 0.2s; }
+        .action-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem; padding: 8px; border-radius: 50%; }
         .action-btn:hover { background: rgba(0,0,0,0.05); }
-        .search-bar { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; background: var(--white); }
-        .search-input { width: 100%; padding: 8px 12px; background: var(--light-gray); border: none; border-radius: 8px; outline: none; font-size: 0.95rem; }
         .contacts-list { flex: 1; overflow-y: auto; }
         .contact-item { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #f5f5f5; }
         .contact-item:hover { background: #f5f6f6; }
         .contact-item.active { background: #f0f2f5; }
         .contact-info { flex: 1; margin-left: 12px; overflow: hidden; }
-        .contact-top { display: flex; justify-content: space-between; margin-bottom: 3px; }
-        .contact-name { font-weight: 500; color: var(--text-primary); font-size: 1.05rem; }
-        .last-msg { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .contact-name { font-weight: 500; font-size: 1.05rem; }
 
         /* Chat Area */
-        .chat-placeholder {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100%; color: var(--text-secondary); text-align: center; padding: 20px;
-            background: var(--light-gray); border-bottom: 6px solid var(--primary-color);
-        }
-        .chat-header { padding: 10px 16px; background: var(--light-gray); border-bottom: 1px solid #d1d7db; display: flex; align-items: center; height: 60px; z-index: 2; }
-        .chat-header-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .chat-header { padding: 10px 16px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; height: 60px; border-bottom: 1px solid #d1d7db; }
+        .chat-header-info { display: flex; align-items: center; gap: 12px; }
         .messages-container { flex: 1; padding: 20px 5%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 8px; position: relative; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 8px; position: relative; font-size: 0.95rem; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
         .msg-in { align-self: flex-start; background: var(--incoming-bubble); border-top-left-radius: 0; }
         .msg-out { align-self: flex-end; background: var(--outgoing-bubble); border-top-right-radius: 0; }
         .msg-time { display: block; font-size: 0.7rem; color: #999; text-align: right; margin-top: 4px; }
-        .chat-input-area { padding: 10px 16px; background: var(--light-gray); display: flex; align-items: center; gap: 10px; z-index: 2; }
+        .chat-input-area { padding: 10px 16px; background: var(--light-gray); display: flex; align-items: center; gap: 10px; }
         .chat-input { flex: 1; padding: 12px; border: none; border-radius: 8px; outline: none; font-size: 1rem; }
-        .send-btn { background: var(--primary-color); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s; }
-        .send-btn:active { transform: scale(0.95); }
+        .send-btn { background: var(--primary-color); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .call-btn { background: var(--primary-color); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; margin-right: 5px;}
 
-        /* --- Modals --- */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); justify-content: center; align-items: center;
-            z-index: 100; backdrop-filter: blur(2px);
+        /* Three Dots Dropdown */
+        .chat-menu-dropdown {
+            position: absolute; top: 50px; right: 10px;
+            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 8px; width: 160px; display: none; flex-direction: column; z-index: 100;
         }
+        .chat-menu-dropdown button {
+            background: none; border: none; width: 100%; text-align: left; padding: 10px 15px;
+            cursor: pointer; font-size: 0.9rem; color: var(--text-primary);
+        }
+        .chat-menu-dropdown button:hover { background: #f0f0f0; }
+        .chat-menu-dropdown button.danger { color: var(--danger); }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
         .modal.open { display: flex; }
-        .modal-content {
-            background: var(--white); padding: 2rem; border-radius: 12px; width: 90%;
-            max-width: 400px; box-shadow: var(--shadow); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.2rem; font-weight: 600; }
-        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
-        
-        /* Request List Styling */
-        .req-item {
-            background: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 10px;
-        }
-        .req-actions { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-small { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: white; flex: 1; }
-        .btn-acc { background: var(--primary-color); }
-        .btn-rej { background: var(--danger); }
+        .modal-content { background: var(--white); padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; animation: popIn 0.3s; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 
-        /* --- Toast --- */
-        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: #323232; color: white; padding: 12px 24px; border-radius: 4px; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; animation: fadeInOut 3s forwards; display: flex; align-items: center; gap: 10px; }
+        /* Emoji Picker */
+        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
+        .emoji-item { cursor: pointer; font-size: 1.5rem; text-align: center; padding: 5px; border-radius: 5px; }
+        .emoji-item:hover { background: #eee; }
+
+        /* Call Overlay */
+        #call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #075e54; z-index: 200; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        #call-overlay.active { display: flex; }
+        .caller-info { text-align: center; margin-bottom: 30px; }
+        .call-actions { display: flex; gap: 30px; }
+        .hangup-btn { background: #d32f2f; width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .accept-btn { background: #4caf50; width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+        /* Toast */
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #323232; color: white; padding: 12px 24px; border-radius: 4px; font-size: 0.9rem; animation: fadeInOut 3s forwards; display: flex; align-items: center; gap: 10px; }
         .toast.error { background: #d32f2f; }
         .toast.success { background: #2e7d32; }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(20px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
-        }
-        .loader {
-            border: 3px solid #f3f3f3; border-top: 3px solid var(--primary-color); border-radius: 50%;
-            width: 20px; height: 20px; animation: spin 1s linear infinite; display: none;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(20px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
 
+        /* Admin Panel specifics */
+        .req-item { background: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .btn-small { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: white; margin-right: 5px; }
+        .btn-acc { background: var(--primary-color); }
+        .btn-rej { background: var(--danger); }
+        .btn-danger { background: var(--danger); width: 100%; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        
         <!-- Login Screen -->
         <div id="login-screen" class="screen active">
             <div class="login-card">
                 <div class="brand-logo">Zuber</div>
-                <p class="brand-tagline">Simple. Secure. Professional Messaging.</p>
                 <button class="btn-google" id="google-login-btn">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-                    Sign in with Google
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Sign in with Google
                 </button>
             </div>
         </div>
@@ -252,179 +148,162 @@
         <!-- Setup Screen -->
         <div id="setup-screen" class="screen">
             <div class="setup-card">
-                <h2 style="margin-bottom: 1rem; color: var(--primary-color);">Setup Profile</h2>
-                <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color:var(--primary-color)">Setup Profile</h2>
+                <div style="margin-bottom: 15px;">
                     <img id="setup-preview-img" src="" class="avatar" style="width: 80px; height: 80px;">
-                    <p id="setup-email" style="color: #666; font-size: 0.9rem; margin-top: 5px;"></p>
                 </div>
                 <div class="input-group">
-                    <label>Choose a Username (Unique)</label>
-                    <input type="text" id="username-input" class="input-field" placeholder="e.g. king123">
+                    <label>Username</label>
+                    <input type="text" id="username-input" class="input-field">
                 </div>
-                <div class="input-group">
-                    <label>Profile Picture URL (Optional)</label>
-                    <input type="text" id="avatar-input" class="input-field" placeholder="https://example.com/image.jpg">
-                    <small style="color: #888; font-size: 0.75rem;">Leave empty to use Google photo</small>
-                </div>
-                <button class="btn-primary" id="save-profile-btn">
-                    <span class="btn-text">Continue to Zuber</span>
-                    <div class="loader" style="display: inline-block; width: 14px; height: 14px; border-width: 2px; vertical-align: middle; margin-left: 5px;"></div>
-                </button>
+                <button class="btn-primary" id="save-profile-btn">Continue</button>
             </div>
         </div>
 
         <!-- Main Screen -->
         <div id="main-screen" class="screen" style="justify-content: flex-start; background: var(--white);">
             <div class="chat-layout">
-                
-                <!-- Sidebar -->
                 <div class="sidebar" id="sidebar">
                     <div class="sidebar-header">
                         <div class="user-profile" id="edit-profile-trigger">
                             <img id="my-avatar" src="" class="avatar">
                             <div class="my-username">
                                 <span id="my-username-display"></span>
-                                <i class="fas fa-check-circle blue-tick" id="my-blue-tick" style="display: none;"></i>
+                                <i class="fas fa-check-circle blue-tick" id="my-blue-tick" style="display:none"></i>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 5px;">
-                            <!-- Admin or Verification Button -->
-                            <button class="action-btn" id="admin-panel-btn" title="Admin Panel" style="display: none;"><i class="fas fa-user-shield"></i></button>
-                            <button class="action-btn" id="verify-btn" title="Request Blue Tick"><i class="fas fa-certificate"></i></button>
-                            <button class="action-btn" id="add-contact-btn" title="Add Contact"><i class="fas fa-user-plus"></i></button>
-                            <button class="action-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+                        <div style="display:flex; gap:5px">
+                            <button class="action-btn" id="admin-panel-btn" style="display:none"><i class="fas fa-user-shield"></i></button>
+                            <button class="action-btn" id="verify-btn"><i class="fas fa-certificate"></i></button>
+                            <button class="action-btn" id="add-contact-btn"><i class="fas fa-user-plus"></i></button>
+                            <button class="action-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
                         </div>
                     </div>
-                    
-                    <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search or start new chat">
-                    </div>
-
-                    <div class="contacts-list" id="contacts-list">
-                        <!-- Contacts will load here -->
-                        <div style="padding: 20px; text-align: center; color: #999; font-size: 0.9rem;">
-                            No contacts yet.<br>Click + to add someone.
-                        </div>
-                    </div>
+                    <div class="contacts-list" id="contacts-list"></div>
                 </div>
 
-                <!-- Chat Area -->
                 <div class="chat-area" id="chat-area">
-                    <!-- Empty State -->
-                    <div id="chat-placeholder" class="chat-placeholder">
-                        <i class="fas fa-comments" style="font-size: 4rem; color: #d1d7db; margin-bottom: 20px;"></i>
-                        <h2>Zuber Web</h2>
-                        <p>Send and receive messages securely.<br>Select a contact to start chatting.</p>
+                    <div id="chat-placeholder" style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color:#999">
+                        <i class="fas fa-comments" style="font-size:3rem"></i>
+                        <p>Select a chat</p>
                     </div>
 
-                    <!-- Active Chat Interface -->
-                    <div id="active-chat-interface" style="display: none; height: 100%; flex-direction: column;">
+                    <div id="active-chat-interface" style="display:none; flex-direction:column; height:100%">
                         <div class="chat-header">
                             <div class="chat-header-info">
-                                <button class="action-btn mobile-back-btn" id="mobile-back-btn" style="margin-right: 5px;"><i class="fas fa-arrow-left"></i></button>
+                                <button class="action-btn mobile-back-btn" id="mobile-back-btn"><i class="fas fa-arrow-left"></i></button>
                                 <img id="current-chat-avatar" src="" class="avatar">
                                 <div>
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <div id="current-chat-name" class="contact-name" style="margin-bottom: 0;"></div>
-                                        <i class="fas fa-check-circle blue-tick" id="chat-blue-tick" style="display: none;"></i>
+                                    <div style="display:flex; align-items:center; gap:5px">
+                                        <span id="current-chat-name"></span>
+                                        <i class="fas fa-check-circle blue-tick" id="chat-blue-tick" style="display:none"></i>
                                     </div>
-                                    <div id="current-chat-status" style="font-size: 0.75rem; color: var(--text-secondary);"></div>
                                 </div>
                             </div>
-                            <div>
-                                <button class="action-btn"><i class="fas fa-ellipsis-v"></i></button>
+                            <div style="position:relative">
+                                <button class="action-btn" id="chat-menu-btn"><i class="fas fa-ellipsis-v"></i></button>
+                                <!-- Dropdown Menu -->
+                                <div id="chat-menu-dropdown" class="chat-menu-dropdown">
+                                    <button id="clear-chat-btn"><i class="fas fa-eraser"></i> Clear Chat</button>
+                                    <button class="danger" id="block-user-btn"><i class="fas fa-ban"></i> Block User</button>
+                                </div>
                             </div>
                         </div>
-
                         <div class="messages-container" id="messages-container"></div>
-
                         <div class="chat-input-area">
-                            <button class="action-btn"><i class="far fa-smile"></i></button>
-                            <input type="text" id="message-input" class="chat-input" placeholder="Type a message">
+                            <button class="action-btn" id="emoji-btn"><i class="far fa-smile"></i></button>
+                            <button class="call-btn" id="call-btn"><i class="fas fa-phone"></i></button>
+                            <input type="text" id="message-input" class="chat-input" placeholder="Message">
                             <button class="send-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Modals -->
-
-        <!-- Edit Profile Modal -->
-        <div id="edit-profile-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">Edit Profile</div>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="input-group">
-                    <label>Profile Picture URL</label>
-                    <input type="text" id="edit-avatar-input" class="input-field">
-                </div>
-                <button class="btn-primary" id="save-edit-profile-btn">Update Photo</button>
-            </div>
-        </div>
-
-        <!-- Add Contact Modal -->
-        <div id="add-contact-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">Add New Contact</div>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="input-group">
-                    <label>Enter Exact Username</label>
-                    <input type="text" id="new-username-input" class="input-field" placeholder="e.g. rahul_dev">
-                </div>
-                <button class="btn-primary" id="add-contact-confirm-btn">Add to Chat</button>
-            </div>
-        </div>
-
-        <!-- Verification Request Modal -->
-        <div id="verify-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">Request Verification</div>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="input-group">
-                    <label>Profession</label>
-                    <input type="text" id="verify-profession" class="input-field" placeholder="e.g. Developer, Doctor">
-                </div>
-                <div class="input-group">
-                    <label>Why are you famous? (Reason)</label>
-                    <textarea id="verify-reason" class="input-field" rows="3" placeholder="I have 1M followers..."></textarea>
-                </div>
-                <div class="input-group">
-                    <label>ID Proof Name (Simulated)</label>
-                    <input type="text" id="verify-name" class="input-field" placeholder="Name on ID">
-                </div>
-                <button class="btn-primary" id="submit-verify-btn">Submit Request to Zuber</button>
-            </div>
-        </div>
-
-        <!-- Admin Panel Modal -->
-        <div id="admin-modal" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header">
-                    <div class="modal-title">Admin Panel (Zuber)</div>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div id="admin-requests-list" style="max-height: 300px; overflow-y: auto;">
-                    <div style="text-align: center; color: #888;">No pending requests.</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="toast-container"></div>
-
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Modals -->
+    <!-- Edit Profile -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Edit Profile</h3><button class="close-modal">&times;</button></div>
+            <input type="text" id="edit-avatar-input" class="input-field" placeholder="Photo URL">
+            <button class="btn-primary" id="save-edit-profile-btn" style="margin-top:10px">Update</button>
+        </div>
+    </div>
+
+    <!-- Add Contact -->
+    <div id="add-contact-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Add Contact</h3><button class="close-modal">&times;</button></div>
+            <input type="text" id="new-username-input" class="input-field" placeholder="Username">
+            <button class="btn-primary" id="add-contact-confirm-btn" style="margin-top:10px">Add</button>
+        </div>
+    </div>
+
+    <!-- Verification -->
+    <div id="verify-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Request Verification</h3><button class="close-modal">&times;</button></div>
+            <input type="text" id="verify-profession" class="input-field" placeholder="Profession">
+            <textarea id="verify-reason" class="input-field" rows="2" placeholder="Why are you famous?" style="margin-top:5px"></textarea>
+            <button class="btn-primary" id="submit-verify-btn" style="margin-top:10px">Submit</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content" style="max-width:500px">
+            <div class="modal-header"><h3>Admin Panel (Zuber)</h3><button class="close-modal">&times;</button></div>
+            
+            <!-- Manual Control -->
+            <div style="border-bottom:1px solid #ddd; padding-bottom:10px; margin-bottom:10px">
+                <h4>Manual Control</h4>
+                <input type="text" id="admin-username-input" class="input-field" placeholder="Enter username to control">
+                <div style="display:flex; gap:5px; margin-top:5px; flex-wrap:wrap">
+                    <button class="btn-small btn-acc" id="admin-ban-btn">Ban User</button>
+                    <button class="btn-small btn-acc" id="admin-unban-btn">Unban</button>
+                    <button class="btn-small btn-acc" id="admin-verify-btn">Give Tick</button>
+                    <button class="btn-small btn-rej" id="admin-unverify-btn">Remove Tick</button>
+                </div>
+            </div>
+
+            <!-- Requests -->
+            <div style="max-height:200px; overflow-y:auto">
+                <h4>Verification Requests</h4>
+                <div id="admin-requests-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emoji Picker -->
+    <div id="emoji-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Emoji</h3><button class="close-modal">&times;</button></div>
+            <div class="emoji-grid" id="emoji-grid"></div>
+        </div>
+    </div>
+
+    <!-- Call Overlay -->
+    <div id="call-overlay">
+        <img id="call-avatar" src="" class="avatar" style="width:100px; height:100px; margin-bottom:20px; border:3px solid white">
+        <h2 id="call-name" style="margin-bottom:5px">User</h2>
+        <p id="call-status">Calling...</p>
+        <div class="call-actions" id="call-actions-caller">
+            <button class="hangup-btn" id="end-call-btn"><i class="fas fa-phone-slash"></i></button>
+        </div>
+        <div class="call-actions" id="call-actions-receiver" style="display:none">
+            <button class="accept-btn" id="accept-call-btn"><i class="fas fa-phone"></i></button>
+            <button class="hangup-btn" id="reject-call-btn"><i class="fas fa-phone-slash"></i></button>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, onValue, push, serverTimestamp, update, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue, push, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",
@@ -445,30 +324,28 @@
         let currentUser = null;
         let currentUserData = null;
         let selectedChatId = null;
+        let selectedUser = null;
+        let activeCallId = null; // Track call ID
 
         // DOM Elements
-        const screens = { login: document.getElementById('login-screen'), setup: document.getElementById('setup-screen'), main: document.getElementById('main-screen') };
         const els = {
+            screens: document.querySelectorAll('.screen'),
             googleBtn: document.getElementById('google-login-btn'),
             usernameInput: document.getElementById('username-input'),
-            avatarInput: document.getElementById('avatar-input'),
             saveProfileBtn: document.getElementById('save-profile-btn'),
             setupPreviewImg: document.getElementById('setup-preview-img'),
-            setupEmail: document.getElementById('setup-email'),
             myAvatar: document.getElementById('my-avatar'),
             myUsernameDisplay: document.getElementById('my-username-display'),
             myBlueTick: document.getElementById('my-blue-tick'),
             contactsList: document.getElementById('contacts-list'),
-            addContactBtn: document.getElementById('add-contact-btn'),
             addContactModal: document.getElementById('add-contact-modal'),
-            closeModal: document.querySelectorAll('.close-modal'),
             newUsernameInput: document.getElementById('new-username-input'),
             addContactConfirmBtn: document.getElementById('add-contact-confirm-btn'),
             chatArea: document.getElementById('chat-area'),
             chatPlaceholder: document.getElementById('chat-placeholder'),
             activeChatInterface: document.getElementById('active-chat-interface'),
-            currentChatName: document.getElementById('current-chat-name'),
             currentChatAvatar: document.getElementById('current-chat-avatar'),
+            currentChatName: document.getElementById('current-chat-name'),
             chatBlueTick: document.getElementById('chat-blue-tick'),
             messagesContainer: document.getElementById('messages-container'),
             messageInput: document.getElementById('message-input'),
@@ -476,6 +353,11 @@
             mobileBackBtn: document.getElementById('mobile-back-btn'),
             logoutBtn: document.getElementById('logout-btn'),
             sidebar: document.getElementById('sidebar'),
+            // Menu
+            chatMenuBtn: document.getElementById('chat-menu-btn'),
+            chatMenuDropdown: document.getElementById('chat-menu-dropdown'),
+            clearChatBtn: document.getElementById('clear-chat-btn'),
+            blockUserBtn: document.getElementById('block-user-btn'),
             // Edit Profile
             editProfileTrigger: document.getElementById('edit-profile-trigger'),
             editProfileModal: document.getElementById('edit-profile-modal'),
@@ -486,207 +368,227 @@
             verifyModal: document.getElementById('verify-modal'),
             verifyProfession: document.getElementById('verify-profession'),
             verifyReason: document.getElementById('verify-reason'),
-            verifyName: document.getElementById('verify-name'),
             submitVerifyBtn: document.getElementById('submit-verify-btn'),
             // Admin
             adminPanelBtn: document.getElementById('admin-panel-btn'),
             adminModal: document.getElementById('admin-modal'),
-            adminRequestsList: document.getElementById('admin-requests-list')
+            adminUsernameInput: document.getElementById('admin-username-input'),
+            adminBanBtn: document.getElementById('admin-ban-btn'),
+            adminUnbanBtn: document.getElementById('admin-unban-btn'),
+            adminVerifyBtn: document.getElementById('admin-verify-btn'),
+            adminUnverifyBtn: document.getElementById('admin-unverify-btn'),
+            adminRequestsList: document.getElementById('admin-requests-list'),
+            // Emoji
+            emojiBtn: document.getElementById('emoji-btn'),
+            emojiModal: document.getElementById('emoji-modal'),
+            emojiGrid: document.getElementById('emoji-grid'),
+            // Call
+            callBtn: document.getElementById('call-btn'),
+            callOverlay: document.getElementById('call-overlay'),
+            callAvatar: document.getElementById('call-avatar'),
+            callName: document.getElementById('call-name'),
+            callStatus: document.getElementById('call-status'),
+            endCallBtn: document.getElementById('end-call-btn'),
+            acceptCallBtn: document.getElementById('accept-call-btn'),
+            rejectCallBtn: document.getElementById('reject-call-btn'),
+            callActionsCaller: document.getElementById('call-actions-caller'),
+            callActionsReceiver: document.getElementById('call-actions-receiver')
         };
 
-        // --- Utils ---
-        function showScreen(s) { Object.values(screens).forEach(x => x.classList.remove('active')); screens[s].classList.add('active'); }
-        function showToast(m, t = 'info') {
+        // Utils
+        const showScreen = (id) => els.screens.forEach(s => s.classList.toggle('active', s.id === id));
+        const showToast = (msg, t='info') => {
             const c = document.getElementById('toast-container');
-            const x = document.createElement('div');
-            x.className = `toast ${t}`;
-            x.innerHTML = `<i class="fas ${t === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${m}`;
-            c.appendChild(x);
-            setTimeout(() => x.remove(), 3500);
-        }
+            const x = document.createElement('div'); x.className = `toast ${t}`;
+            x.innerHTML = `<i class="fas ${t==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`;
+            c.appendChild(x); setTimeout(()=>x.remove(), 3000);
+        };
 
-        // --- Auth & Setup ---
+        // --- Auth ---
         els.googleBtn.onclick = () => signInWithPopup(auth, provider).catch(e => showToast(e.message, 'error'));
         els.logoutBtn.onclick = () => signOut(auth).then(() => window.location.reload());
 
         onAuthStateChanged(auth, async (u) => {
-            if (u) {
+            if(u) {
                 currentUser = u;
-                const snap = await get(ref(db, 'users/' + u.uid));
-                if (snap.exists()) {
-                    currentUserData = snap.val();
-                    showScreen('main');
-                    initMainApp();
+                const s = await get(ref(db, 'users/'+u.uid));
+                if(s.exists()) {
+                    currentUserData = s.val();
+                    if(currentUserData.isBanned) {
+                        alert("You have been banned by Admin.");
+                        signOut(auth);
+                        return;
+                    }
+                    showScreen('main-screen');
+                    initApp();
                 } else {
-                    showScreen('setup');
-                    els.setupEmail.innerText = u.email;
-                    els.setupPreviewImg.src = u.photoURL || 'https://picsum.photos/seed/user/80/80.jpg';
+                    showScreen('setup-screen');
+                    els.setupPreviewImg.src = u.photoURL;
                 }
             } else {
-                showScreen('login');
+                showScreen('login-screen');
             }
         });
 
         els.saveProfileBtn.onclick = async () => {
             const un = els.usernameInput.value.trim().toLowerCase();
-            const av = els.avatarInput.value.trim() || currentUser.photoURL;
-            if (!un) return showToast("Enter username", 'error');
-            
-            els.saveProfileBtn.disabled = true;
-            els.saveProfileBtn.querySelector('.loader').style.display = 'inline-block';
-
-            try {
-                const s = await get(ref(db, 'usernames/' + un));
-                if (s.exists()) throw new Error("Username taken");
-                
-                await set(ref(db, 'users/' + currentUser.uid), {
-                    username: un, email: currentUser.email, photoURL: av, uid: currentUser.uid, verified: false, verificationStatus: 'none'
-                });
-                await set(ref(db, 'usernames/' + un), currentUser.uid);
-                
-                currentUserData = { username: un, photoURL: av, uid: currentUser.uid, verified: false };
-                showScreen('main');
-                initMainApp();
-                showToast("Profile complete!", 'success');
-            } catch (e) {
-                showToast(e.message, 'error');
-            } finally {
-                els.saveProfileBtn.disabled = false;
-                els.saveProfileBtn.querySelector('.loader').style.display = 'none';
-            }
+            if(!un) return showToast("Enter username", 'error');
+            const check = await get(ref(db, 'usernames/'+un));
+            if(check.exists()) return showToast("Taken", 'error');
+            await set(ref(db, 'users/'+currentUser.uid), { 
+                username: un, photoURL: currentUser.photoURL, uid: currentUser.uid, verified: false, isBanned: false 
+            });
+            await set(ref(db, 'usernames/'+un), currentUser.uid);
+            currentUserData = { username: un, photoURL: currentUser.photoURL, uid: currentUser.uid };
+            showScreen('main-screen'); initApp();
         };
 
         // --- Main App ---
-        function initMainApp() {
+        function initApp() {
             els.myAvatar.src = currentUserData.photoURL;
             els.myUsernameDisplay.innerText = currentUserData.username;
-            if (currentUserData.verified) els.myBlueTick.style.display = 'inline';
+            if(currentUserData.verified) els.myBlueTick.style.display = 'inline';
 
             // Admin Check
-            if (currentUserData.username === 'zuber') {
+            if(currentUserData.username === 'zuber') {
                 els.adminPanelBtn.style.display = 'block';
-                loadAdminRequests();
+                loadAdminPanel();
             } else {
                 els.verifyBtn.style.display = 'block';
             }
 
-            // Listen for my verification status changes
-            onValue(ref(db, 'users/' + currentUser.uid + '/verified'), (s) => {
-                if (s.exists() && s.val() === true) {
-                    els.myBlueTick.style.display = 'inline';
-                    showToast("You are now verified!", 'success');
-                }
+            // Contacts Listener (Auto-add logic here)
+            onValue(ref(db, 'users/'+currentUser.uid+'/contacts'), snap => {
+                els.contactsList.innerHTML = '';
+                if(!snap.exists()) { els.contactsList.innerHTML = '<div style="padding:20px;text-align:center;color:#999">No chats</div>'; return; }
+                const arr = Object.keys(snap.val());
+                arr.forEach(async uid => {
+                    const uSnap = await get(ref(db, 'users/'+uid));
+                    if(uSnap.exists()) {
+                        const u = uSnap.val();
+                        const div = document.createElement('div');
+                        div.className = 'contact-item';
+                        div.innerHTML = `<img src="${u.photoURL}" class="avatar"><div class="contact-info"><div class="contact-name">${u.username} ${u.verified?'<i class="fas fa-check-circle blue-tick"></i>':''}</div></div>`;
+                        div.onclick = () => openChat(u);
+                        els.contactsList.appendChild(div);
+                    }
+                });
             });
 
-            // Contacts
-            onValue(ref(db, 'users/' + currentUser.uid + '/contacts'), (s) => {
-                els.contactsList.innerHTML = '';
-                if (!s.exists()) {
-                    els.contactsList.innerHTML = `<div style="padding: 20px; text-align: center; color: #999;">No contacts.</div>`;
-                    return;
+            // Listen for incoming Calls
+            listenForCalls();
+        }
+
+        // --- Chat Logic ---
+        async function openChat(user) {
+            selectedUser = user;
+            if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
+            
+            els.currentChatName.innerText = user.username;
+            els.currentChatAvatar.src = user.photoURL;
+            els.chatBlueTick.style.display = user.verified ? 'inline' : 'none';
+            els.chatPlaceholder.style.display = 'none';
+            els.activeChatInterface.style.display = 'flex';
+            els.messagesContainer.innerHTML = '';
+
+            const cid = [currentUser.uid, user.uid].sort().join('_');
+            selectedChatId = cid;
+
+            // Check Blocked Status
+            const myBlockSnap = await get(ref(db, `users/${currentUser.uid}/blocked/${user.uid}`));
+            if(myBlockSnap.exists()) {
+                els.messagesContainer.innerHTML = '<div style="text-align:center;color:#888;margin-top:20px">You blocked this user. Unblock to chat.</div>';
+                return; 
+            }
+
+            // Check if they blocked me
+            const theirBlockSnap = await get(ref(db, `users/${user.uid}/blocked/${currentUser.uid}`));
+            if(theirBlockSnap.exists()) {
+                els.messagesContainer.innerHTML = '<div style="text-align:center;color:#ef5350;margin-top:20px"><i class="fas fa-ban"></i> You are blocked by this user</div>';
+                // Allow viewing history but prevent sending via button check
+            }
+
+            onValue(ref(db, 'chats/'+cid), s => {
+                els.messagesContainer.innerHTML = '';
+                if(s.exists()) {
+                    Object.values(s.val()).forEach(renderMsg);
+                    els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
                 }
-                const p = Object.keys(s.val()).map(async uid => {
-                    const us = await get(ref(db, 'users/' + uid));
-                    return us.exists() ? { uid, ...us.val() } : null;
-                });
-                Promise.all(p).then(arr => {
-                    arr.filter(x => x).forEach(u => {
-                        const d = document.createElement('div');
-                        d.className = 'contact-item';
-                        d.innerHTML = `
-                            <img src="${u.photoURL}" class="avatar">
-                            <div class="contact-info">
-                                <div class="contact-top">
-                                    <span class="contact-name">
-                                        ${u.username}
-                                        ${u.verified ? '<i class="fas fa-check-circle blue-tick"></i>' : ''}
-                                    </span>
-                                </div>
-                                <span class="last-msg">Tap to chat</span>
-                            </div>`;
-                        d.onclick = () => openChat(u);
-                        els.contactsList.appendChild(d);
-                    });
-                });
             });
         }
 
-        // --- Edit Profile ---
-        els.editProfileTrigger.onclick = () => {
-            els.editAvatarInput.value = currentUserData.photoURL;
-            els.editProfileModal.classList.add('open');
-        };
-        els.saveEditProfileBtn.onclick = async () => {
-            const url = els.editAvatarInput.value.trim();
-            if(!url) return;
-            await update(ref(db, 'users/' + currentUser.uid), { photoURL: url });
-            currentUserData.photoURL = url;
-            els.myAvatar.src = url;
-            els.editProfileModal.classList.remove('open');
-            showToast("Profile updated", 'success');
+        const renderMsg = (m) => {
+            const d = document.createElement('div');
+            const isMe = m.sender === currentUser.uid;
+            d.className = `message ${isMe ? 'msg-out' : 'msg-in'}`;
+            d.innerHTML = `${m.text}<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
+            els.messagesContainer.appendChild(d);
         };
 
-        // --- Add Contact ---
-        els.addContactBtn.onclick = () => els.addContactModal.classList.add('open');
-        els.addContactConfirmBtn.onclick = async () => {
-            const un = els.newUsernameInput.value.trim().toLowerCase();
-            if (!un) return;
-            const s = await get(ref(db, 'usernames/' + un));
-            if (s.exists()) {
-                await set(ref(db, 'users/' + currentUser.uid + '/contacts/' + s.val()), true);
-                showToast("Added!", 'success');
-                els.addContactModal.classList.remove('open');
-            } else {
-                showToast("User not found", 'error');
+        els.sendBtn.onclick = async () => {
+            const txt = els.messageInput.value.trim();
+            if(!txt || !selectedChatId) return;
+
+            // Check if blocked by receiver
+            const theirBlockSnap = await get(ref(db, `users/${selectedUser.uid}/blocked/${currentUser.uid}`));
+            if(theirBlockSnap.exists()) {
+                return showToast("You are blocked by this user", 'error');
+            }
+
+            // Auto Add Contact for Receiver
+            await set(ref(db, `users/${selectedUser.uid}/contacts/${currentUser.uid}`), true);
+
+            push(ref(db, 'chats/'+selectedChatId), {
+                text: txt, sender: currentUser.uid, timestamp: Date.now()
+            });
+            els.messageInput.value = '';
+        };
+
+        els.messageInput.onkeypress = e => { if(e.key==='Enter') els.sendBtn.click(); };
+        els.mobileBackBtn.onclick = () => { els.chatArea.classList.remove('active'); els.sidebar.classList.remove('hidden-mobile'); };
+
+        // --- Three Dots Menu ---
+        els.chatMenuBtn.onclick = (e) => {
+            e.stopPropagation();
+            els.chatMenuDropdown.style.display = els.chatMenuDropdown.style.display === 'flex' ? 'none' : 'flex';
+        };
+        document.onclick = () => els.chatMenuDropdown.style.display = 'none';
+
+        els.clearChatBtn.onclick = async () => {
+            if(confirm("Clear all messages?")) {
+                await remove(ref(db, 'chats/'+selectedChatId));
+                els.messagesContainer.innerHTML = '';
             }
         };
 
-        // --- Verification Logic ---
-        els.verifyBtn.onclick = () => els.verifyModal.classList.add('open');
-        els.submitVerifyBtn.onclick = async () => {
-            const data = {
-                profession: els.verifyProfession.value,
-                reason: els.verifyReason.value,
-                idName: els.verifyName.value,
-                status: 'pending'
-            };
-            if(!data.profession || !data.reason) return showToast("Fill details", 'error');
-            
-            await update(ref(db, 'users/' + currentUser.uid), { verificationStatus: 'pending' });
-            await set(ref(db, 'verificationRequests/' + currentUser.uid), data);
-            
-            showToast("Request sent to Zuber", 'success');
-            els.verifyModal.classList.remove('open');
+        els.blockUserBtn.onclick = async () => {
+            if(confirm(`Block ${selectedUser.username}?`)) {
+                await set(ref(db, `users/${currentUser.uid}/blocked/${selectedUser.uid}`), true);
+                showToast("User blocked", 'success');
+                openChat(selectedUser); // Reload view
+            }
         };
 
-        // --- Admin Logic ---
-        function loadAdminRequests() {
-            onValue(ref(db, 'verificationRequests'), (snap) => {
-                const list = els.adminRequestsList;
-                list.innerHTML = '';
-                if(!snap.exists()) {
-                    list.innerHTML = '<div style="text-align:center;color:#999;">No requests.</div>';
-                    return;
-                }
-                snap.forEach(c => {
-                    const uid = c.key;
+        // --- Admin Panel ---
+        function loadAdminPanel() {
+            // Verification Requests
+            onValue(ref(db, 'verificationRequests'), s => {
+                els.adminRequestsList.innerHTML = '';
+                if(!s.exists()) { els.adminRequestsList.innerHTML = '<p>No requests</p>'; return; }
+                s.forEach(c => {
                     const req = c.val();
                     if(req.status === 'pending') {
-                        get(ref(db, 'users/' + uid)).then(uSnap => {
+                        const uid = c.key;
+                        get(ref(db, 'users/'+uid)).then(uSnap => {
                             if(uSnap.exists()) {
                                 const u = uSnap.val();
                                 const item = document.createElement('div');
                                 item.className = 'req-item';
-                                item.innerHTML = `
-                                    <div><strong>${u.username}</strong></div>
-                                    <div style="font-size:0.8rem; margin: 4px 0;">${req.profession}</div>
-                                    <div style="font-size:0.8rem; color:#666;">"${req.reason}"</div>
-                                    <div class="req-actions">
-                                        <button class="btn-small btn-acc" onclick="acceptReq('${uid}', '${u.username}')">Accept</button>
-                                        <button class="btn-small btn-rej" onclick="rejectReq('${uid}', '${u.username}')">Reject</button>
-                                    </div>
+                                item.innerHTML = `<b>${u.username}</b><br><small>${req.reason}</small><br>
+                                    <button class="btn-small btn-acc" onclick="window.acceptAdmin('${uid}')">Acc</button>
+                                    <button class="btn-small btn-rej" onclick="window.rejectAdmin('${uid}')">Rej</button>
                                 `;
-                                list.appendChild(item);
+                                els.adminRequestsList.appendChild(item);
                             }
                         });
                     }
@@ -694,101 +596,175 @@
             });
         }
 
-        els.adminPanelBtn.onclick = () => els.adminModal.classList.add('open');
-
-        // Global functions for inline HTML events
-        window.acceptReq = async (uid, username) => {
-            await update(ref(db, 'users/' + uid), { verified: true, verificationStatus: 'accepted' });
-            await remove(ref(db, 'verificationRequests/' + uid)); // remove from pending
-            showToast(`Accepted ${username}`, 'success');
-            
-            // Auto send message from Zuber
-            sendSystemMessage(uid, "Congratulations, your blue tick request has been accepted by Zuber. Keep shining! ✨");
+        // Manual Admin Actions
+        const getUidFromUser = async (un) => {
+            const s = await get(ref(db, 'usernames/'+un));
+            return s.exists() ? s.val() : null;
         };
 
-        window.rejectReq = async (uid, username) => {
-            await update(ref(db, 'users/' + uid), { verificationStatus: 'rejected' });
-            await remove(ref(db, 'verificationRequests/' + uid));
-            showToast(`Rejected ${username}`, 'info');
-            
-            // Auto send message from Zuber
-            sendSystemMessage(uid, "Sorry, your blue tick verification request has been rejected by Zuber. Better luck next time.");
+        window.acceptAdmin = async (uid) => {
+            await update(ref(db, 'users/'+uid), { verified: true, verificationStatus: 'accepted' });
+            await remove(ref(db, 'verificationRequests/'+uid));
+            sendSystemMsg(uid, "Congratulations! Your blue tick request has been accepted.");
+            showToast("Accepted", 'success');
+        };
+        window.rejectAdmin = async (uid) => {
+            await update(ref(db, 'users/'+uid), { verificationStatus: 'rejected' });
+            await remove(ref(db, 'verificationRequests/'+uid));
+            sendSystemMsg(uid, "Sorry, your request was rejected by Zuber.");
+            showToast("Rejected", 'info');
         };
 
-        async function sendSystemMessage(targetUid, text) {
-            // Zuber's UID would be needed. Since we don't know the admin's UID specifically in this logic easily
-            // we will push to the chat path assuming the current user is Zuber (admin)
-            // But wait, the chat path is sorted. 
-            // Ideally, Zuber adds the user to contacts first.
+        const sendSystemMsg = async (uid, txt) => {
+             // Add admin to contact
+            await set(ref(db, `users/${uid}/contacts/${currentUser.uid}`), true);
+            const cid = [currentUser.uid, uid].sort().join('_');
+            push(ref(db, 'chats/'+cid), { text: txt, sender: currentUser.uid, timestamp: Date.now() });
+        };
+
+        els.adminBanBtn.onclick = async () => {
+            const uid = await getUidFromUser(els.adminUsernameInput.value);
+            if(uid) { await update(ref(db, 'users/'+uid), { isBanned: true }); showToast("Banned", 'success'); } else showToast("User not found", 'error');
+        };
+        els.adminUnbanBtn.onclick = async () => {
+            const uid = await getUidFromUser(els.adminUsernameInput.value);
+            if(uid) { await update(ref(db, 'users/'+uid), { isBanned: false }); showToast("Unbanned", 'success'); } else showToast("User not found", 'error');
+        };
+        els.adminVerifyBtn.onclick = async () => {
+            const uid = await getUidFromUser(els.adminUsernameInput.value);
+            if(uid) { await update(ref(db, 'users/'+uid), { verified: true }); showToast("Verified", 'success'); } else showToast("User not found", 'error');
+        };
+        els.adminUnverifyBtn.onclick = async () => {
+            const uid = await getUidFromUser(els.adminUsernameInput.value);
+            if(uid) { await update(ref(db, 'users/'+uid), { verified: false }); showToast("Tick Removed", 'success'); } else showToast("User not found", 'error');
+        };
+
+        // --- Emojis ---
+        const emojis = ['😀','😂','😍','😎','😭','😡','👍','👎','🎉','🔥','❤️','👋','🤣','😊','😘','🥰','😜','🤔','👀','🚀','💩','👻','💀','👽','🤖','🤡','💯','✨','🎁','🌹','🍕','🍔'];
+        emojis.forEach(e => {
+            const sp = document.createElement('span');
+            sp.className = 'emoji-item'; sp.innerText = e;
+            sp.onclick = () => { els.messageInput.value += e; els.emojiModal.classList.remove('open'); };
+            els.emojiGrid.appendChild(sp);
+        });
+        els.emojiBtn.onclick = () => els.emojiModal.classList.add('open');
+
+        // --- Calls (Voice) ---
+        els.callBtn.onclick = async () => {
+            if(!selectedUser) return;
+            const callId = push(ref(db, 'calls')).key;
+            activeCallId = callId;
             
-            // Simplified: We add user to Zuber's contacts silently if not there, then send msg
-            await set(ref(db, 'users/' + currentUser.uid + '/contacts/' + targetUid), true);
-            
-            const chatId = [currentUser.uid, targetUid].sort().join('_');
-            await push(ref(db, 'chats/' + chatId), {
-                text: text,
-                sender: currentUser.uid, // Sent by Zuber
+            // Initiate Call
+            await set(ref(db, 'calls/'+callId), {
+                caller: currentUser.uid,
+                callerName: currentUserData.username,
+                callerPhoto: currentUserData.photoURL,
+                receiver: selectedUser.uid,
+                status: 'ringing',
                 timestamp: Date.now()
             });
-        }
 
-        // --- Chatting ---
-        let selectedUser = null;
-        function openChat(user) {
-            selectedUser = user;
-            if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
-            
-            els.currentChatName.innerText = user.username;
-            els.currentChatAvatar.src = user.photoURL;
-            els.chatBlueTick.style.display = user.verified ? 'inline' : 'none';
-            
-            els.chatPlaceholder.style.display = 'none';
-            els.activeChatInterface.style.display = 'flex';
-            els.messagesContainer.innerHTML = '';
+            // UI for Caller
+            showCallUI(currentUserData.username, currentUserData.photoURL, 'Calling...');
+        };
 
-            const chatId = [currentUser.uid, user.uid].sort().join('_');
-            selectedChatId = chatId;
-
-            onValue(ref(db, 'chats/' + chatId), (s) => {
-                els.messagesContainer.innerHTML = '';
-                if (s.exists()) {
-                    Object.values(s.val()).forEach(m => renderMessage(m));
-                    scrollToBottom();
-                }
+        function listenForCalls() {
+            onValue(ref(db, 'calls'), snap => {
+                if(!snap.exists()) return;
+                snap.forEach(c => {
+                    const call = c.val();
+                    // If I am the receiver and status is ringing
+                    if(call.receiver === currentUser.uid && call.status === 'ringing') {
+                        activeCallId = c.key;
+                        showCallUI(call.callerName, call.callerPhoto, 'Incoming Call...', true);
+                        // Play sound (optional)
+                    }
+                    // If call status is connected/ended
+                    if(activeCallId === c.key && call.status === 'connected') {
+                        document.getElementById('call-status').innerText = "Connected";
+                        document.getElementById('call-status').style.color = "#4caf50";
+                        els.callActionsCaller.style.display = 'none';
+                        els.callActionsReceiver.style.display = 'none';
+                    }
+                });
             });
         }
 
-        function renderMessage(m) {
-            const d = document.createElement('div');
-            const isMe = m.sender === currentUser.uid;
-            d.className = `message ${isMe ? 'msg-out' : 'msg-in'}`;
-            d.innerHTML = `
-                ${m.text}
-                <span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-            `;
-            els.messagesContainer.appendChild(d);
+        function showCallUI(name, photo, status, isIncoming=false) {
+            els.callOverlay.classList.add('active');
+            els.callName.innerText = name;
+            els.callAvatar.src = photo;
+            document.getElementById('call-status').innerText = status;
+            document.getElementById('call-status').style.color = "white";
+            
+            if(isIncoming) {
+                els.callActionsCaller.style.display = 'none';
+                els.callActionsReceiver.style.display = 'flex';
+            } else {
+                els.callActionsCaller.style.display = 'flex';
+                els.callActionsReceiver.style.display = 'none';
+            }
         }
 
-        function scrollToBottom() { els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight; }
+        const endCall = () => {
+            if(activeCallId) remove(ref(db, 'calls/'+activeCallId));
+            els.callOverlay.classList.remove('active');
+            activeCallId = null;
+        };
 
-        function sendMessage() {
-            const t = els.messageInput.value.trim();
-            if(!t || !selectedChatId) return;
-            push(ref(db, 'chats/' + selectedChatId), { text: t, sender: currentUser.uid, timestamp: Date.now() });
-            els.messageInput.value = '';
-        }
+        els.endCallBtn.onclick = endCall;
+        els.rejectCallBtn.onclick = endCall;
 
-        els.sendBtn.onclick = sendMessage;
-        els.messageInput.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
-        els.mobileBackBtn.onclick = () => { els.chatArea.classList.remove('active'); els.sidebar.classList.remove('hidden-mobile'); };
+        els.acceptCallBtn.onclick = async () => {
+            if(!activeCallId) return;
+            await update(ref(db, 'calls/'+activeCallId), { status: 'connected' });
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Real Audio Logic would go here using WebRTC
+                // For this demo, we just update UI state
+                console.log("Microphone access granted", stream);
+            } catch(e) {
+                console.error("Mic denied", e);
+            }
+        };
 
-        // Close Modals logic
-        Array.from(document.querySelectorAll('.modal')).forEach(m => {
-            m.onclick = (e) => { if(e.target === m) m.classList.remove('open'); };
+        // Close Modals
+        document.querySelectorAll('.modal, .close-modal').forEach(el => {
+            el.onclick = (e) => {
+                if(e.target === el || e.target.classList.contains('close-modal')) el.classList.remove('open');
+            }
         });
-        Array.from(document.querySelectorAll('.close-modal')).forEach(b => {
-            b.onclick = () => b.closest('.modal').classList.remove('open');
-        });
+
+        // Edit Profile
+        els.editProfileTrigger.onclick = () => els.editProfileModal.classList.add('open');
+        els.saveEditProfileBtn.onclick = async () => {
+            const url = els.editAvatarInput.value;
+            if(url) {
+                await update(ref(db, 'users/'+currentUser.uid), { photoURL: url });
+                els.myAvatar.src = url;
+                els.editProfileModal.classList.remove('open');
+            }
+        };
+
+        // Add Contact
+        document.getElementById('add-contact-btn').onclick = () => els.addContactModal.classList.add('open');
+        els.addContactConfirmBtn.onclick = async () => {
+            const un = els.newUsernameInput.value.trim().toLowerCase();
+            const s = await get(ref(db, 'usernames/'+un));
+            if(s.exists()) {
+                await set(ref(db, `users/${currentUser.uid}/contacts/${s.val()}`), true);
+                showToast("Added", 'success'); els.addContactModal.classList.remove('open');
+            } else showToast("Not found", 'error');
+        };
+        
+        // Verify Modal
+        els.verifyBtn.onclick = () => els.verifyModal.classList.add('open');
+        els.submitVerifyBtn.onclick = async () => {
+            const data = { profession: els.verifyProfession.value, reason: els.verifyReason.value, status: 'pending' };
+            await set(ref(db, 'verificationRequests/'+currentUser.uid), data);
+            showToast("Sent", 'success'); els.verifyModal.classList.remove('open');
+        };
 
     </script>
 </body>
