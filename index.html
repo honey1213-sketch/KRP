@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zuber - Ultimate Chat</title>
-    <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
@@ -153,7 +151,7 @@
                     <img id="setup-preview-img" src="" class="avatar" style="width: 80px; height: 80px;">
                 </div>
                 <div class="input-group">
-                    <label>Username</label>
+                    <label>Username (For Admin: enter 'zuber')</label>
                     <input type="text" id="username-input" class="input-field">
                 </div>
                 <button class="btn-primary" id="save-profile-btn">Continue</button>
@@ -173,6 +171,7 @@
                             </div>
                         </div>
                         <div style="display:flex; gap:5px">
+                            <!-- Admin Button -->
                             <button class="action-btn" id="admin-panel-btn" style="display:none"><i class="fas fa-user-shield"></i></button>
                             <button class="action-btn" id="verify-btn"><i class="fas fa-certificate"></i></button>
                             <button class="action-btn" id="add-contact-btn"><i class="fas fa-user-plus"></i></button>
@@ -254,7 +253,7 @@
     <!-- Admin Panel -->
     <div id="admin-modal" class="modal">
         <div class="modal-content" style="max-width:500px">
-            <div class="modal-header"><h3>Admin Panel (Zuber)</h3><button class="close-modal">&times;</button></div>
+            <div class="modal-header"><h3>Admin Panel</h3><button class="close-modal">&times;</button></div>
             
             <!-- Manual Control -->
             <div style="border-bottom:1px solid #ddd; padding-bottom:10px; margin-bottom:10px">
@@ -303,14 +302,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, onValue, push, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",
             authDomain: "krp-bank.firebaseapp.com",
             databaseURL: "https://krp-bank-default-rtdb.firebaseio.com",
             projectId: "krp-bank",
-            storageBucket: "krp-bank.firebasestorage.app",
+            storageBucket: "krp-bank.firebasystorage.app",
             messagingSenderId: "911407082396",
             appId: "1:911407082396:web:c5af104a844e2697797659",
             measurementId: "G-R0J2TLLC3T"
@@ -325,7 +324,7 @@
         let currentUserData = null;
         let selectedChatId = null;
         let selectedUser = null;
-        let activeCallId = null; // Track call ID
+        let activeCallId = null; 
 
         // DOM Elements
         const els = {
@@ -449,11 +448,13 @@
             els.myUsernameDisplay.innerText = currentUserData.username;
             if(currentUserData.verified) els.myBlueTick.style.display = 'inline';
 
-            // Admin Check
-            if(currentUserData.username === 'zuber') {
+            // Admin Check (Fixed Logic)
+            if(currentUserData.username.toLowerCase() === 'zuber') {
                 els.adminPanelBtn.style.display = 'block';
+                // Load Admin Data
                 loadAdminPanel();
             } else {
+                els.adminPanelBtn.style.display = 'none';
                 els.verifyBtn.style.display = 'block';
             }
 
@@ -505,7 +506,6 @@
             const theirBlockSnap = await get(ref(db, `users/${user.uid}/blocked/${currentUser.uid}`));
             if(theirBlockSnap.exists()) {
                 els.messagesContainer.innerHTML = '<div style="text-align:center;color:#ef5350;margin-top:20px"><i class="fas fa-ban"></i> You are blocked by this user</div>';
-                // Allow viewing history but prevent sending via button check
             }
 
             onValue(ref(db, 'chats/'+cid), s => {
@@ -721,8 +721,6 @@
             await update(ref(db, 'calls/'+activeCallId), { status: 'connected' });
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                // Real Audio Logic would go here using WebRTC
-                // For this demo, we just update UI state
                 console.log("Microphone access granted", stream);
             } catch(e) {
                 console.error("Mic denied", e);
@@ -765,6 +763,11 @@
             await set(ref(db, 'verificationRequests/'+currentUser.uid), data);
             showToast("Sent", 'success'); els.verifyModal.classList.remove('open');
         };
+
+        // ADMIN BUTTON CLICK EVENT (THE FIX)
+        els.adminPanelBtn.onclick = () => {
+            els.adminModal.classList.add('open');
+        }
 
     </script>
 </body>
