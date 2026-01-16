@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zuber - Ultimate Chat</title>
+    <title>Zuber - Web App</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
@@ -11,7 +11,7 @@
         :root {
             --primary-color: #008069;
             --primary-dark: #005d4b;
-            --bg-color: #d1d7db;
+            --bg-color: #d1d7db; /* Web Page Background */
             --chat-bg: #e5ddd5;
             --white: #ffffff;
             --light-gray: #f0f2f5;
@@ -21,26 +21,57 @@
             --outgoing-bubble: #d9fdd3;
             --danger: #ef5350;
             --blue-tick: #208be0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --online-color: #25D366;
+            --shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { background-color: var(--bg-color); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        /* WEB LAYOUT STYLING */
+        body { 
+            background-color: var(--bg-color); 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: auto;
+        }
         
-        #app-container { width: 100%; height: 100%; max-width: 1400px; background: var(--white); display: flex; position: relative; overflow: hidden; margin: 10px; border-radius: 12px; box-shadow: var(--shadow); }
-        
-        /* Mobile Adjustment */
-        @media (max-width: 768px) { #app-container { margin: 0; border-radius: 0; height: 100vh; } }
+        #app-container { 
+            width: 100%; 
+            height: 100%; 
+            max-width: 1400px; /* Web App Width */
+            background: var(--white); 
+            display: flex; 
+            position: relative; 
+            overflow: hidden;
+            /* Desktop Styling */
+            margin: 10px;
+            border-radius: 12px; /* Web Look */
+            box-shadow: var(--shadow);
+            height: 95vh; /* Fixed height for desktop */
+        }
 
+        /* Mobile Adjustment */
+        @media (max-width: 768px) {
+            body { align-items: flex-start; } /* Reset centering */
+            #app-container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                border-radius: 0;
+                max-width: none;
+                height: 100vh;
+            }
+        }
+        
+        /* Background Pattern */
         .chat-area { background-color: #e3dacd; background-image: radial-gradient(#c5bfba 1.5px, transparent 1.5px); background-size: 20px 20px; }
 
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; background: var(--light-gray); z-index: 20; }
         .screen.active { display: flex; }
 
         /* Login/Setup Cards */
-        .login-card, .setup-card { background: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: var(--shadow); text-align: center; width: 90%; max-width: 400px; animation: slideUp 0.4s ease-out; }
+        .login-card, .setup-card { background: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .brand-logo { font-size: 2.5rem; color: var(--primary-color); font-weight: 800; }
         .input-group { margin-bottom: 1.5rem; text-align: left; }
@@ -52,8 +83,20 @@
 
         .chat-layout { display: flex; width: 100%; height: 100%; }
         .sidebar { width: 100%; background: var(--white); display: flex; flex-direction: column; z-index: 5; flex-shrink: 0; }
-        @media (min-width: 768px) { .sidebar { width: 30%; min-width: 320px; border-right: 1px solid #e0e0e0; } .chat-area { display: flex !important; } .mobile-back-btn { display: none !important; } }
-        @media (max-width: 767px) { .chat-area { display: none; width: 100%; position: absolute; top: 0; left: 0; height: 100%; z-index: 10; } .chat-area.active { display: flex; } .sidebar.hidden-mobile { display: none; } }
+        
+        /* Desktop Sidebar */
+        @media (min-width: 768px) { 
+            .sidebar { width: 30%; min-width: 320px; border-right: 1px solid #e0e0e0; } 
+            .chat-area { display: flex !important; } 
+            .mobile-back-btn { display: none !important; } 
+        }
+        
+        /* Mobile Chat Area */
+        @media (max-width: 767px) { 
+            .chat-area { display: none; width: 100%; position: absolute; top:0; left:0; height: 100%; z-index: 10; } 
+            .chat-area.active { display: flex; } 
+            .sidebar.hidden-mobile { display: none; } 
+        }
 
         .sidebar-header { padding: 16px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
@@ -74,16 +117,14 @@
         .chat-header-top { display: flex; align-items: center; gap: 12px; }
         .status-text { font-size: 0.8rem; color: var(--text-secondary); margin-left: 52px; }
         .status-text.online { color: var(--online-color); font-weight: 500; }
+        :root { --online-color: #25D366; }
         
         .messages-container { flex: 1; padding: 20px 5%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .message { max-width: 75%; padding: 8px 12px; border-radius: 8px; position: relative; font-size: 0.95rem; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .msg-in { align-self: flex-start; background: var(--incoming-bubble); border-top-left-radius: 0; }
         .msg-out { align-self: flex-end; background: var(--outgoing-bubble); border-top-right-radius: 0; }
-        .msg-meta { display: flex; align-items: flex-end; justify-content: flex-end; gap: 5px; margin-top: 4px; }
-        .msg-time { font-size: 0.7rem; color: #999; }
-        .msg-tick { font-size: 0.85rem; color: #8696a0; transition: color 0.3s; }
-        .msg-tick.read { color: var(--blue-tick); }
+        .msg-time { display: block; font-size: 0.7rem; color: #999; text-align: right; margin-top: 4px; }
         
         .chat-input-area { padding: 10px 16px; background: var(--light-gray); display: flex; align-items: center; gap: 10px; z-index: 50; position: relative; flex-shrink: 0; }
         .chat-input { flex: 1; padding: 12px; border: none; border-radius: 24px; outline: none; font-size: 1rem; }
@@ -376,8 +417,7 @@
         let currentUserData = null;
         let selectedChatId = null;
         let selectedUser = null;
-        let activeChatListener = null; 
-        let activeMessageRef = null; // To listen to specific message changes
+        let activeChatListener = null;
         let setupBase64 = "";
         let editBase64 = "";
         let renderedMsgTimestamps = new Set();
@@ -453,7 +493,6 @@
             c.appendChild(x); setTimeout(()=>x.remove(), 3000);
         };
 
-        // --- LOCAL STORAGE MANAGER ---
         const LS = {
             key: (k) => `zuber_${k}`,
             set: (k, v) => localStorage.setItem(LS.key(k), JSON.stringify(v)),
@@ -562,7 +601,7 @@
             const check = await get(ref(db, 'usernames/'+un));
             if(check.exists()) return showToast("Taken", 'error');
             const profile = { 
-                username: un, photoURL: setupBase64, uid: currentUser.uid, verified: false, isBanned: false 
+                username: un, photoURL: setupBase64, uid: currentUser.uid, verified: false, isBanned: false, status: 'online' 
             };
             await set(ref(db, 'users/'+currentUser.uid), profile);
             await set(ref(db, 'usernames/'+un), currentUser.uid);
@@ -597,6 +636,7 @@
                 els.verifyBtn.style.display = 'block';
             }
 
+            // Load Contacts
             const localContacts = LS.get('my_contacts');
             if(localContacts) renderContacts(localContacts);
 
@@ -634,12 +674,9 @@
             });
         }
 
-        // --- CHAT LOGIC (READ RECEIPTS & AUTO DELETE) ---
         async function openChat(user) {
             selectedUser = user;
-            // Detach previous listeners
-            if(activeChatListener) off(activeChatListener);
-            if(activeMessageRef) off(activeMessageRef);
+            if(activeChatListener) activeChatListener();
 
             if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
             
@@ -653,15 +690,11 @@
             const cid = [currentUser.uid, user.uid].sort().join('_');
             selectedChatId = cid;
 
-            // Load from LS
             const localMsgs = LS.getMsgs(cid);
-            localMsgs.forEach(m => {
-                renderMsg(m);
-                renderedMsgTimestamps.add(m.timestamp);
-            });
+            localMsgs.forEach(m => renderMsg(m));
+            renderedMsgTimestamps = new Set(localMsgs.map(m => m.timestamp));
             scrollToBottom();
 
-            // Block/Unblock Logic
             const blockedRef = ref(db, `users/${currentUser.uid}/blocked/${user.uid}`);
             const isBlockedSnap = await get(blockedRef);
             const isBlocked = isBlockedSnap.exists();
@@ -694,7 +727,6 @@
                  els.messagesContainer.innerHTML = '<div style="text-align:center;color:#ef5350;margin-top:20px"><i class="fas fa-ban"></i> You are blocked by this user</div>';
             }
 
-            // Report Button Logic
             els.reportUserBtn.onclick = () => { els.reportModal.classList.add('open'); };
             els.submitReportBtn.onclick = async () => {
                 const reason = els.reportReason.value;
@@ -734,61 +766,22 @@
                 }
             });
 
-            // --- REALTIME LISTENER (NO MORE AUTO-DELETE TIMER) ---
+            // Realtime Listener (ChildAdded)
             if(!isBlocked && !theirBlockSnap.exists()) {
                 const chatRef = ref(db, 'chats/'+cid);
-                
-                // 1. Listen for NEW messages (Sent by others or me)
                 activeChatListener = onChildAdded(chatRef, (snapshot) => {
                     const msg = snapshot.val();
                     const msgKey = snapshot.key;
-                    
-                    // Check Duplicates
                     if(renderedMsgTimestamps.has(msg.timestamp)) return;
 
-                    // Save to LS immediately
                     LS.saveMsg(cid, msg);
                     renderedMsgTimestamps.add(msg.timestamp);
-                    
-                    // Update Local UI immediately
                     renderMsg(msg);
                     scrollToBottom();
-                    
-                    // Listen for 'read' status changes for THIS specific message
-                    const specificMsgRef = ref(db, `chats/${cid}/${msgKey}`);
-                    onValue(specificMsgRef, (readSnap) => {
-                        if(readSnap.exists()) {
-                            const msgData = readSnap.val();
-                            if(msgData.read) {
-                                // 1. Find the UI element for this message (using timestamp for simplicity or key)
-                                // In this simple version, we will iterate DOM to find the match to update tick
-                                // Ideally we store DOM reference, but timestamp match is safer for this demo
-                                const msgDiv = Array.from(els.messagesContainer.children).find(el => el.innerText.includes(msgData.text.substring(0, 15))); // Simple match
-                                if(msgDiv) {
-                                    const tickIcon = msgDiv.querySelector('.msg-tick');
-                                    if(tickIcon) {
-                                        tickIcon.classList.add('read');
-                                        tickIcon.classList.remove('fa-check');
-                                        tickIcon.classList.add('fa-check-double');
-                                    }
-                                }
-                                
-                                // 2. DELETE FROM DB (AND LS) AFTER READ (User's Request)
-                                // Remove from Local Storage too to match "Self Destruct on Read"
-                                setTimeout(() => {
-                                    remove(specificMsgRef);
-                                    const lsHistory = LS.getMsgs(cid).filter(m => m.timestamp !== msgData.timestamp);
-                                    LS.set(`chat_${cid}`, lsHistory);
-                                    
-                                    // Remove from DOM smoothly
-                                    if(msgDiv) {
-                                        msgDiv.style.opacity = '0';
-                                        setTimeout(() => msgDiv.remove(), 300);
-                                    }
-                                }, 1000); // 1 sec delay to allow blue tick animation
-                            }
-                        }
-                    });
+
+                    setTimeout(() => {
+                        remove(ref(db, `chats/${cid}/${msgKey}`));
+                    }, 5000);
                 });
             }
         }
@@ -797,14 +790,7 @@
             const d = document.createElement('div');
             const isMe = m.sender === currentUser.uid;
             d.className = `message ${isMe ? 'msg-out' : 'msg-in'}`;
-            
-            // Tick logic (Only for outgoing)
-            let metaHtml = `<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
-            if(isMe) {
-                metaHtml += `<i class="fas fa-check msg-tick"></i>`;
-            }
-            
-            d.innerHTML = `${m.text}${metaHtml}`;
+            d.innerHTML = `${m.text}<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
             els.messagesContainer.appendChild(d);
         };
 
@@ -819,31 +805,26 @@
 
             await set(ref(db, `users/${selectedUser.uid}/contacts/${currentUser.uid}`), true);
 
-            const msg = { 
-                text: txt, 
-                sender: currentUser.uid, 
-                timestamp: Date.now(), 
-                read: false // Default state
-            };
+            const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
             
-            // 1. Save to LocalStorage
             LS.saveMsg(selectedChatId, msg);
             renderedMsgTimestamps.add(msg.timestamp);
             
-            // 2. Render UI immediately (Grey Tick)
             renderMsg(msg);
             scrollToBottom();
             els.messageInput.value = '';
 
-            // 3. Send to Firebase (Transport)
             const msgRef = push(ref(db, 'chats/'+selectedChatId));
             await set(msgRef, msg);
+
+            setTimeout(() => {
+                remove(msgRef);
+            }, 5000);
         };
 
         els.messageInput.onkeypress = e => { if(e.key==='Enter') els.sendBtn.click(); };
         els.mobileBackBtn.onclick = () => { els.chatArea.classList.remove('active'); els.sidebar.classList.remove('hidden-mobile'); };
 
-        // --- Three Dots Menu ---
         els.chatMenuBtn.onclick = (e) => {
             e.stopPropagation();
             els.chatMenuDropdown.style.display = els.chatMenuDropdown.style.display === 'flex' ? 'none' : 'flex';
@@ -985,7 +966,7 @@
             await set(ref(db, `users/${uid}/contacts/${currentUser.uid}`), true);
             const cid = [currentUser.uid, uid].sort().join('_');
             const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
-            // System messages are not self-destructing
+            LS.saveMsg(cid, msg);
             const msgRef = push(ref(db, 'chats/'+cid));
             await set(msgRef, msg);
         };
@@ -1040,6 +1021,7 @@
             if(editBase64) {
                 currentUserData.photoURL = editBase64;
                 LS.set('my_profile', currentUserData);
+                
                 await update(ref(db, 'users/'+currentUser.uid), { photoURL: editBase64 });
                 els.myAvatar.src = editBase64;
                 els.editProfileModal.classList.remove('open');
@@ -1055,17 +1037,6 @@
             const un = els.newUsernameInput.value.trim().toLowerCase();
             const s = await get(ref(db, 'usernames/'+un));
             if(s.exists()) {
-                const uid = s.val();
-                const uSnap = await get(ref(db, 'users/'+uid));
-                if(uSnap.exists()) {
-                    const newUser = uSnap.val();
-                    const currentContacts = LS.get('my_contacts') || [];
-                    if(!currentContacts.find(c => c.uid === uid)) {
-                        currentContacts.push(newUser);
-                        LS.set('my_contacts', currentContacts);
-                        renderContacts(currentContacts);
-                    }
-                }
                 await set(ref(db, `users/${currentUser.uid}/contacts/${s.val()}`), true);
                 showToast("Added", 'success'); 
                 els.addContactModal.classList.remove('open');
