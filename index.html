@@ -23,7 +23,7 @@
             --blue-tick: #208be0;
             --shadow: 0 4px 12px rgba(0,0,0,0.1);
             --online-color: #25D366;
-            --ai-color: #e3f2fd; /* Light blue for AI */
+            --ai-color: #e3f2fd;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -152,10 +152,23 @@
             background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 9999;
         }
         .loading-spinner {
-            border:4px solid #f3f3f3; border-top: 4px solid var(--primary-color);
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color);
             border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Typing Indicator */
+        .typing-msg {
+            align-self: flex-start; background: var(--incoming-bubble); padding: 8px 12px; border-radius: 18px; border-top-left-radius: 0;
+            display: inline-flex; align-items: center; gap: 3px; margin-bottom: 5px; box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+        .typing-dot {
+            width: 6px; height: 6px; background: #90949c; border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -400,12 +413,11 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
-        // --- ZUBER AI CARE CONFIG ---
         const BOT_UID = 'zuber_support_bot';
         const ZUBER_CARE = {
             uid: BOT_UID,
             username: 'Zuber Care',
-            photoURL: 'https://cdn-icons-png.flaticon.com/512/4712/4712009.png', // Robot Icon
+            photoURL: 'https://cdn-icons-png.flaticon.com/512/4712/4712009.png', 
             verified: true,
             isBot: true,
             status: 'Always Online'
@@ -420,6 +432,7 @@
         let editBase64 = "";
         let reportEvidenceBase64 = "";
         let renderedMsgTimestamps = new Set();
+        let isBotTyping = false;
 
         const els = {
             screens: document.querySelectorAll('.screen'),
@@ -498,7 +511,6 @@
         };
         const showLoading = (show) => els.loadingOverlay.style.display = show ? 'flex' : 'none';
 
-        // --- ULTRA COMPRESSOR ---
         const compressImage = (file) => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -522,31 +534,82 @@
             });
         };
 
-        // --- ZUBER AI LOGIC ---
-        function getAIResponse(userText) {
-            const lower = userText.toLowerCase();
-            if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-                return "Hello! Welcome to Zuber. How can I assist you today?";
+        // --- ULTRA SMART ZUBER AI ENGINE ---
+        function getAIResponse(text) {
+            const t = text.toLowerCase();
+            
+            // Helper to check multiple keywords
+            const has = (words) => words.some(w => t.includes(w));
+
+            // 1. Identity
+            if (has(['who are you', 'your name', 'what are you', 'bot', 'robot', 'real human', 'agent'])) {
+                return "I am Zuber Care, your personal AI support assistant. I'm here to help with anything related to your account.";
             }
-            if (lower.includes('ban') || lower.includes('banned')) {
-                return "If your account is banned, please use the Appeal feature in the banned screen. Admin 'zuber' handles appeals.";
+
+            // 2. Greetings (Warm start)
+            if (has(['hello', 'hi', 'hey', 'hlo', 'hii', 'good morning', 'good evening', 'gm', 'ge'])) {
+                const greetings = [
+                    "Hello! How can I assist you today?",
+                    "Hi there! I'm Zuber Care. Ask me anything about your account.",
+                    "Hey! Need help with verification, reporting, or ban issues?",
+                    "Good day! I'm online to help you."
+                ];
+                return greetings[Math.floor(Math.random() * greetings.length)];
             }
-            if (lower.includes('tick') || lower.includes('verify') || lower.includes('blue')) {
-                return "To get a verified blue tick, tap the Certificate icon in your profile menu and submit a request.";
+
+            // 3. Gratitude & Closing (Polite end)
+            if (has(['bye', 'thanks', 'thank you', 'thnx', 'ok', 'good night', 'goodbye', 'done', 'thanks alot'])) {
+                const closing = [
+                    "You're very welcome! Is there anything else I can help you with?",
+                    "My pleasure. If you have more questions, just ask!",
+                    "Glad I could help. Have a great time on Zuber!",
+                    "No problem. Take care and stay safe."
+                ];
+                return closing[Math.floor(Math.random() * closing.length)];
             }
-            if (lower.includes('admin') || lower.includes('zuber')) {
-                return "Admin 'zuber' is the owner and creator of this platform.";
+
+            // 4. Account Status (Ban/Suspend)
+            if (has(['ban', 'banned', 'blocked', 'suspended', 'kicked', 'restricted'])) {
+                if (has(['why', 'reason', 'unfair'])) {
+                    return "Accounts are banned when they violate our community guidelines (e.g., harassment, scamming). If you feel this is a mistake, you can submit an appeal from the banned screen.";
+                }
+                return "I see you're asking about a ban. To appeal, please go to the banned screen and submit an appeal. Our admin reviews it.";
             }
-            if (lower.includes('report')) {
-                return "You can report abusive users by opening the chat menu (three dots) and selecting 'Report User'.";
+
+            // 5. Verification Requests
+            if (has(['tick', 'verify', 'verified', 'blue tick', 'badge', 'mark', 'check'])) {
+                return "To get the verified Blue Tick, please tap the Certificate icon in your profile menu. Fill in your profession and reason. The Admin approves requests manually.";
             }
-            if (lower.includes('contact') || lower.includes('support')) {
-                return "I am Zuber AI Support. I answer instantly. For human help, contact Admin 'zuber'.";
+
+            // 6. Reporting & Safety
+            if (has(['report', 'abuse', 'scam', 'rude', 'hate', 'spam', 'fake id', 'fake profile'])) {
+                return "Safety is our priority. To report a user, open their chat, tap the three dots (menu), and select 'Report User'. We take strict action against scams.";
             }
-            if (lower.includes('password') || lower.includes('login')) {
-                return "We use Google Auth for login. We do not store passwords.";
+
+            // 7. Login & Technical Issues
+            if (has(['login', 'password', 'sign in', 'forgot', 'reset', 'access', 'error', 'slow', 'crash', 'loading', 'not opening', 'bug'])) {
+                return "I'm sorry you're facing trouble. We use Google Auth, so we don't store passwords. If the app is slow, try clearing your browser cache or checking your internet connection.";
             }
-            return "I am Zuber AI. I can help with basic questions like Ban, Verification, or Reporting. For complex issues, please contact Admin.";
+
+            // 8. Feature Queries
+            if (has(['feature', 'how to', 'use', 'function', 'add contact', 'chat', 'search', 'delete'])) {
+                return "Sure! To add a contact, tap the + icon in the sidebar. To chat, simply select a user. If you need more details on a specific feature, let me know!";
+            }
+
+            // 9. Escalation (Human Agent)
+            if (has(['human', 'real person', 'live chat', 'agent', 'talk to person', 'manager'])) {
+                return "I am doing my best to help. However, for complex issues, you can contact our Admin 'zuber' directly for manual intervention.";
+            }
+
+            // 10. INSANELY SMART FALLBACK (The "Real Agent" Trick)
+            // If no category matches, we acknowledge the input and ask for more details.
+            const fallbacks = [
+                `I understand you mentioned "${text.substring(0, 15)}${text.length>15?'...':''}". Could you tell me more so I can assist you better?`,
+                "I didn't quite catch that. Are you facing a technical issue or is it about another user?",
+                "I'm listening. Can you explain what exactly is happening?",
+                "I'm not sure I understood correctly. Could you rephrase that for me?"
+            ];
+            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
         }
 
         const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -701,7 +764,6 @@
 
         // --- MAIN APP ---
         function initApp() {
-            // Auto-DB Cleanup: Clear old notifications on startup
             remove(ref(db, 'notifications/' + currentUser.uid)); 
 
             updateMyProfileUI(currentUserData);
@@ -722,16 +784,12 @@
                 if(notif.from !== currentUserData.username) {
                     showToast(`New message arrived from ${notif.from}`, 'info');
                 }
-                // Cleanup Notification Logic
                 remove(snapshot.ref);
             });
 
-            // Load Contacts
             let localContacts = LS.get('my_contacts') || [];
-            
-            // AUTO ADD ZUBER AI CARE
             if(!localContacts.find(c => c.uid === BOT_UID)) {
-                localContacts.unshift(ZUBER_CARE); // Add to top
+                localContacts.unshift(ZUBER_CARE);
                 LS.set('my_contacts', localContacts);
             }
 
@@ -752,7 +810,6 @@
                         }
                         return u;
                     })).then(users => {
-                        // Merge with Zuber Care if needed
                         let finalUsers = users.filter(u => u);
                         if(!finalUsers.find(u => u.uid === BOT_UID)) {
                             finalUsers.unshift(ZUBER_CARE);
@@ -835,11 +892,10 @@
             if(selectedUser.uid === BOT_UID) {
                 els.currentChatStatus.innerText = "Zuber AI • Online";
                 els.currentChatStatus.style.color = "var(--primary-color)";
-                els.chatMenuBtn.style.display = 'none'; // No options for bot
+                els.chatMenuBtn.style.display = 'none'; 
             } else {
                 els.chatMenuBtn.style.display = 'block';
                 
-                // Fetch fresh status for human users
                 const freshUserSnap = await get(ref(db, 'users/' + user.uid));
                 if(freshUserSnap.exists()) {
                     selectedUser = freshUserSnap.val();
@@ -912,7 +968,6 @@
                 };
             }
 
-            // Listen for real messages only if not bot
             if(selectedUser.uid !== BOT_UID) {
                 const blockedRef = ref(db, `users/${currentUser.uid}/blocked/${user.uid}`);
                 const isBlockedSnap = await get(blockedRef);
@@ -933,7 +988,6 @@
                         renderMsg(msg);
                         scrollToBottom();
 
-                        // INSTANT DB CLEANUP (500ms) - The "Turant" delete
                         setTimeout(() => {
                             remove(ref(db, `chats/${cid}/${msgKey}`));
                         }, 500);
@@ -950,13 +1004,30 @@
             els.messagesContainer.appendChild(d);
         };
 
+        const showTyping = () => {
+            if(isBotTyping) return;
+            isBotTyping = true;
+            const d = document.createElement('div');
+            d.className = 'typing-msg';
+            d.id = 'typing-indicator';
+            d.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+            els.messagesContainer.appendChild(d);
+            scrollToBottom();
+        };
+
+        const hideTyping = () => {
+            const el = document.getElementById('typing-indicator');
+            if(el) el.remove();
+            isBotTyping = false;
+        };
+
         const scrollToBottom = () => els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
 
         els.sendBtn.onclick = async () => {
             const txt = els.messageInput.value.trim();
             if(!txt || !selectedChatId) return;
 
-            // --- BOT CHAT LOGIC (NO DB USED) ---
+            // --- BOT CHAT LOGIC ---
             if(selectedUser.uid === BOT_UID) {
                 const userMsg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
                 
@@ -966,21 +1037,27 @@
                 renderMsg(userMsg);
                 scrollToBottom();
                 els.messageInput.value = '';
+                els.sendBtn.disabled = true;
 
-                // 2. Simulate Bot Typing/Thinking (1s delay)
+                // 2. Simulate "Typing..." (Real Agent Feel)
+                showTyping();
+
+                // 3. AI Thinking Delay (1.5s)
                 setTimeout(() => {
                     const replyText = getAIResponse(txt);
                     const botMsg = { text: replyText, sender: BOT_UID, timestamp: Date.now() };
                     
+                    hideTyping();
                     LS.saveMsg(selectedChatId, botMsg);
                     renderedMsgTimestamps.add(botMsg.timestamp);
                     renderMsg(botMsg);
                     scrollToBottom();
-                }, 1000);
+                    els.sendBtn.disabled = false;
+                }, 1500);
                 return;
             }
 
-            // --- HUMAN CHAT LOGIC (INSTANT DB CLEANUP) ---
+            // --- HUMAN CHAT LOGIC ---
             const theirBlockSnap = await get(ref(db, `users/${selectedUser.uid}/blocked/${currentUser.uid}`));
             if(theirBlockSnap.exists()) return showToast("You are blocked by this user", 'error');
 
@@ -1005,7 +1082,6 @@
                 timestamp: Date.now()
             });
 
-            // INSTANT DELETE FROM DB (500ms)
             setTimeout(() => {
                 remove(msgRef);
             }, 500);
@@ -1028,7 +1104,7 @@
             }
         };
 
-        // --- REPORT SUBMIT LOGIC ---
+        // --- REPORT LOGIC ---
         els.submitReportBtn.onclick = async () => {
             const reason = els.reportReason.value.trim();
             const file = els.reportEvidenceInput.files[0];
@@ -1048,8 +1124,6 @@
                     showToast("Error processing image", 'error');
                     return;
                 }
-            } else {
-                finalBase64 = null;
             }
 
             const reportData = {
@@ -1071,7 +1145,7 @@
             els.reportEvidenceInput.value = '';
         };
 
-        // --- VERIFICATION SUBMIT LOGIC ---
+        // --- VERIFY LOGIC ---
         els.verifyBtn.onclick = () => {
             if(currentUserData.verified) {
                 showToast("You are already verified!", 'success');
@@ -1337,7 +1411,6 @@
                 if(uSnap.exists()) {
                     const newUser = uSnap.val();
                     let currentContacts = LS.get('my_contacts') || [];
-                    // Ensure Zuber Care stays top
                     const isZuberCare = currentContacts.find(c => c.uid === BOT_UID);
                     if(!currentContacts.find(c => c.uid === uid)) {
                         currentContacts.push(newUser);
