@@ -413,6 +413,7 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
+        // --- ZUBER AI CARE CONFIG (API KEY YAHAN DAALO) ---
         const BOT_UID = 'zuber_support_bot';
         const ZUBER_CARE = {
             uid: BOT_UID,
@@ -422,6 +423,11 @@
             isBot: true,
             status: 'Always Online'
         };
+
+        // --- OPENAI CONFIG (API KEY DAALNA HAI) ---
+        const OPENAI_API_KEY = 'sk-proj-...PASTE_YOUR_KEY_HERE...'; // <--- APNI KEY YAHAN DAAL DO
+        const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+        const AI_MODEL = 'gpt-3.5-turbo'; // GPT-4o-mini bhi use kar sakte ho
 
         let currentUser = null;
         let currentUserData = null;
@@ -511,6 +517,7 @@
         };
         const showLoading = (show) => els.loadingOverlay.style.display = show ? 'flex' : 'none';
 
+        // --- COMPRESSOR ---
         const compressImage = (file) => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -534,83 +541,43 @@
             });
         };
 
-        // --- ULTRA SMART ZUBER AI ENGINE ---
-        function getAIResponse(text) {
-            const t = text.toLowerCase();
-            
-            // Helper to check multiple keywords
-            const has = (words) => words.some(w => t.includes(w));
+        // --- OPENAI API CONNECTION ---
+        const callOpenAI = async (chatHistory) => {
+            try {
+                const systemMessage = {
+                    role: "system",
+                    content: "You are Zuber Care, a professional customer support agent for the Zuber chat application. Your goal is to assist users with account issues, blue ticks, reporting users, or technical problems. Be polite, empathetic, and concise. Provide clear steps. Use English."
+                };
 
-            // 1. Identity
-            if (has(['who are you', 'your name', 'what are you', 'bot', 'robot', 'real human', 'agent'])) {
-                return "I am Zuber Care, your personal AI support assistant. I'm here to help with anything related to your account.";
-            }
+                // Combine system prompt + chat history + new user message
+                // Limit history to last 10 messages to save tokens
+                const recentHistory = chatHistory.slice(-10);
+                const apiMessages = [systemMessage, ...recentHistory];
 
-            // 2. Greetings (Warm start)
-            if (has(['hello', 'hi', 'hey', 'hlo', 'hii', 'good morning', 'good evening', 'gm', 'ge'])) {
-                const greetings = [
-                    "Hello! How can I assist you today?",
-                    "Hi there! I'm Zuber Care. Ask me anything about your account.",
-                    "Hey! Need help with verification, reporting, or ban issues?",
-                    "Good day! I'm online to help you."
-                ];
-                return greetings[Math.floor(Math.random() * greetings.length)];
-            }
+                const response = await fetch(OPENAI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: AI_MODEL,
+                        messages: apiMessages,
+                        temperature: 0.7
+                    })
+                });
 
-            // 3. Gratitude & Closing (Polite end)
-            if (has(['bye', 'thanks', 'thank you', 'thnx', 'ok', 'good night', 'goodbye', 'done', 'thanks alot'])) {
-                const closing = [
-                    "You're very welcome! Is there anything else I can help you with?",
-                    "My pleasure. If you have more questions, just ask!",
-                    "Glad I could help. Have a great time on Zuber!",
-                    "No problem. Take care and stay safe."
-                ];
-                return closing[Math.floor(Math.random() * closing.length)];
-            }
-
-            // 4. Account Status (Ban/Suspend)
-            if (has(['ban', 'banned', 'blocked', 'suspended', 'kicked', 'restricted'])) {
-                if (has(['why', 'reason', 'unfair'])) {
-                    return "Accounts are banned when they violate our community guidelines (e.g., harassment, scamming). If you feel this is a mistake, you can submit an appeal from the banned screen.";
+                const data = await response.json();
+                if(data.choices && data.choices[0]) {
+                    return data.choices[0].message.content;
+                } else {
+                    throw new Error("No response from API");
                 }
-                return "I see you're asking about a ban. To appeal, please go to the banned screen and submit an appeal. Our admin reviews it.";
+            } catch (error) {
+                console.error("AI Error:", error);
+                return "I'm sorry, I'm having trouble connecting right now. Please check your API Key or try again.";
             }
-
-            // 5. Verification Requests
-            if (has(['tick', 'verify', 'verified', 'blue tick', 'badge', 'mark', 'check'])) {
-                return "To get the verified Blue Tick, please tap the Certificate icon in your profile menu. Fill in your profession and reason. The Admin approves requests manually.";
-            }
-
-            // 6. Reporting & Safety
-            if (has(['report', 'abuse', 'scam', 'rude', 'hate', 'spam', 'fake id', 'fake profile'])) {
-                return "Safety is our priority. To report a user, open their chat, tap the three dots (menu), and select 'Report User'. We take strict action against scams.";
-            }
-
-            // 7. Login & Technical Issues
-            if (has(['login', 'password', 'sign in', 'forgot', 'reset', 'access', 'error', 'slow', 'crash', 'loading', 'not opening', 'bug'])) {
-                return "I'm sorry you're facing trouble. We use Google Auth, so we don't store passwords. If the app is slow, try clearing your browser cache or checking your internet connection.";
-            }
-
-            // 8. Feature Queries
-            if (has(['feature', 'how to', 'use', 'function', 'add contact', 'chat', 'search', 'delete'])) {
-                return "Sure! To add a contact, tap the + icon in the sidebar. To chat, simply select a user. If you need more details on a specific feature, let me know!";
-            }
-
-            // 9. Escalation (Human Agent)
-            if (has(['human', 'real person', 'live chat', 'agent', 'talk to person', 'manager'])) {
-                return "I am doing my best to help. However, for complex issues, you can contact our Admin 'zuber' directly for manual intervention.";
-            }
-
-            // 10. INSANELY SMART FALLBACK (The "Real Agent" Trick)
-            // If no category matches, we acknowledge the input and ask for more details.
-            const fallbacks = [
-                `I understand you mentioned "${text.substring(0, 15)}${text.length>15?'...':''}". Could you tell me more so I can assist you better?`,
-                "I didn't quite catch that. Are you facing a technical issue or is it about another user?",
-                "I'm listening. Can you explain what exactly is happening?",
-                "I'm not sure I understood correctly. Could you rephrase that for me?"
-            ];
-            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
-        }
+        };
 
         const fileToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1027,33 +994,46 @@
             const txt = els.messageInput.value.trim();
             if(!txt || !selectedChatId) return;
 
-            // --- BOT CHAT LOGIC ---
+            // --- BOT CHAT LOGIC (OPENAI) ---
             if(selectedUser.uid === BOT_UID) {
+                // 1. Create User Message Object
                 const userMsg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
                 
-                // 1. Render User Message
+                // 2. Save to LS immediately
                 LS.saveMsg(selectedChatId, userMsg);
                 renderedMsgTimestamps.add(userMsg.timestamp);
+                
+                // 3. Render User Message
                 renderMsg(userMsg);
                 scrollToBottom();
                 els.messageInput.value = '';
                 els.sendBtn.disabled = true;
 
-                // 2. Simulate "Typing..." (Real Agent Feel)
+                // 4. Show Typing...
                 showTyping();
 
-                // 3. AI Thinking Delay (1.5s)
-                setTimeout(() => {
-                    const replyText = getAIResponse(txt);
-                    const botMsg = { text: replyText, sender: BOT_UID, timestamp: Date.now() };
+                // 5. Prepare Chat History (Context) for AI
+                const history = LS.getMsgs(selectedChatId) || [];
+                // Add current message to history to ensure it's in the list we send
+                const historyWithCurrent = [...history, userMsg];
+
+                // 6. Call AI
+                try {
+                    const aiText = await callOpenAI(historyWithCurrent);
                     
                     hideTyping();
+                    const botMsg = { text: aiText, sender: BOT_UID, timestamp: Date.now() };
+                    
                     LS.saveMsg(selectedChatId, botMsg);
                     renderedMsgTimestamps.add(botMsg.timestamp);
                     renderMsg(botMsg);
                     scrollToBottom();
                     els.sendBtn.disabled = false;
-                }, 1500);
+                } catch (err) {
+                    hideTyping();
+                    showToast(err, 'error');
+                    els.sendBtn.disabled = false;
+                }
                 return;
             }
 
