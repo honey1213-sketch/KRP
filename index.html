@@ -602,7 +602,6 @@
             }
 
             // 10. INSANELY SMART FALLBACK (The "Real Agent" Trick)
-            // If no category matches, we acknowledge the input and ask for more details.
             const fallbacks = [
                 `I understand you mentioned "${text.substring(0, 15)}${text.length>15?'...':''}". Could you tell me more so I can assist you better?`,
                 "I didn't quite catch that. Are you facing a technical issue or is it about another user?",
@@ -852,9 +851,16 @@
             users.forEach(u => {
                 const div = document.createElement('div');
                 div.className = 'contact-item';
-                const tickHtml = u.verified ? '<i class="fas fa-check-circle blue-tick"></i>' : '';
+                
+                // --- INSTAGRAM STYLE LOGIC: Check if Banned ---
+                // If user is banned (and not the bot), show generic name
+                const isBannedUser = (u.isBanned && u.uid !== BOT_UID);
+                const displayName = isBannedUser ? "Zuber User" : u.username;
+                const displayPhoto = isBannedUser ? "https://ui-avatars.com/api/?name=Zuber+User&background=ccc&color=555" : u.photoURL;
+                const tickHtml = (u.verified && !isBannedUser) ? '<i class="fas fa-check-circle blue-tick"></i>' : '';
+                
                 const preview = u.lastMessage ? `<div class="last-msg-preview">${u.lastMessage}</div>` : '';
-                div.innerHTML = `<img src="${u.photoURL}" class="avatar"><div class="contact-info"><div class="contact-name">${u.username} ${tickHtml}</div>${preview}</div>`;
+                div.innerHTML = `<img src="${displayPhoto}" class="avatar"><div class="contact-info"><div class="contact-name">${displayName} ${tickHtml}</div>${preview}</div>`;
                 div.onclick = () => openChat(u);
                 els.contactsList.appendChild(div);
             });
@@ -867,14 +873,53 @@
 
             if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
             
-            els.currentChatName.innerText = selectedUser.username;
-            els.currentChatAvatar.src = selectedUser.photoURL;
-            
-            if(selectedUser.verified) {
-                els.chatBlueTick.style.display = 'inline';
-            } else {
-                els.chatBlueTick.style.display = 'none';
-            }
+            // --- REALTIME BAN/BLOCK CHECKER START ---
+            // Listen to the target user's data to instantly update header if they get banned/unblocked
+            const targetUserRef = ref(db, 'users/' + user.uid);
+            const targetListener = onValue(targetUserRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                const isBannedByAdmin = data.isBanned;
+                const isBlockedByPartner = data.blocked && data.blocked[currentUser.uid]; // They blocked me
+                // Note: If I block them, standard behavior is I still see their name. 
+                // But if THEY block ME, I see generic.
+
+                if (isBannedByAdmin || (isBlockedByPartner && user.uid !== BOT_UID)) {
+                    // Change to "Zuber User"
+                    els.currentChatName.innerText = "Zuber User";
+                    els.currentChatName.style.color = "#888"; // Grey color
+                    els.currentChatAvatar.src = "https://ui-avatars.com/api/?name=Zuber+User&background=ccc&color=fff&size=128";
+                    els.chatBlueTick.style.display = "none";
+                    els.currentChatStatus.innerText = "Account Restricted";
+                    els.currentChatStatus.style.color = "#888";
+                    
+                    // Disable input
+                    els.messageInput.placeholder = "You cannot reply to this conversation";
+                    els.messageInput.disabled = true;
+                    els.sendBtn.disabled = true;
+                } else {
+                    // Restore to normal
+                    els.currentChatName.innerText = data.username;
+                    els.currentChatName.style.color = ""; // Reset color
+                    els.currentChatAvatar.src = data.photoURL;
+                    
+                    if(data.verified) {
+                        els.chatBlueTick.style.display = 'inline';
+                    } else {
+                        els.chatBlueTick.style.display = 'none';
+                    }
+
+                    els.currentChatStatus.innerText = "Click here for contact info";
+                    els.currentChatStatus.style.color = "";
+                    
+                    // Enable input
+                    els.messageInput.placeholder = "Message";
+                    els.messageInput.disabled = false;
+                    els.sendBtn.disabled = false;
+                }
+            });
+            // --- REALTIME BAN/BLOCK CHECKER END ---
 
             els.chatPlaceholder.style.display = 'none';
             els.activeChatInterface.style.display = 'flex';
@@ -893,6 +938,12 @@
                 els.currentChatStatus.innerText = "Zuber AI • Online";
                 els.currentChatStatus.style.color = "var(--primary-color)";
                 els.chatMenuBtn.style.display = 'none'; 
+                // Reset generic UI for bot (in case listener fired weirdly)
+                els.currentChatName.innerText = "Zuber Care";
+                els.currentChatName.style.color = "";
+                els.currentChatAvatar.src = ZUBER_CARE.photoURL;
+                els.messageInput.disabled = false;
+                els.sendBtn.disabled = false;
             } else {
                 els.chatMenuBtn.style.display = 'block';
                 
@@ -943,7 +994,11 @@
                 const partnerStatusRef = ref(db, 'users/' + user.uid + '/status');
                 const partnerLastSeenRef = ref(db, 'users/' + user.uid + '/lastOnline');
                 
+                // Only listen to status if not banned/blocked logic overriding it
                 onValue(partnerStatusRef, (snap) => {
+                    // If we are in "Zuber User" mode, don't show status
+                    if(els.currentChatName.innerText === "Zuber User") return;
+
                     const status = snap.val();
                     if(status === 'online') {
                         els.currentChatStatus.innerText = 'Online';
@@ -994,6 +1049,12 @@
                     });
                 }
             }
+            
+            // Cleanup listener when chat changes
+            activeChatListener = () => {
+                off(targetUserRef);
+                // Also cleanup other listeners if needed
+            };
         }
 
         const renderMsg = (m) => {
@@ -1031,7 +1092,6 @@
             if(selectedUser.uid === BOT_UID) {
                 const userMsg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
                 
-                // 1. Render User Message
                 LS.saveMsg(selectedChatId, userMsg);
                 renderedMsgTimestamps.add(userMsg.timestamp);
                 renderMsg(userMsg);
@@ -1039,10 +1099,8 @@
                 els.messageInput.value = '';
                 els.sendBtn.disabled = true;
 
-                // 2. Simulate "Typing..." (Real Agent Feel)
                 showTyping();
 
-                // 3. AI Thinking Delay (1.5s)
                 setTimeout(() => {
                     const replyText = getAIResponse(txt);
                     const botMsg = { text: replyText, sender: BOT_UID, timestamp: Date.now() };
