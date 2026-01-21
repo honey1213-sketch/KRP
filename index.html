@@ -2,1498 +2,507 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zuber - Ultimate Chat</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Rupee (Cash Manager)</title>
     <style>
         :root {
-            --primary-color: #008069;
-            --primary-dark: #005d4b;
-            --bg-color: #d1d7db;
-            --chat-bg: #e5ddd5;
-            --white: #ffffff;
-            --light-gray: #f0f2f5;
-            --text-primary: #111b21;
-            --text-secondary: #667781;
-            --incoming-bubble: #ffffff;
-            --outgoing-bubble: #d9fdd3;
-            --danger: #ef5350;
-            --blue-tick: #208be0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --online-color: #25D366;
-            --ai-color: #e3f2fd;
+            --primary: #10b981; /* Green for Money */
+            --primary-dark: #059669;
+            --accent: #f59e0b; /* Gold for Coins/Notes */
+            --bg: #f3f4f6;
+            --dark: #1f2937;
+            --light: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { background-color: var(--bg-color); height: 100dvh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        
-        #app-container { width: 100%; height: 100%; max-width: 1600px; background: var(--white); display: flex; position: relative; overflow: hidden; }
-        @media (min-width: 900px) { #app-container { height: 95vh; width: 95vw; box-shadow: var(--shadow); } }
-        
-        .chat-area { background-color: #e3dacd; background-image: radial-gradient(#c5bfba 1.5px, transparent 1.5px); background-size: 20px 20px; }
-
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; background: var(--light-gray); z-index: 20; }
-        .screen.active { display: flex; }
-
-        .login-card, .setup-card { background: var(--white); padding: 2.5rem; border-radius: 16px; box-shadow: var(--shadow); text-align: center; width: 90%; max-width: 400px; animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .brand-logo { font-size: 2.5rem; color: var(--primary-color); font-weight: 800; }
-        .input-group { margin-bottom: 1.5rem; text-align: left; }
-        .input-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
-        .input-field { width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; }
-        .btn-google { background: var(--white); color: var(--text-primary); border: 1px solid #dadce0; padding: 12px 24px; border-radius: 24px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; margin-top: 10px; }
-        .btn-primary { background: var(--primary-color); color: var(--white); border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-
-        .chat-layout { display: flex; width: 100%; height: 100%; }
-        .sidebar { width: 100%; background: var(--white); display: flex; flex-direction: column; z-index: 5; flex-shrink: 0; }
-        @media (min-width: 768px) { .sidebar { width: 30%; min-width: 320px; border-right: 1px solid #e0e0e0; } .chat-area { display: flex !important; } .mobile-back-btn { display: none !important; } }
-        @media (max-width: 767px) { .chat-area { display: none; width: 100%; position: absolute; top: 0; left: 0; height: 100%; z-index: 10; } .chat-area.active { display: flex; } .sidebar.hidden-mobile { display: none; } }
-
-        .sidebar-header { padding: 16px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; height: 60px; }
-        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
-        .my-username { font-weight: 600; display: flex; align-items: center; gap: 5px; }
-        .blue-tick { color: var(--blue-tick); font-size: 0.8rem; }
-        .action-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem; padding: 8px; border-radius: 50%; position: relative; z-index: 10; }
-        .action-btn:hover { background: rgba(0,0,0,0.05); }
-        .contacts-list { flex: 1; overflow-y: auto; }
-        .contact-item { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #f5f5f5; }
-        .contact-item:hover { background: #f5f6f6; }
-        .contact-item.active { background: #f0f2f5; }
-        .contact-info { flex: 1; margin-left: 12px; overflow: hidden; }
-        .contact-name { font-weight: 500; font-size: 1.05rem; }
-        .last-msg-preview { font-size: 0.85rem; color: #667781; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;}
-
-        .chat-header { padding: 10px 16px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; height: 70px; border-bottom: 1px solid #d1d7db; flex-shrink: 0; }
-        .chat-header-info { display: flex; flex-direction: column; justify-content: center; }
-        .chat-header-top { display: flex; align-items: center; gap: 12px; }
-        .status-text { font-size: 0.8rem; color: var(--text-secondary); margin-left: 52px; }
-        .status-text.online { color: var(--online-color); font-weight: 500; }
-        
-        .messages-container { flex: 1; padding: 20px 5%; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .message { max-width: 75%; padding: 8px 12px; border-radius: 8px; position: relative; font-size: 0.95rem; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .msg-in { align-self: flex-start; background: var(--incoming-bubble); border-top-left-radius: 0; }
-        .msg-out { align-self: flex-end; background: var(--outgoing-bubble); border-top-right-radius: 0; }
-        .msg-time { display: block; font-size: 0.7rem; color: #999; text-align: right; margin-top: 4px; }
-        
-        .chat-input-area { padding: 10px 16px; background: var(--light-gray); display: flex; align-items: center; gap: 10px; z-index: 50; position: relative; flex-shrink: 0; }
-        .chat-input { flex: 1; padding: 12px; border: none; border-radius: 24px; outline: none; font-size: 1rem; }
-        .send-btn { background: var(--primary-color); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-
-        .chat-menu-dropdown {
-            position: absolute; top: 60px; right: 10px;
-            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            border-radius: 8px; width: 180px; display: none; flex-direction: column; z-index: 100;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-        .chat-menu-dropdown button {
-            background: none; border: none; width: 100%; text-align: left; padding: 10px 15px;
-            cursor: pointer; font-size: 0.9rem; color: var(--text-primary);
+
+        body {
+            background-color: var(--bg);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
         }
-        .chat-menu-dropdown button:hover { background: #f0f0f0; }
-        .chat-menu-dropdown button.danger { color: var(--danger); }
-        .chat-menu-dropdown button.report { color: #ff9800; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
-        .modal.open { display: flex; }
-        .modal-content { background: var(--white); padding: 2rem; border-radius: 12px; width: 90%; max-width: 450px; animation: popIn 0.3s; max-height: 90vh; overflow-y: auto; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: center; }
-        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-
-        .receipt-box {
-            background: #f9f9f9; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-top: 10px;
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 800px;
         }
-        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-        .receipt-label { font-weight: 600; color: #555; font-size: 0.9rem; }
-        .receipt-val { color: #111; font-size: 0.9rem; text-align: right; max-width: 60%; word-wrap: break-word; }
-        .receipt-img { width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #ddd; }
-        .receipt-id { font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
 
-        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
-        .emoji-item { cursor: pointer; font-size: 1.5rem; text-align: center; padding: 5px; border-radius: 5px; }
-        .emoji-item:hover { background: #eee; }
-
-        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: #323232; color: white; padding: 12px 24px; border-radius: 4px; font-size: 0.9rem; animation: fadeInOut 3s forwards; display: flex; align-items: center; gap: 10px; pointer-events: auto; }
-        .toast.error { background: #d32f2f; }
-        .toast.success { background: #2e7d32; }
-        .toast.info { background: #0288d1; }
-        @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(20px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
-
-        #banned-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 5000; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 20px;
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        #banned-overlay.active { display: flex; }
-        .banned-icon { font-size: 4rem; color: var(--danger); margin-bottom: 20px; }
 
-        .req-item { background: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .btn-small { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: white; margin-right: 5px; }
-        .btn-acc { background: var(--primary-color); }
-        .btn-rej { background: var(--danger); }
-        .btn-danger { background: var(--danger); width: 100%; margin-top: 5px; }
-        
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; overflow-x: auto; }
-        .admin-tab { background: none; border: none; padding: 5px 10px; cursor: pointer; white-space: nowrap; opacity: 0.6; }
-        .admin-tab.active { opacity: 1; border-bottom: 2px solid var(--primary-color); color: var(--primary-color); font-weight: 600; }
-        .admin-section { display: none; max-height: 300px; overflow-y: auto; }
-        .admin-section.active { display: block; }
-        .admin-evidence-img { max-width: 150px; border-radius: 4px; margin-top: 5px; border: 1px solid #ccc; cursor: pointer; }
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
 
-        .loading-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 9999;
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
-        .loading-spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color);
-            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Typing Indicator */
-        .typing-msg {
-            align-self: flex-start; background: var(--incoming-bubble); padding: 8px 12px; border-radius: 18px; border-top-left-radius: 0;
-            display: inline-flex; align-items: center; gap: 3px; margin-bottom: 5px; box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        /* Balance Card */
+        .balance-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .typing-dot {
-            width: 6px; height: 6px; background: #90949c; border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
+
+        .balance-card h2 {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
         }
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        .total-amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .currency-symbol {
+            font-size: 2rem;
+            vertical-align: super;
+        }
+
+        /* Panels */
+        .panel {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        /* Rupee Input Section */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .rupee-select-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn-add {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* History List */
+        .history-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .history-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-desc {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .note-meta {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .history-value {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+        }
+
+        .btn-delete:hover {
+            opacity: 1;
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Notes Area */
+        .notes-area {
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        .notes-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .note-card {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .rupee-select-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Global Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-    </div>
+    <header>
+        <h1>
+            <span style="font-size: 1.5em;">₹</span> Rupee Manager
+        </h1>
+        <p class="subtitle">Digital Galla - Add notes, track cash automatically.</p>
+    </header>
 
-    <!-- Banned Overlay -->
-    <div id="banned-overlay">
-        <i class="fas fa-ban banned-icon"></i>
-        <h2 style="color: var(--danger); margin-bottom: 10px;">Account Banned</h2>
-        <p style="color: #666; margin-bottom: 20px; max-width: 300px;">Your account has been banned by Zuber.</p>
-        <div id="appeal-section">
-            <textarea id="appeal-reason" class="input-field" rows="3" placeholder="Write your reason to unban..." style="margin-bottom: 10px;"></textarea>
-            <button class="btn-primary" id="submit-appeal-btn">Submit Appeal Request</button>
-        </div>
-        <div id="appeal-submitted-msg" style="display: none; color: var(--primary-color); font-weight: 600;">Appeal Sent! Wait for Admin.</div>
-    </div>
-
-    <div id="app-container">
-        <!-- Login Screen -->
-        <div id="login-screen" class="screen active">
-            <div class="login-card">
-                <div class="brand-logo">Zuber</div>
-                <button class="btn-google" id="google-login-btn">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Sign in with Google
-                </button>
-            </div>
+    <div class="container">
+        <!-- Top Total Display -->
+        <div class="balance-card">
+            <h2>Total Balance</h2>
+            <div class="total-amount" id="displayTotal">0.00</div>
         </div>
 
-        <!-- Setup Screen -->
-        <div id="setup-screen" class="screen">
-            <div class="setup-card">
-                <h2 style="color:var(--primary-color)">Setup Profile</h2>
-                <div style="margin-bottom: 15px; position: relative;">
-                    <img id="setup-preview-img" src="" class="avatar" style="width: 100px; height: 100px; cursor: pointer;">
-                    <div style="position: absolute; bottom: 0; right: 0; background: var(--light-gray); border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer;" onclick="document.getElementById('setup-pic-upload').click()">
-                        <i class="fas fa-camera" style="font-size: 12px;"></i>
-                    </div>
-                </div>
-                <input type="file" id="setup-pic-upload" hidden accept="image/*">
+        <!-- Left: Add Rupees -->
+        <div class="panel">
+            <div class="panel-header">Add Rupees (Notes)</div>
+            <form id="rupeeForm">
                 <div class="input-group">
-                    <label>Username (For Admin: enter 'zuber')</label>
-                    <input type="text" id="username-input" class="input-field">
-                </div>
-                <button class="btn-primary" id="save-profile-btn">Continue</button>
-            </div>
-        </div>
-
-        <!-- Main Screen -->
-        <div id="main-screen" class="screen" style="justify-content: flex-start; background: var(--white);">
-            <div class="chat-layout">
-                <div class="sidebar" id="sidebar">
-                    <div class="sidebar-header">
-                        <div class="user-profile" id="edit-profile-trigger">
-                            <img id="my-avatar" src="" class="avatar">
-                            <div class="my-username">
-                                <span id="my-username-display"></span>
-                                <i class="fas fa-check-circle blue-tick" id="my-blue-tick" style="display:none"></i>
-                            </div>
+                    <div class="rupee-select-row">
+                        <div>
+                            <label>Select Note Value</label>
+                            <select id="noteValue">
+                                <option value="10">₹10 Note</option>
+                                <option value="20">₹20 Note</option>
+                                <option value="50">₹50 Note</option>
+                                <option value="100">₹100 Note</option>
+                                <option value="200">₹200 Note</option>
+                                <option value="500" selected>₹500 Note</option>
+                                <option value="2000">₹2000 Note</option>
+                            </select>
                         </div>
-                        <div style="display:flex; gap:5px; z-index: 15;">
-                            <button class="action-btn" id="admin-panel-btn" style="display:none"><i class="fas fa-user-shield"></i></button>
-                            <button class="action-btn" id="verify-btn" style="display:none"><i class="fas fa-certificate"></i></button>
-                            <button class="action-btn" id="add-contact-btn"><i class="fas fa-user-plus"></i></button>
-                            <button class="action-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+                        <div>
+                            <label>Number of Notes</label>
+                            <input type="number" id="noteCount" value="1" min="1" placeholder="Quantity">
                         </div>
                     </div>
-                    <div class="contacts-list" id="contacts-list"></div>
-                </div>
-
-                <div class="chat-area" id="chat-area">
-                    <div id="chat-placeholder" style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color:#999">
-                        <i class="fas fa-comments" style="font-size:3rem"></i>
-                        <p>Select a chat</p>
+                    
+                    <div style="margin-top: 10px; background: #e0f2fe; padding: 10px; border-radius: 6px; text-align: center; color: #0369a1;">
+                        Sub Total: <strong style="font-size: 1.2rem;">₹<span id="subTotalCalc">500</span></strong>
                     </div>
 
-                    <div id="active-chat-interface" style="display:none; flex-direction:column; height:100%">
-                        <div class="chat-header">
-                            <div class="chat-header-top" style="flex:1">
-                                <button class="action-btn mobile-back-btn" id="mobile-back-btn"><i class="fas fa-arrow-left"></i></button>
-                                <img id="current-chat-avatar" src="" class="avatar">
-                                <div class="chat-header-info">
-                                    <div style="display:flex; align-items:center; gap:5px">
-                                        <span id="current-chat-name" style="font-size: 1.1rem; font-weight: 500;"></span>
-                                        <i class="fas fa-check-circle blue-tick" id="chat-blue-tick" style="display:none"></i>
-                                    </div>
-                                    <div id="current-chat-status" class="status-text">Offline</div>
-                                </div>
-                            </div>
-                            <div style="position:relative">
-                                <button class="action-btn" id="chat-menu-btn"><i class="fas fa-ellipsis-v"></i></button>
-                                <div id="chat-menu-dropdown" class="chat-menu-dropdown">
-                                    <button id="clear-chat-btn"><i class="fas fa-eraser"></i> Clear Chat</button>
-                                    <button class="report" id="report-user-btn"><i class="fas fa-flag"></i> Report User</button>
-                                    <button class="danger" id="block-user-btn"><i class="fas fa-ban"></i> Block User</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="messages-container" id="messages-container"></div>
-                        <div class="chat-input-area">
-                            <button class="action-btn" id="emoji-btn"><i class="far fa-smile"></i></button>
-                            <input type="text" id="message-input" class="chat-input" placeholder="Message">
-                            <button class="send-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
-                        </div>
-                    </div>
+                    <button type="submit" class="btn-add">Add to Balance</button>
                 </div>
-            </div>
+            </form>
+        </div>
+
+        <!-- Right: History -->
+        <div class="panel">
+            <div class="panel-header">Transaction History</div>
+            <ul id="historyList" class="history-list">
+                <li style="text-align: center; color: #9ca3af; padding: 20px;">No notes added yet.</li>
+            </ul>
+        </div>
+
+        <!-- Bottom: Notes -->
+        <div class="panel notes-area">
+            <div class="panel-header">Personal Notes (Memos)</div>
+            <input type="text" id="noteInput" class="notes-input" placeholder="Type a note and press Enter...">
+            <ul id="memoList" class="notes-list"></ul>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="edit-profile-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Update Profile Picture</h3><button class="close-modal">&times;</button></div>
-            <div style="text-align:center; margin-bottom: 15px;">
-                <img id="edit-preview-img" src="" class="avatar" style="width: 100px; height: 100px;">
-            </div>
-            <input type="file" id="edit-pic-upload" class="input-field" accept="image/*">
-            <small style="color: #666; font-size: 0.8rem; display:block; margin-top:5px">Select a photo from your gallery.</small>
-            <button class="btn-primary" id="save-edit-profile-btn" style="margin-top:10px">Update Photo</button>
-        </div>
-    </div>
-
-    <div id="add-contact-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Add Contact</h3><button class="close-modal">&times;</button></div>
-            <input type="text" id="new-username-input" class="input-field" placeholder="Username">
-            <button class="btn-primary" id="add-contact-confirm-btn" style="margin-top:10px">Add</button>
-        </div>
-    </div>
-
-    <div id="verify-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Request Verification</h3><button class="close-modal">&times;</button></div>
-            <input type="text" id="verify-profession" class="input-field" placeholder="Profession">
-            <textarea id="verify-reason" class="input-field" rows="2" placeholder="Why are you famous?" style="margin-top:5px"></textarea>
-            <button class="btn-primary" id="submit-verify-btn" style="margin-top:10px">Submit</button>
-        </div>
-    </div>
-
-    <div id="report-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Report User</h3><button class="close-modal">&times;</button></div>
-            <textarea id="report-reason" class="input-field" rows="3" placeholder="Why are you reporting this user?" style="margin-bottom: 10px;"></textarea>
-            
-            <label style="font-size:0.9rem; font-weight:600; margin-bottom:5px; display:block;">Upload Screenshot (Evidence)</label>
-            <input type="file" id="report-evidence-input" class="input-field" accept="image/*">
-            <small style="color: #666; font-size: 0.8rem; display:block; margin-bottom:10px">Max size: 2MB. Image will be auto-compressed.</small>
-            
-            <button class="btn-primary" id="submit-report-btn" style="background: var(--danger);">Submit Report</button>
-        </div>
-    </div>
-
-    <div id="receipt-modal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-receipt"></i> Confirmation Receipt</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div id="receipt-content"></div>
-            <button class="btn-primary" id="close-receipt-btn" style="margin-top: 20px;">Close</button>
-        </div>
-    </div>
-
-    <div id="admin-modal" class="modal">
-        <div class="modal-content" style="max-width:550px;">
-            <div class="modal-header"><h3>Admin Panel</h3><button class="close-modal">&times;</button></div>
-            
-            <div class="admin-tabs">
-                <button class="admin-tab active" data-tab="control">Control</button>
-                <button class="admin-tab" data-tab="appeals">Appeals</button>
-                <button class="admin-tab" data-tab="requests">Verify Req</button>
-                <button class="admin-tab" data-tab="reports">Reports</button>
-            </div>
-
-            <div id="tab-control" class="admin-section active">
-                <div style="border-bottom:1px solid #ddd; padding-bottom:10px; margin-bottom:10px">
-                    <h4>Manual Control</h4>
-                    <input type="text" id="admin-username-input" class="input-field" placeholder="Enter username to control">
-                    <div style="display:flex; gap:5px; margin-top:5px; flex-wrap:wrap">
-                        <button class="btn-small btn-acc" id="admin-ban-btn">Ban User</button>
-                        <button class="btn-small btn-acc" id="admin-unban-btn">Unban</button>
-                        <button class="btn-small btn-acc" id="admin-verify-btn">Give Tick</button>
-                        <button class="btn-small btn-rej" id="admin-unverify-btn">Remove Tick</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-appeals" class="admin-section">
-                <div style="max-height:300px; overflow-y:auto">
-                    <h4>Ban Appeals</h4>
-                    <div id="admin-appeals-list"></div>
-                </div>
-            </div>
-
-            <div id="tab-requests" class="admin-section">
-                <div style="max-height:300px; overflow-y:auto">
-                    <h4>Verification Requests</h4>
-                    <div id="admin-requests-list"></div>
-                </div>
-            </div>
-
-            <div id="tab-reports" class="admin-section">
-                <div style="max-height:300px; overflow-y:auto">
-                    <h4>User Reports</h4>
-                    <div id="admin-reports-list"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="emoji-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Emoji</h3><button class="close-modal">&times;</button></div>
-            <div class="emoji-grid" id="emoji-grid"></div>
-        </div>
-    </div>
-
-    <div id="toast-container"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, onChildAdded, onValue, push, update, remove, onDisconnect, serverTimestamp, off } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyChKPlzj9uVm3KBi4iPOz8xQHtC6v0Lt4E",
-            authDomain: "krp-bank.firebaseapp.com",
-            databaseURL: "https://krp-bank-default-rtdb.firebaseio.com",
-            projectId: "krp-bank",
-            storageBucket: "krp-bank.firebasestorage.app",
-            messagingSenderId: "911407082396",
-            appId: "1:911407082396:web:c5af104a844e2697797659",
-            measurementId: "G-R0J2TLLC3T"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const provider = new GoogleAuthProvider();
-
-        const BOT_UID = 'zuber_support_bot';
-        const ZUBER_CARE = {
-            uid: BOT_UID,
-            username: 'Zuber Care',
-            photoURL: 'https://cdn-icons-png.flaticon.com/512/4712/4712009.png', 
-            verified: true,
-            isBot: true,
-            status: 'Always Online'
-        };
-
-        let currentUser = null;
-        let currentUserData = null;
-        let selectedChatId = null;
-        let selectedUser = null;
-        let activeChatListener = null;
-        let setupBase64 = "";
-        let editBase64 = "";
-        let reportEvidenceBase64 = "";
-        let renderedMsgTimestamps = new Set();
-        let isBotTyping = false;
-
-        const els = {
-            screens: document.querySelectorAll('.screen'),
-            googleBtn: document.getElementById('google-login-btn'),
-            usernameInput: document.getElementById('username-input'),
-            saveProfileBtn: document.getElementById('save-profile-btn'),
-            setupPreviewImg: document.getElementById('setup-preview-img'),
-            setupPicUpload: document.getElementById('setup-pic-upload'),
-            myAvatar: document.getElementById('my-avatar'),
-            myUsernameDisplay: document.getElementById('my-username-display'),
-            myBlueTick: document.getElementById('my-blue-tick'),
-            contactsList: document.getElementById('contacts-list'),
-            addContactModal: document.getElementById('add-contact-modal'),
-            newUsernameInput: document.getElementById('new-username-input'),
-            addContactConfirmBtn: document.getElementById('add-contact-confirm-btn'),
-            chatArea: document.getElementById('chat-area'),
-            chatPlaceholder: document.getElementById('chat-placeholder'),
-            activeChatInterface: document.getElementById('active-chat-interface'),
-            currentChatAvatar: document.getElementById('current-chat-avatar'),
-            currentChatName: document.getElementById('current-chat-name'),
-            currentChatStatus: document.getElementById('current-chat-status'),
-            chatBlueTick: document.getElementById('chat-blue-tick'),
-            messagesContainer: document.getElementById('messages-container'),
-            messageInput: document.getElementById('message-input'),
-            sendBtn: document.getElementById('send-btn'),
-            mobileBackBtn: document.getElementById('mobile-back-btn'),
-            logoutBtn: document.getElementById('logout-btn'),
-            sidebar: document.getElementById('sidebar'),
-            chatMenuBtn: document.getElementById('chat-menu-btn'),
-            chatMenuDropdown: document.getElementById('chat-menu-dropdown'),
-            clearChatBtn: document.getElementById('clear-chat-btn'),
-            blockUserBtn: document.getElementById('block-user-btn'),
-            reportUserBtn: document.getElementById('report-user-btn'),
-            editProfileTrigger: document.getElementById('edit-profile-trigger'),
-            editProfileModal: document.getElementById('edit-profile-modal'),
-            editPreviewImg: document.getElementById('edit-preview-img'),
-            editPicUpload: document.getElementById('edit-pic-upload'),
-            saveEditProfileBtn: document.getElementById('save-edit-profile-btn'),
-            verifyBtn: document.getElementById('verify-btn'),
-            verifyModal: document.getElementById('verify-modal'),
-            verifyProfession: document.getElementById('verify-profession'),
-            verifyReason: document.getElementById('verify-reason'),
-            submitVerifyBtn: document.getElementById('submit-verify-btn'),
-            adminPanelBtn: document.getElementById('admin-panel-btn'),
-            adminModal: document.getElementById('admin-modal'),
-            adminUsernameInput: document.getElementById('admin-username-input'),
-            adminBanBtn: document.getElementById('admin-ban-btn'),
-            adminUnbanBtn: document.getElementById('admin-unban-btn'),
-            adminVerifyBtn: document.getElementById('admin-verify-btn'),
-            adminUnverifyBtn: document.getElementById('admin-unverify-btn'),
-            adminRequestsList: document.getElementById('admin-requests-list'),
-            adminAppealsList: document.getElementById('admin-appeals-list'),
-            adminReportsList: document.getElementById('admin-reports-list'),
-            emojiBtn: document.getElementById('emoji-btn'),
-            emojiModal: document.getElementById('emoji-modal'),
-            emojiGrid: document.getElementById('emoji-grid'),
-            bannedOverlay: document.getElementById('banned-overlay'),
-            submitAppealBtn: document.getElementById('submit-appeal-btn'),
-            appealReason: document.getElementById('appeal-reason'),
-            reportModal: document.getElementById('report-modal'),
-            reportReason: document.getElementById('report-reason'),
-            reportEvidenceInput: document.getElementById('report-evidence-input'),
-            submitReportBtn: document.getElementById('submit-report-btn'),
-            receiptModal: document.getElementById('receipt-modal'),
-            receiptContent: document.getElementById('receipt-content'),
-            closeReceiptBtn: document.getElementById('close-receipt-btn'),
-            loadingOverlay: document.getElementById('loading-overlay')
-        };
-
-        const showScreen = (id) => els.screens.forEach(s => s.classList.toggle('active', s.id === id));
-        const showToast = (msg, t='info') => {
-            const c = document.getElementById('toast-container');
-            const x = document.createElement('div'); x.className = `toast ${t}`;
-            x.innerHTML = `<i class="fas ${t==='error'?'fa-exclamation-circle':(t==='success'?'fa-check-circle':'fa-envelope')}"></i> ${msg}`;
-            c.appendChild(x); setTimeout(()=>x.remove(), 3000);
-        };
-        const showLoading = (show) => els.loadingOverlay.style.display = show ? 'flex' : 'none';
-
-        const compressImage = (file) => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6)); 
-                    };
-                    img.onerror = (err) => reject(err);
-                };
-                reader.onerror = (err) => reject(err);
-            });
-        };
-
-        // --- ULTRA SMART ZUBER AI ENGINE ---
-        function getAIResponse(text) {
-            const t = text.toLowerCase();
-            
-            // Helper to check multiple keywords
-            const has = (words) => words.some(w => t.includes(w));
-
-            // 1. Identity
-            if (has(['who are you', 'your name', 'what are you', 'bot', 'robot', 'real human', 'agent'])) {
-                return "I am Zuber Care, your personal AI support assistant. I'm here to help with anything related to your account.";
-            }
-
-            // 2. Greetings (Warm start)
-            if (has(['hello', 'hi', 'hey', 'hlo', 'hii', 'good morning', 'good evening', 'gm', 'ge'])) {
-                const greetings = [
-                    "Hello! How can I assist you today?",
-                    "Hi there! I'm Zuber Care. Ask me anything about your account.",
-                    "Hey! Need help with verification, reporting, or ban issues?",
-                    "Good day! I'm online to help you."
-                ];
-                return greetings[Math.floor(Math.random() * greetings.length)];
-            }
-
-            // 3. Gratitude & Closing (Polite end)
-            if (has(['bye', 'thanks', 'thank you', 'thnx', 'ok', 'good night', 'goodbye', 'done', 'thanks alot'])) {
-                const closing = [
-                    "You're very welcome! Is there anything else I can help you with?",
-                    "My pleasure. If you have more questions, just ask!",
-                    "Glad I could help. Have a great time on Zuber!",
-                    "No problem. Take care and stay safe."
-                ];
-                return closing[Math.floor(Math.random() * closing.length)];
-            }
-
-            // 4. Account Status (Ban/Suspend)
-            if (has(['ban', 'banned', 'blocked', 'suspended', 'kicked', 'restricted'])) {
-                if (has(['why', 'reason', 'unfair'])) {
-                    return "Accounts are banned when they violate our community guidelines (e.g., harassment, scamming). If you feel this is a mistake, you can submit an appeal from the banned screen.";
-                }
-                return "I see you're asking about a ban. To appeal, please go to the banned screen and submit an appeal. Our admin reviews it.";
-            }
-
-            // 5. Verification Requests
-            if (has(['tick', 'verify', 'verified', 'blue tick', 'badge', 'mark', 'check'])) {
-                return "To get the verified Blue Tick, please tap the Certificate icon in your profile menu. Fill in your profession and reason. The Admin approves requests manually.";
-            }
-
-            // 6. Reporting & Safety
-            if (has(['report', 'abuse', 'scam', 'rude', 'hate', 'spam', 'fake id', 'fake profile'])) {
-                return "Safety is our priority. To report a user, open their chat, tap the three dots (menu), and select 'Report User'. We take strict action against scams.";
-            }
-
-            // 7. Login & Technical Issues
-            if (has(['login', 'password', 'sign in', 'forgot', 'reset', 'access', 'error', 'slow', 'crash', 'loading', 'not opening', 'bug'])) {
-                return "I'm sorry you're facing trouble. We use Google Auth, so we don't store passwords. If the app is slow, try clearing your browser cache or checking your internet connection.";
-            }
-
-            // 8. Feature Queries
-            if (has(['feature', 'how to', 'use', 'function', 'add contact', 'chat', 'search', 'delete'])) {
-                return "Sure! To add a contact, tap the + icon in the sidebar. To chat, simply select a user. If you need more details on a specific feature, let me know!";
-            }
-
-            // 9. Escalation (Human Agent)
-            if (has(['human', 'real person', 'live chat', 'agent', 'talk to person', 'manager'])) {
-                return "I am doing my best to help. However, for complex issues, you can contact our Admin 'zuber' directly for manual intervention.";
-            }
-
-            // 10. INSANELY SMART FALLBACK (The "Real Agent" Trick)
-            const fallbacks = [
-                `I understand you mentioned "${text.substring(0, 15)}${text.length>15?'...':''}". Could you tell me more so I can assist you better?`,
-                "I didn't quite catch that. Are you facing a technical issue or is it about another user?",
-                "I'm listening. Can you explain what exactly is happening?",
-                "I'm not sure I understood correctly. Could you rephrase that for me?"
-            ];
-            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
-        }
-
-        const fileToBase64 = (file) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-
-        // --- LOCAL STORAGE MANAGER ---
-        const LS = {
-            key: (k) => `zuber_${k}`,
-            set: (k, v) => localStorage.setItem(LS.key(k), JSON.stringify(v)),
-            get: (k) => JSON.parse(localStorage.getItem(LS.key(k))),
-            remove: (k) => localStorage.removeItem(LS.key(k)),
-            saveMsg: (cid, msg) => {
-                const k = `chat_${cid}`;
-                let h = LS.get(k) || [];
-                if(!h.find(m => m.timestamp === msg.timestamp)) {
-                    h.push(msg);
-                    LS.set(k, h);
-                    updateContactPreview(cid, msg);
-                }
+    <script>
+        // Main App Logic
+        const app = {
+            data: {
+                transactions: [], // Stores objects: { value, count, total, id, date }
+                memos: []
             },
-            getMsgs: (cid) => LS.get(`chat_${cid}`) || [],
-            clearChat: (cid) => LS.remove(`chat_${cid}`)
-        };
 
-        function updateContactPreview(cid, msg) {
-            const contacts = LS.get('my_contacts') || [];
-            const otherUid = cid.split('_').find(id => id !== currentUser.uid);
-            if(otherUid) {
-                const contact = contacts.find(c => c.uid === otherUid);
-                if(contact) {
-                    contact.lastMessage = msg.text;
-                    contact.lastTime = msg.timestamp;
-                    LS.set('my_contacts', contacts);
-                    renderContacts(contacts);
+            init() {
+                // Load from Local Storage
+                const savedData = localStorage.getItem('rupeeManagerData');
+                if (savedData) {
+                    this.data = JSON.parse(savedData);
                 }
-            }
-        }
 
-        // --- AUTH ---
-        els.googleBtn.onclick = () => signInWithPopup(auth, provider).catch(e => showToast(e.message, 'error'));
-        els.logoutBtn.onclick = () => {
-            if(currentUser) {
-                set(ref(db, 'users/'+currentUser.uid+'/status'), 'offline');
-                set(ref(db, 'users/'+currentUser.uid+'/lastOnline'), Date.now());
-            }
-            signOut(auth).then(() => window.location.reload());
-        };
-
-        onAuthStateChanged(auth, async (u) => {
-            if(u) {
-                currentUser = u;
-                const localProfile = LS.get('my_profile');
-                if(localProfile && localProfile.uid === u.uid) {
-                    currentUserData = localProfile;
-                    if(currentUserData.isBanned) {
-                        showScreen('main-screen');
-                        els.bannedOverlay.classList.add('active');
-                        checkAppealStatus();
-                        return;
-                    }
-                    showScreen('main-screen');
-                    initApp();
-                    setupPresence();
-                } else {
-                    const s = await get(ref(db, 'users/'+u.uid));
-                    if(s.exists()) {
-                        currentUserData = s.val();
-                        LS.set('my_profile', currentUserData);
-                        if(currentUserData.isBanned) {
-                            showScreen('main-screen');
-                            els.bannedOverlay.classList.add('active');
-                            checkAppealStatus();
-                            return;
-                        }
-                        showScreen('main-screen');
-                        initApp();
-                        setupPresence();
-                    } else {
-                        showScreen('setup-screen');
-                        els.setupPreviewImg.src = u.photoURL;
-                        setupBase64 = u.photoURL;
-                    }
-                }
-            } else {
-                showScreen('login-screen');
-            }
-        });
-
-        const checkAppealStatus = async () => {
-            const snap = await get(ref(db, `banAppeals/${currentUser.uid}`));
-            if(snap.exists() && snap.val().status === 'pending') {
-                els.appealReason.style.display = 'none';
-                els.submitAppealBtn.style.display = 'none';
-                document.getElementById('appeal-submitted-msg').style.display = 'block';
-            }
-        };
-
-        els.submitAppealBtn.onclick = async () => {
-            const reason = els.appealReason.value;
-            if(!reason) return showToast("Write reason", 'error');
-            await set(ref(db, `banAppeals/${currentUser.uid}`), { reason, status: 'pending', username: currentUserData.username });
-            checkAppealStatus();
-        };
-
-        els.setupPicUpload.onchange = async (e) => {
-            const file = e.target.files[0];
-            if(file) {
-                if(file.size > 500000) { showToast("Image too large! Max 500KB", 'error'); return; }
-                try {
-                    const base64 = await fileToBase64(file);
-                    setupBase64 = base64;
-                    els.setupPreviewImg.src = base64;
-                } catch(err) { showToast("Error loading image", 'error'); }
-            }
-        };
-
-        els.saveProfileBtn.onclick = async () => {
-            const un = els.usernameInput.value.trim().toLowerCase();
-            if(!un) return showToast("Enter username", 'error');
-            const check = await get(ref(db, 'usernames/'+un));
-            if(check.exists()) return showToast("Taken", 'error');
-            
-            const profile = { 
-                username: un, photoURL: setupBase64, uid: currentUser.uid, verified: false, isBanned: false 
-            };
-            
-            await set(ref(db, 'users/'+currentUser.uid), profile);
-            await set(ref(db, 'usernames/'+un), currentUser.uid);
-            currentUserData = profile;
-            
-            LS.set('my_profile', profile);
-            
-            showScreen('main-screen'); initApp(); setupPresence();
-        };
-
-        function setupPresence() {
-            const userStatusRef = ref(db, 'users/' + currentUser.uid + '/status');
-            const lastOnlineRef = ref(db, 'users/' + currentUser.uid + '/lastOnline');
-            const connectedRef = ref(db, '.info/connected');
-            onValue(connectedRef, (snap) => {
-                if (snap.val() === true) {
-                    onDisconnect(userStatusRef).set('offline');
-                    onDisconnect(lastOnlineRef).set(serverTimestamp());
-                    set(userStatusRef, 'online');
-                }
-            });
-        }
-
-        // --- MAIN APP ---
-        function initApp() {
-            remove(ref(db, 'notifications/' + currentUser.uid)); 
-
-            updateMyProfileUI(currentUserData);
-
-            const myProfileRef = ref(db, 'users/' + currentUser.uid);
-            onValue(myProfileRef, (snap) => {
-                if(snap.exists()) {
-                    const data = snap.val();
-                    currentUserData = data;
-                    LS.set('my_profile', data);
-                    updateMyProfileUI(data);
-                }
-            });
-
-            const notifRef = ref(db, 'notifications/' + currentUser.uid);
-            onChildAdded(notifRef, (snapshot) => {
-                const notif = snapshot.val();
-                if(notif.from !== currentUserData.username) {
-                    showToast(`New message arrived from ${notif.from}`, 'info');
-                }
-                remove(snapshot.ref);
-            });
-
-            let localContacts = LS.get('my_contacts') || [];
-            if(!localContacts.find(c => c.uid === BOT_UID)) {
-                localContacts.unshift(ZUBER_CARE);
-                LS.set('my_contacts', localContacts);
-            }
-
-            renderContacts(localContacts);
-
-            onValue(ref(db, 'users/'+currentUser.uid+'/contacts'), snap => {
-                const val = snap.val();
-                if(val) {
-                    const uids = Object.keys(val);
-                    Promise.all(uids.map(async uid => {
-                        let u = LS.get(`user_cache_${uid}`);
-                        if(!u) {
-                            const s = await get(ref(db, 'users/'+uid));
-                            if(s.exists()) {
-                                u = s.val();
-                                LS.set(`user_cache_${u.uid}`, u);
-                            }
-                        }
-                        return u;
-                    })).then(users => {
-                        let finalUsers = users.filter(u => u);
-                        if(!finalUsers.find(u => u.uid === BOT_UID)) {
-                            finalUsers.unshift(ZUBER_CARE);
-                        }
-                        renderContacts(finalUsers);
-                        LS.set('my_contacts', finalUsers);
-                    });
-                }
-            });
-        }
-
-        function updateMyProfileUI(data) {
-            if(!data) return;
-            els.myAvatar.src = data.photoURL || "";
-            els.myUsernameDisplay.innerText = data.username || "";
-            
-            if(data.verified) {
-                els.myBlueTick.style.display = 'inline';
-                els.verifyBtn.style.display = 'none';
-            } else {
-                els.myBlueTick.style.display = 'none';
-                if(data.username.toLowerCase() !== 'zuber') {
-                    els.verifyBtn.style.display = 'block';
-                } else {
-                    els.verifyBtn.style.display = 'none';
-                }
-            }
-
-            if(data.username.toLowerCase() === 'zuber') {
-                els.adminPanelBtn.style.display = 'block';
-                loadAdminPanel();
-            } else {
-                els.adminPanelBtn.style.display = 'none';
-            }
-        }
-
-        function renderContacts(users) {
-            els.contactsList.innerHTML = '';
-            if(users.length === 0) els.contactsList.innerHTML = '<div style="padding:20px;text-align:center;color:#999">No chats</div>';
-            users.forEach(u => {
-                const div = document.createElement('div');
-                div.className = 'contact-item';
+                // Bind Events
+                document.getElementById('rupeeForm').addEventListener('submit', (e) => this.addRupees(e));
+                document.getElementById('noteCount').addEventListener('input', () => this.calculateSubTotal());
+                document.getElementById('noteValue').addEventListener('change', () => this.calculateSubTotal());
                 
-                // --- INSTAGRAM STYLE LOGIC: Check if Banned ---
-                // If user is banned (and not the bot), show generic name
-                const isBannedUser = (u.isBanned && u.uid !== BOT_UID);
-                const displayName = isBannedUser ? "Zuber User" : u.username;
-                const displayPhoto = isBannedUser ? "https://ui-avatars.com/api/?name=Zuber+User&background=ccc&color=555" : u.photoURL;
-                const tickHtml = (u.verified && !isBannedUser) ? '<i class="fas fa-check-circle blue-tick"></i>' : '';
-                
-                const preview = u.lastMessage ? `<div class="last-msg-preview">${u.lastMessage}</div>` : '';
-                div.innerHTML = `<img src="${displayPhoto}" class="avatar"><div class="contact-info"><div class="contact-name">${displayName} ${tickHtml}</div>${preview}</div>`;
-                div.onclick = () => openChat(u);
-                els.contactsList.appendChild(div);
-            });
-        }
-
-        // --- CHAT LOGIC ---
-        async function openChat(user) {
-            selectedUser = user;
-            if(activeChatListener) activeChatListener();
-
-            if(window.innerWidth <= 767) { els.chatArea.classList.add('active'); els.sidebar.classList.add('hidden-mobile'); }
-            
-            // --- REALTIME BAN/BLOCK CHECKER START ---
-            // Listen to the target user's data to instantly update header if they get banned/unblocked
-            const targetUserRef = ref(db, 'users/' + user.uid);
-            const targetListener = onValue(targetUserRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                const isBannedByAdmin = data.isBanned;
-                const isBlockedByPartner = data.blocked && data.blocked[currentUser.uid]; // They blocked me
-                // Note: If I block them, standard behavior is I still see their name. 
-                // But if THEY block ME, I see generic.
-
-                if (isBannedByAdmin || (isBlockedByPartner && user.uid !== BOT_UID)) {
-                    // Change to "Zuber User"
-                    els.currentChatName.innerText = "Zuber User";
-                    els.currentChatName.style.color = "#888"; // Grey color
-                    els.currentChatAvatar.src = "https://ui-avatars.com/api/?name=Zuber+User&background=ccc&color=fff&size=128";
-                    els.chatBlueTick.style.display = "none";
-                    els.currentChatStatus.innerText = "Account Restricted";
-                    els.currentChatStatus.style.color = "#888";
-                    
-                    // Disable input
-                    els.messageInput.placeholder = "You cannot reply to this conversation";
-                    els.messageInput.disabled = true;
-                    els.sendBtn.disabled = true;
-                } else {
-                    // Restore to normal
-                    els.currentChatName.innerText = data.username;
-                    els.currentChatName.style.color = ""; // Reset color
-                    els.currentChatAvatar.src = data.photoURL;
-                    
-                    if(data.verified) {
-                        els.chatBlueTick.style.display = 'inline';
-                    } else {
-                        els.chatBlueTick.style.display = 'none';
-                    }
-
-                    els.currentChatStatus.innerText = "Click here for contact info";
-                    els.currentChatStatus.style.color = "";
-                    
-                    // Enable input
-                    els.messageInput.placeholder = "Message";
-                    els.messageInput.disabled = false;
-                    els.sendBtn.disabled = false;
-                }
-            });
-            // --- REALTIME BAN/BLOCK CHECKER END ---
-
-            els.chatPlaceholder.style.display = 'none';
-            els.activeChatInterface.style.display = 'flex';
-            els.messagesContainer.innerHTML = '';
-            
-            const cid = [currentUser.uid, user.uid].sort().join('_');
-            selectedChatId = cid;
-
-            const localMsgs = LS.getMsgs(cid);
-            localMsgs.forEach(m => renderMsg(m));
-            renderedMsgTimestamps = new Set(localMsgs.map(m => m.timestamp));
-            scrollToBottom();
-
-            // BOT CHAT STATUS
-            if(selectedUser.uid === BOT_UID) {
-                els.currentChatStatus.innerText = "Zuber AI • Online";
-                els.currentChatStatus.style.color = "var(--primary-color)";
-                els.chatMenuBtn.style.display = 'none'; 
-                // Reset generic UI for bot (in case listener fired weirdly)
-                els.currentChatName.innerText = "Zuber Care";
-                els.currentChatName.style.color = "";
-                els.currentChatAvatar.src = ZUBER_CARE.photoURL;
-                els.messageInput.disabled = false;
-                els.sendBtn.disabled = false;
-            } else {
-                els.chatMenuBtn.style.display = 'block';
-                
-                const freshUserSnap = await get(ref(db, 'users/' + user.uid));
-                if(freshUserSnap.exists()) {
-                    selectedUser = freshUserSnap.val();
-                    LS.set(`user_cache_${user.uid}`, selectedUser);
-                    const localContacts = LS.get('my_contacts');
-                    if(localContacts) {
-                        const updatedContacts = localContacts.map(c => c.uid === user.uid ? selectedUser : c);
-                        LS.set('my_contacts', updatedContacts);
-                        renderContacts(updatedContacts);
-                    }
-                }
-
-                const blockedRef = ref(db, `users/${currentUser.uid}/blocked/${user.uid}`);
-                const isBlockedSnap = await get(blockedRef);
-                const isBlocked = isBlockedSnap.exists();
-
-                if(isBlocked) {
-                    els.blockUserBtn.innerHTML = '<i class="fas fa-user-check"></i> Unblock User';
-                    els.blockUserBtn.classList.remove('danger');
-                    els.blockUserBtn.style.color = 'var(--primary-color)';
-                    els.blockUserBtn.onclick = async () => {
-                        await remove(blockedRef);
-                        showToast("User Unblocked", 'success');
-                        openChat(user);
-                    };
-                    els.messagesContainer.innerHTML = '<div style="text-align:center;color:#888;margin-top:20px">You blocked this user. Unblock to chat.</div>';
-                } else {
-                    els.blockUserBtn.innerHTML = '<i class="fas fa-ban"></i> Block User';
-                    els.blockUserBtn.classList.add('danger');
-                    els.blockUserBtn.style.color = 'var(--danger)';
-                    els.blockUserBtn.onclick = async () => {
-                        if(confirm(`Block ${user.username}?`)) {
-                            await set(blockedRef, true);
-                            showToast("User blocked", 'success');
-                            openChat(user);
-                        }
-                    };
-                }
-
-                const theirBlockSnap = await get(ref(db, `users/${user.uid}/blocked/${currentUser.uid}`));
-                if(theirBlockSnap.exists() && !isBlocked) {
-                    els.messagesContainer.innerHTML = '<div style="text-align:center;color:#ef5350;margin-top:20px"><i class="fas fa-ban"></i> You are blocked by this user</div>';
-                }
-
-                const partnerStatusRef = ref(db, 'users/' + user.uid + '/status');
-                const partnerLastSeenRef = ref(db, 'users/' + user.uid + '/lastOnline');
-                
-                // Only listen to status if not banned/blocked logic overriding it
-                onValue(partnerStatusRef, (snap) => {
-                    // If we are in "Zuber User" mode, don't show status
-                    if(els.currentChatName.innerText === "Zuber User") return;
-
-                    const status = snap.val();
-                    if(status === 'online') {
-                        els.currentChatStatus.innerText = 'Online';
-                        els.currentChatStatus.classList.add('online');
-                    } else {
-                        els.currentChatStatus.classList.remove('online');
-                        get(partnerLastSeenRef).then(tsSnap => {
-                            if(tsSnap.exists()) {
-                                const time = new Date(tsSnap.val());
-                                els.currentChatStatus.innerText = `Last seen ${time.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-                            } else {
-                                els.currentChatStatus.innerText = 'Offline';
-                            }
-                        });
-                    }
+                // Bind Memo Input
+                document.getElementById('noteInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addMemo();
                 });
 
-                els.reportUserBtn.onclick = () => { 
-                    els.reportReason.value = '';
-                    els.reportEvidenceInput.value = '';
-                    els.reportModal.classList.add('open'); 
-                };
-            }
+                this.calculateSubTotal(); // Initial calc
+                this.updateUI();
+            },
 
-            if(selectedUser.uid !== BOT_UID) {
-                const blockedRef = ref(db, `users/${currentUser.uid}/blocked/${user.uid}`);
-                const isBlockedSnap = await get(blockedRef);
-                const isBlocked = isBlockedSnap.exists();
-                const theirBlockSnap = await get(ref(db, `users/${user.uid}/blocked/${currentUser.uid}`));
+            calculateSubTotal() {
+                const val = parseInt(document.getElementById('noteValue').value) || 0;
+                const count = parseInt(document.getElementById('noteCount').value) || 0;
+                const total = val * count;
+                document.getElementById('subTotalCalc').innerText = total;
+            },
 
-                if(!isBlocked && !theirBlockSnap.exists()) {
-                    const chatRef = ref(db, 'chats/'+cid);
-                    activeChatListener = onChildAdded(chatRef, (snapshot) => {
-                        const msg = snapshot.val();
-                        const msgKey = snapshot.key;
-
-                        if(renderedMsgTimestamps.has(msg.timestamp)) return;
-
-                        LS.saveMsg(cid, msg);
-                        renderedMsgTimestamps.add(msg.timestamp);
-                        
-                        renderMsg(msg);
-                        scrollToBottom();
-
-                        setTimeout(() => {
-                            remove(ref(db, `chats/${cid}/${msgKey}`));
-                        }, 500);
-                    });
-                }
-            }
-            
-            // Cleanup listener when chat changes
-            activeChatListener = () => {
-                off(targetUserRef);
-                // Also cleanup other listeners if needed
-            };
-        }
-
-        const renderMsg = (m) => {
-            const d = document.createElement('div');
-            const isMe = m.sender === currentUser.uid;
-            d.className = `message ${isMe ? 'msg-out' : 'msg-in'}`;
-            d.innerHTML = `${m.text}<span class="msg-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
-            els.messagesContainer.appendChild(d);
-        };
-
-        const showTyping = () => {
-            if(isBotTyping) return;
-            isBotTyping = true;
-            const d = document.createElement('div');
-            d.className = 'typing-msg';
-            d.id = 'typing-indicator';
-            d.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
-            els.messagesContainer.appendChild(d);
-            scrollToBottom();
-        };
-
-        const hideTyping = () => {
-            const el = document.getElementById('typing-indicator');
-            if(el) el.remove();
-            isBotTyping = false;
-        };
-
-        const scrollToBottom = () => els.messagesContainer.scrollTop = els.messagesContainer.scrollHeight;
-
-        els.sendBtn.onclick = async () => {
-            const txt = els.messageInput.value.trim();
-            if(!txt || !selectedChatId) return;
-
-            // --- BOT CHAT LOGIC ---
-            if(selectedUser.uid === BOT_UID) {
-                const userMsg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
+            addRupees(e) {
+                e.preventDefault();
                 
-                LS.saveMsg(selectedChatId, userMsg);
-                renderedMsgTimestamps.add(userMsg.timestamp);
-                renderMsg(userMsg);
-                scrollToBottom();
-                els.messageInput.value = '';
-                els.sendBtn.disabled = true;
+                const val = parseInt(document.getElementById('noteValue').value);
+                const count = parseInt(document.getElementById('noteCount').value);
 
-                showTyping();
-
-                setTimeout(() => {
-                    const replyText = getAIResponse(txt);
-                    const botMsg = { text: replyText, sender: BOT_UID, timestamp: Date.now() };
-                    
-                    hideTyping();
-                    LS.saveMsg(selectedChatId, botMsg);
-                    renderedMsgTimestamps.add(botMsg.timestamp);
-                    renderMsg(botMsg);
-                    scrollToBottom();
-                    els.sendBtn.disabled = false;
-                }, 1500);
-                return;
-            }
-
-            // --- HUMAN CHAT LOGIC ---
-            const theirBlockSnap = await get(ref(db, `users/${selectedUser.uid}/blocked/${currentUser.uid}`));
-            if(theirBlockSnap.exists()) return showToast("You are blocked by this user", 'error');
-
-            await set(ref(db, `users/${selectedUser.uid}/contacts/${currentUser.uid}`), true);
-
-            const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
-            
-            LS.saveMsg(selectedChatId, msg);
-            renderedMsgTimestamps.add(msg.timestamp);
-            
-            renderMsg(msg);
-            scrollToBottom();
-            els.messageInput.value = '';
-
-            const msgRef = push(ref(db, 'chats/'+selectedChatId));
-            await set(msgRef, msg);
-
-            await push(ref(db, `notifications/${selectedUser.uid}`), {
-                from: currentUserData.username,
-                msg: txt,
-                type: 'message',
-                timestamp: Date.now()
-            });
-
-            setTimeout(() => {
-                remove(msgRef);
-            }, 500);
-        };
-
-        els.messageInput.onkeypress = e => { if(e.key==='Enter') els.sendBtn.click(); };
-        els.mobileBackBtn.onclick = () => { els.chatArea.classList.remove('active'); els.sidebar.classList.remove('hidden-mobile'); };
-
-        els.chatMenuBtn.onclick = (e) => {
-            e.stopPropagation();
-            els.chatMenuDropdown.style.display = els.chatMenuDropdown.style.display === 'flex' ? 'none' : 'flex';
-        };
-        document.onclick = () => els.chatMenuDropdown.style.display = 'none';
-
-        els.clearChatBtn.onclick = () => {
-            if(confirm("Clear local chat history?")) {
-                LS.clearChat(selectedChatId);
-                els.messagesContainer.innerHTML = '';
-                if(selectedUser.uid !== BOT_UID) remove(ref(db, 'chats/'+selectedChatId));
-            }
-        };
-
-        // --- REPORT LOGIC ---
-        els.submitReportBtn.onclick = async () => {
-            const reason = els.reportReason.value.trim();
-            const file = els.reportEvidenceInput.files[0];
-
-            if(!reason) return showToast("Enter reason", 'error');
-            
-            let finalBase64 = null;
-
-            if(file) {
-                if(file.size > 2000000) { showToast("Screenshot too large! Max 2MB", 'error'); return; }
-                try {
-                    showLoading(true);
-                    finalBase64 = await compressImage(file);
-                    showLoading(false);
-                } catch(err) {
-                    showLoading(false);
-                    showToast("Error processing image", 'error');
+                if (count <= 0) {
+                    alert("Please enter at least 1 note.");
                     return;
                 }
-            }
 
-            const reportData = {
-                reporter: currentUser.uid,
-                reporterName: currentUserData.username,
-                reported: selectedUser.uid,
-                username: selectedUser.username,
-                reason: reason,
-                evidence: finalBase64,
-                status: 'pending',
-                timestamp: Date.now()
-            };
+                const totalAdded = val * count;
 
-            const repRef = await push(ref(db, 'reports'), reportData);
-            showReceipt('report', repRef.key, reportData);
+                const transaction = {
+                    id: Date.now(),
+                    value: val,
+                    count: count,
+                    total: totalAdded,
+                    date: new Date().toLocaleTimeString()
+                };
 
-            els.reportModal.classList.remove('open');
-            els.reportReason.value = '';
-            els.reportEvidenceInput.value = '';
-        };
+                this.data.transactions.unshift(transaction); // Add to top
+                this.saveData();
+                this.updateUI();
+                
+                // Reset count to 1, keep value selected (user might want to add same note again)
+                document.getElementById('noteCount').value = 1;
+                this.calculateSubTotal();
+            },
 
-        // --- VERIFY LOGIC ---
-        els.verifyBtn.onclick = () => {
-            if(currentUserData.verified) {
-                showToast("You are already verified!", 'success');
-                return;
-            }
-            els.verifyModal.classList.add('open');
-        };
+            deleteTransaction(id) {
+                this.data.transactions = this.data.transactions.filter(t => t.id !== id);
+                this.saveData();
+                this.updateUI();
+            },
 
-        els.submitVerifyBtn.onclick = async () => {
-            const snap = await get(ref(db, `users/${currentUser.uid}`));
-            if(snap.exists() && snap.val().verified) {
-                showToast("You are already verified.", 'error');
-                els.verifyModal.classList.remove('open');
-                return;
-            }
+            addMemo() {
+                const input = document.getElementById('noteInput');
+                const text = input.value.trim();
+                if (!text) return;
 
-            const profession = els.verifyProfession.value.trim();
-            const reason = els.verifyReason.value.trim();
-            
-            if(!profession || !reason) return showToast("Fill all fields", 'error');
+                const memo = {
+                    id: Date.now(),
+                    text: text,
+                    date: new Date().toLocaleDateString()
+                };
 
-            const reqData = { profession, reason, status: 'pending', username: currentUserData.username, uid: currentUser.uid };
-            const reqRef = await push(ref(db, 'verificationRequests'), reqData);
+                this.data.memos.unshift(memo);
+                this.saveData();
+                this.renderMemos();
+                input.value = '';
+            },
 
-            showReceipt('verify', reqRef.key, reqData);
+            deleteMemo(id) {
+                this.data.memos = this.data.memos.filter(m => m.id !== id);
+                this.saveData();
+                this.renderMemos();
+            },
 
-            els.verifyModal.classList.remove('open');
-            
-            els.verifyProfession.value = '';
-            els.verifyReason.value = '';
-        };
+            updateUI() {
+                this.renderTotal();
+                this.renderHistory();
+                this.renderMemos();
+            },
 
-        function showReceipt(type, id, data) {
-            els.receiptContent.innerHTML = '';
-            const box = document.createElement('div');
-            box.className = 'receipt-box';
+            renderTotal() {
+                const total = this.data.transactions.reduce((acc, t) => acc + t.total, 0);
+                document.getElementById('displayTotal').innerText = total.toLocaleString('en-IN');
+            },
 
-            const date = new Date(data.timestamp).toLocaleString();
-            
-            if(type === 'report') {
-                box.innerHTML = `
-                    <div class="receipt-row"><span class="receipt-label">Type:</span> <span class="receipt-val">User Report</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Ticket ID:</span> <span class="receipt-val receipt-id">${id}</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Reported User:</span> <span class="receipt-val">${data.username}</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Reason:</span> <span class="receipt-val">${data.reason}</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Timestamp:</span> <span class="receipt-val">${date}</span></div>
-                    ${data.evidence ? `<div class="receipt-row"><span class="receipt-label">Evidence:</span></div><img src="${data.evidence}" class="receipt-img">` : ''}
-                `;
-            } else {
-                box.innerHTML = `
-                    <div class="receipt-row"><span class="receipt-label">Type:</span> <span class="receipt-val">Verification Request</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Request ID:</span> <span class="receipt-val receipt-id">${id}</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Profession:</span> <span class="receipt-val">${data.profession}</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Reason:</span> <span class="receipt-val">${data.reason}</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Timestamp:</span> <span class="receipt-val">${date}</span></div>
-                `;
-            }
-            els.receiptContent.appendChild(box);
-            els.receiptModal.classList.add('open');
-        }
+            renderHistory() {
+                const list = document.getElementById('historyList');
+                list.innerHTML = '';
 
-        els.closeReceiptBtn.onclick = () => { els.receiptModal.classList.remove('open'); };
-
-        // --- ADMIN PANEL ---
-        function loadAdminPanel() {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.onclick = () => {
-                    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+                if (this.data.transactions.length === 0) {
+                    list.innerHTML = '<li style="text-align: center; color: #9ca3af; padding: 20px;">No notes added yet.</li>';
+                    return;
                 }
-            });
 
-            onValue(ref(db, 'verificationRequests'), s => {
-                els.adminRequestsList.innerHTML = '';
-                if(!s.exists()) { els.adminRequestsList.innerHTML = '<p>No requests</p>'; return; }
-                s.forEach(c => {
-                    const req = c.val();
-                    if(req.status === 'pending') {
-                        const uid = c.key;
-                        const item = document.createElement('div');
-                        item.className = 'req-item';
-                        item.innerHTML = `<b>${req.username}</b><br><small>Profession: ${req.profession}</small><br><small>${req.reason}</small><br>
-                            <button class="btn-small btn-acc" onclick="window.acceptAdmin('${uid}')">Acc</button>
-                            <button class="btn-small btn-rej" onclick="window.rejectAdmin('${uid}')">Rej</button>
-                        `;
-                        els.adminRequestsList.appendChild(item);
-                    }
+                this.data.transactions.forEach(t => {
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    
+                    // Logic: "500 x 2 Notes"
+                    li.innerHTML = `
+                        <div class="history-info">
+                            <span class="note-desc">₹${t.value} x ${t.count} Notes</span>
+                            <span class="note-meta">Added at ${t.date}</span>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <span class="history-value">+₹${t.total}</span>
+                            <button class="btn-delete" onclick="app.deleteTransaction(${t.id})">&times;</button>
+                        </div>
+                    `;
+                    list.appendChild(li);
                 });
-            });
+            },
 
-            onValue(ref(db, 'banAppeals'), s => {
-                els.adminAppealsList.innerHTML = '';
-                if(!s.exists()) { els.adminAppealsList.innerHTML = '<p>No appeals</p>'; return; }
-                s.forEach(c => {
-                    const appeal = c.val();
-                    if(appeal.status === 'pending') {
-                        const uid = c.key;
-                        const item = document.createElement('div');
-                        item.className = 'req-item';
-                        item.style.borderColor = '#ef5350';
-                        item.innerHTML = `<b style="color:#ef5350">${appeal.username} (Banned)</b><br><small>${appeal.reason}</small><br>
-                            <button class="btn-small btn-acc" onclick="window.acceptAppeal('${uid}')">Unban</button>
-                            <button class="btn-small btn-rej" onclick="window.rejectAppeal('${uid}')">Reject</button>
-                        `;
-                        els.adminAppealsList.appendChild(item);
-                    }
+            renderMemos() {
+                const list = document.getElementById('memoList');
+                list.innerHTML = '';
+
+                if (this.data.memos.length === 0) return; // Don't show empty text for side memos
+
+                this.data.memos.forEach(m => {
+                    const li = document.createElement('li');
+                    li.className = 'note-card';
+                    li.innerHTML = `
+                        ${m.text}
+                        <button onclick="app.deleteMemo(${m.id})" style="position:absolute; top:5px; right:5px; border:none; background:none; cursor:pointer; font-weight:bold;">&times;</button>
+                    `;
+                    list.appendChild(li);
                 });
-            });
+            },
 
-            onValue(ref(db, 'reports'), s => {
-                els.adminReportsList.innerHTML = '';
-                if(!s.exists()) { els.adminReportsList.innerHTML = '<p>No reports</p>'; return; }
-                s.forEach(c => {
-                    const report = c.val();
-                    if(report.status === 'pending') {
-                        const repKey = c.key;
-                        const item = document.createElement('div');
-                        item.className = 'req-item';
-                        item.style.borderColor = '#ff9800';
-                        
-                        let evidenceHtml = '';
-                        if(report.evidence) {
-                            evidenceHtml = `<div style="margin-top:5px;"><b>Evidence:</b><br><img src="${report.evidence}" class="admin-evidence-img" onclick="window.open(this.src)"></div>`;
-                        }
-
-                        item.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <b style="color:#ff9800">${report.reporterName}</b> reported 
-                                <b>${report.username}</b>
-                            </div>
-                            <small>Reason: ${report.reason}</small>
-                            ${evidenceHtml}
-                            <div style="margin-top:8px;">
-                                <button class="btn-small btn-acc" onclick="window.acceptReport('${repKey}', '${report.reported}')">Ban</button>
-                                <button class="btn-small btn-rej" onclick="window.rejectReport('${repKey}')">Reject</button>
-                            </div>
-                        `;
-                        els.adminReportsList.appendChild(item);
-                    }
-                });
-            });
-        }
-
-        const getUidFromUser = async (un) => {
-            const s = await get(ref(db, 'usernames/'+un));
-            return s.exists() ? s.val() : null;
+            saveData() {
+                localStorage.setItem('rupeeManagerData', JSON.stringify(this.data));
+            }
         };
 
-        window.acceptAdmin = async (uid) => {
-            await update(ref(db, 'users/'+uid), { verified: true, verificationStatus: 'accepted' });
-            await remove(ref(db, 'verificationRequests/'+uid)); 
-            sendSystemMsg(uid, "Congratulations! Your blue tick request has been accepted.");
-            showToast("Accepted", 'success');
-        };
-        window.rejectAdmin = async (uid) => {
-            await update(ref(db, 'users/'+uid), { verificationStatus: 'rejected' });
-            await remove(ref(db, 'verificationRequests/'+uid)); 
-            sendSystemMsg(uid, "Sorry, your request was rejected.");
-            showToast("Rejected", 'info');
-        };
-
-        window.acceptAppeal = async (uid) => {
-            await update(ref(db, 'users/'+uid), { isBanned: false });
-            await remove(ref(db, 'banAppeals/'+uid)); 
-            sendSystemMsg(uid, "Your ban appeal has been accepted. Unbanned.");
-            showToast("Unbanned", 'success');
-        };
-
-        window.rejectAppeal = async (uid) => {
-            await remove(ref(db, 'banAppeals/'+uid)); 
-            sendSystemMsg(uid, "Your ban appeal has been rejected.");
-            showToast("Appeal Rejected", 'info');
-        };
-
-        window.acceptReport = async (repKey, uid) => {
-            await update(ref(db, 'users/'+uid), { isBanned: true });
-            await remove(ref(db, `reports/${repKey}`)); 
-            showToast("User Banned", 'success');
-        };
-        window.rejectReport = async (repKey) => {
-            await remove(ref(db, `reports/${repKey}`)); 
-            showToast("Report Rejected", 'info');
-        };
-
-        const sendSystemMsg = async (uid, txt) => {
-            await set(ref(db, `users/${uid}/contacts/${currentUser.uid}`), true);
-            const cid = [currentUser.uid, uid].sort().join('_');
-            const msg = { text: txt, sender: currentUser.uid, timestamp: Date.now() };
-            LS.saveMsg(cid, msg);
-            const refMsg = push(ref(db, 'chats/'+cid));
-            await set(refMsg, msg);
-        };
-
-        els.adminBanBtn.onclick = async () => {
-            const uid = await getUidFromUser(els.adminUsernameInput.value);
-            if(uid) { await update(ref(db, 'users/'+uid), { isBanned: true }); showToast("Banned", 'success'); } else showToast("User not found", 'error');
-        };
-        els.adminUnbanBtn.onclick = async () => {
-            const uid = await getUidFromUser(els.adminUsernameInput.value);
-            if(uid) { await update(ref(db, 'users/'+uid), { isBanned: false }); showToast("Unbanned", 'success'); } else showToast("User not found", 'error');
-        };
-        els.adminVerifyBtn.onclick = async () => {
-            const uid = await getUidFromUser(els.adminUsernameInput.value);
-            if(uid) { await update(ref(db, 'users/'+uid), { verified: true }); showToast("Verified", 'success'); } else showToast("User not found", 'error');
-        };
-        els.adminUnverifyBtn.onclick = async () => {
-            const uid = await getUidFromUser(els.adminUsernameInput.value);
-            if(uid) { await update(ref(db, 'users/'+uid), { verified: false }); showToast("Tick Removed", 'success'); } else showToast("User not found", 'error');
-        };
-
-        // --- EMOJIS ---
-        const emojis = ['😀','😂','😍','😎','😭','😡','👍','👎','🎉','🔥','❤️','👋','🤣','😊','😘','🥰','😜','🤔','👀','🚀','💩','👻','💀','👽','🤖','🤡','💯','✨','🎁','🌹','🍕','🍔'];
-        emojis.forEach(e => {
-            const sp = document.createElement('span');
-            sp.className = 'emoji-item'; sp.innerText = e;
-            sp.onclick = () => { els.messageInput.value += e; els.emojiModal.classList.remove('open'); };
-            els.emojiGrid.appendChild(sp);
+        // Start App
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
         });
-        els.emojiBtn.onclick = () => els.emojiModal.classList.add('open');
-
-        // --- EDIT PROFILE ---
-        els.editProfileTrigger.onclick = () => {
-            els.editPreviewImg.src = currentUserData.photoURL;
-            editBase64 = "";
-            els.editProfileModal.classList.add('open');
-        };
-
-        els.editPicUpload.onchange = async (e) => {
-            const file = e.target.files[0];
-            if(file) {
-                if(file.size > 500000) { showToast("Image too large! Max 500KB", 'error'); return; }
-                try {
-                    const base64 = await fileToBase64(file);
-                    editBase64 = base64;
-                    els.editPreviewImg.src = base64;
-                } catch(err) { showToast("Error loading image", 'error'); }
-            }
-        };
-
-        els.saveEditProfileBtn.onclick = async () => {
-            if(editBase64) {
-                currentUserData.photoURL = editBase64;
-                LS.set('my_profile', currentUserData);
-                await update(ref(db, 'users/'+currentUser.uid), { photoURL: editBase64 });
-                els.myAvatar.src = editBase64;
-                els.editProfileModal.classList.remove('open');
-                showToast("Profile Updated", 'success');
-            } else {
-                showToast("No image selected", 'error');
-            }
-        };
-
-        // --- ADD CONTACT ---
-        document.getElementById('add-contact-btn').onclick = () => els.addContactModal.classList.add('open');
-        els.addContactConfirmBtn.onclick = async () => {
-            const un = els.newUsernameInput.value.trim().toLowerCase();
-            const s = await get(ref(db, 'usernames/'+un));
-            if(s.exists()) {
-                const uid = s.val();
-                const uSnap = await get(ref(db, 'users/'+uid));
-                if(uSnap.exists()) {
-                    const newUser = uSnap.val();
-                    let currentContacts = LS.get('my_contacts') || [];
-                    const isZuberCare = currentContacts.find(c => c.uid === BOT_UID);
-                    if(!currentContacts.find(c => c.uid === uid)) {
-                        currentContacts.push(newUser);
-                        if(isZuberCare) {
-                            currentContacts = currentContacts.filter(c => c.uid !== BOT_UID);
-                            currentContacts.unshift(ZUBER_CARE);
-                        }
-                        LS.set('my_contacts', currentContacts);
-                        renderContacts(currentContacts);
-                    }
-                }
-                await set(ref(db, `users/${currentUser.uid}/contacts/${uid}`), true);
-                showToast("Added", 'success'); 
-                els.addContactModal.classList.remove('open');
-            } else showToast("Not found", 'error');
-        };
-
-        els.adminPanelBtn.onclick = () => { els.adminModal.classList.add('open'); }
-
-        document.querySelectorAll('.modal, .close-modal').forEach(el => {
-            el.onclick = (e) => {
-                if(e.target === el || e.target.classList.contains('close-modal')) el.classList.remove('open');
-            }
-        });
-
     </script>
 </body>
 </html>
